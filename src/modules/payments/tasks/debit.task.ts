@@ -10,7 +10,7 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
 import { v4 as uuidv4 } from 'uuid';
 import Redlock from 'redlock';
 import Redis from 'ioredis';
