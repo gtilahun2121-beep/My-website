@@ -17,6 +17,9 @@
         "strictBindCallApply": true,
         "forceConsistentCasingInFileNames": true,
         "noFallthroughCasesInSwitch": true,
+        "types": [
+            "node"
+        ],
         "paths": {
             "@common/*": [
                 "src/common/*"

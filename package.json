@@ -36,7 +36,7 @@
         "passport-jwt": "^4.0.1",
         "pg": "^8.11.5",
         "postgres": "^3.4.4",
-        "redlock": "^5.0.0-beta.2",
+        "redlock": "^4.2.0",
         "reflect-metadata": "^0.2.1",
         "rxjs": "^7.8.1",
         "uuid": "^9.0.1"
@@ -50,6 +50,7 @@
         "@types/node": "^20.11.30",
         "@types/passport-jwt": "^4.0.1",
         "@types/pg": "^8.11.4",
+        "@types/redlock": "^4.0.7",
         "@types/uuid": "^9.0.8",
         "@typescript-eslint/eslint-plugin": "^7.3.1",
         "@typescript-eslint/parser": "^7.3.1",
