@@ -10,19 +10,15 @@ import { ScheduleModule } from '@nestjs/schedule';
 
 import { AuthModule } from './modules/auth/auth.module';
 import { PaymentsModule } from './modules/payments/payments.module';
+import { SocialModule } from './modules/social/social.module';
 
 @Module({
     imports: [
-        // Load .env for local development (no-op in production where Vault is used)
         ConfigModule.forRoot({ isGlobal: true }),
-
-        // Enable @Cron / @Interval decorators for the debit task
         ScheduleModule.forRoot(),
-
-        // Feature modules
         AuthModule,
         PaymentsModule,
-        // SocialModule — Milestone 5
+        SocialModule,
     ],
 })
 export class AppModule { }
