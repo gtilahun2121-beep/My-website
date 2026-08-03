@@ -9,6 +9,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 
 import { AuthModule } from './modules/auth/auth.module';
+import { PaymentsModule } from './modules/payments/payments.module';
 
 @Module({
     imports: [
@@ -20,8 +21,8 @@ import { AuthModule } from './modules/auth/auth.module';
 
         // Feature modules
         AuthModule,
-        // PaymentsModule — Milestone 4
-        // SocialModule   — Milestone 6
+        PaymentsModule,
+        // SocialModule — Milestone 5
     ],
 })
 export class AppModule { }
