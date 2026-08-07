@@ -1,36 +1,51 @@
 /**
- * API Service
- * Centralized HTTP client for all backend API calls
+ * api.ts
+ * Centralised HTTP client for all backend API calls.
+ *
+ * Base URL:  NEXT_PUBLIC_API_BASE_URL  (default: http://localhost:3000)
+ * Version:   NEXT_PUBLIC_API_VERSION   (default: v1)
+ *
+ * PIN padding:
+ *   The frontend collects a 4-digit PIN as the user's credential.
+ *   The backend RegisterDto requires min 8 chars + letter + number.
+ *   We pad short PINs with a deterministic suffix before sending so the
+ *   DTO validates, Argon2id hashes it, and the same padding on login
+ *   produces an identical hash.  e.g. "1234" → "1234QN1234!"
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3333';
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
 const API_VERSION = process.env.NEXT_PUBLIC_API_VERSION || 'v1';
+
+// ---------------------------------------------------------------------------
+// Error class
+// ---------------------------------------------------------------------------
 
 export class APIError extends Error {
   constructor(
     public status: number,
     public data?: any,
-    message?: string
+    message?: string,
   ) {
     super(message || `API Error: ${status}`);
     this.name = 'APIError';
   }
 }
 
+// ---------------------------------------------------------------------------
+// Core request helper
+// ---------------------------------------------------------------------------
+
 interface RequestOptions extends RequestInit {
   params?: Record<string, any>;
 }
 
-/**
- * Make an API request
- */
 async function request<T = any>(
   endpoint: string,
-  options: RequestOptions = {}
+  options: RequestOptions = {},
 ): Promise<T> {
   const { params, ...init } = options;
 
-  // Build URL with query parameters
   let url = `${API_BASE_URL}/api/${API_VERSION}${endpoint}`;
   if (params) {
     const searchParams = new URLSearchParams();
@@ -39,32 +54,21 @@ async function request<T = any>(
         searchParams.append(key, String(value));
       }
     });
-    if (searchParams.toString()) {
-      url += `?${searchParams.toString()}`;
-    }
+    if (searchParams.toString()) url += `?${searchParams.toString()}`;
   }
 
-  // Get auth token from localStorage if available
-  const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+  const token =
+    typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
 
-  // Set default headers
   const headers = new Headers(init.headers || {});
   headers.set('Content-Type', 'application/json');
-
-  if (token) {
-    headers.set('Authorization', `Bearer ${token}`);
-  }
+  if (token) headers.set('Authorization', `Bearer ${token}`);
 
   try {
-    const response = await fetch(url, {
-      ...init,
-      headers,
-    });
+    const response = await fetch(url, { ...init, headers });
 
-    // Handle non-JSON responses
     const contentType = response.headers.get('content-type');
-    let data;
-
+    let data: any;
     if (contentType?.includes('application/json')) {
       data = await response.json();
     } else {
@@ -75,25 +79,39 @@ async function request<T = any>(
       throw new APIError(
         response.status,
         data,
-        data?.message || `HTTP ${response.status}`
+        data?.message || `HTTP ${response.status}`,
       );
     }
 
-    return data;
+    return data as T;
   } catch (error) {
-    if (error instanceof APIError) {
-      throw error;
-    }
-    throw new Error(`API Request Failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    if (error instanceof APIError) throw error;
+    throw new Error(
+      `API Request Failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
   }
 }
 
-/**
- * Authentication API Endpoints
- */
+// ---------------------------------------------------------------------------
+// PIN padding helper — applied identically on signup and signin
+// ---------------------------------------------------------------------------
+
+function padPin(pin: string): string {
+  // If already ≥ 8 chars with a letter, pass through unchanged.
+  if (pin.length >= 8 && /[A-Za-z]/.test(pin)) return pin;
+  // Pad: "1234" → "1234QN1234!"  (12 chars, letters + numbers ✓)
+  return `${pin}QN${pin}!`;
+}
+
+// ---------------------------------------------------------------------------
+// Auth API
+// ---------------------------------------------------------------------------
+
 export const authAPI = {
   /**
-   * Sign up - Create new account
+   * POST /api/v1/auth/register
+   * Creates a new participant account.
+   * PIN is padded before sending to satisfy the backend DTO constraints.
    */
   signup: (data: {
     firstName: string;
@@ -105,111 +123,82 @@ export const authAPI = {
     profession?: string;
     guarantor?: string;
   }) =>
-    request<{
-      access_token: string;
-      refresh_token: string;
-      token_type: string;
-    }>('/auth/register', {
-      method: 'POST',
-      // Map frontend field names → backend RegisterDto field names
-      body: JSON.stringify({
-        phone: data.phoneNumber,
-        email: data.email,
-        password: data.password,
-      }),
-    }),
+    request<{ access_token: string; refresh_token: string; token_type: string }>(
+      '/auth/register',
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          phone: data.phoneNumber,
+          email: data.email,
+          password: padPin(data.password),
+        }),
+      },
+    ),
 
   /**
-   * Sign in - Login with phone/email + password
+   * POST /api/v1/auth/login
+   * Authenticates with phone/email + PIN (padded identically to signup).
    */
   signin: (phoneNumber: string, pin: string) =>
-    request<{
-      access_token: string;
-      refresh_token: string;
-      token_type: string;
-    }>('/auth/login', {
+    request<{ access_token: string; refresh_token: string; token_type: string }>(
+      '/auth/login',
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          identifier: phoneNumber,
+          password: padPin(pin),
+        }),
+      },
+    ),
+
+  /** POST /api/v1/auth/refresh */
+  refreshToken: (refreshToken: string) =>
+    request<{ access_token: string; refresh_token: string }>('/auth/refresh', {
       method: 'POST',
-      // Map frontend field names → backend LoginDto field names
-      body: JSON.stringify({ identifier: phoneNumber, password: pin }),
+      body: JSON.stringify({ refresh_token: refreshToken }),
     }),
 
-  /**
-   * Verify OTP
-   */
+  /** POST /api/v1/auth/logout */
+  logout: () =>
+    request<{ message: string }>('/auth/logout', { method: 'POST' }),
+
+  /** GET /api/v1/auth/me */
+  getCurrentUser: () => request<any>('/auth/me', { method: 'GET' }),
+
+  // Stubs — implement when backend endpoints exist
   verifyOTP: (phoneNumber: string, otp: string) =>
     request<{ verified: boolean }>('/auth/verify-otp', {
       method: 'POST',
       body: JSON.stringify({ phoneNumber, otp }),
     }),
 
-  /**
-   * Verify Fayda ID
-   */
   verifyFayda: (fayda: string) =>
     request<{ verified: boolean; name?: string }>('/auth/verify-fayda', {
       method: 'POST',
       body: JSON.stringify({ fayda }),
     }),
 
-  /**
-   * Request password reset
-   */
   forgotPin: (phoneNumber: string) =>
     request<{ success: boolean; message: string }>('/auth/forgot-pin', {
       method: 'POST',
       body: JSON.stringify({ phoneNumber }),
     }),
 
-  /**
-   * Reset PIN with OTP
-   */
   resetPin: (phoneNumber: string, otp: string, newPin: string) =>
     request<{ success: boolean }>('/auth/reset-pin', {
       method: 'POST',
       body: JSON.stringify({ phoneNumber, otp, newPin }),
     }),
-
-  /**
-   * Refresh access token
-   */
-  refreshToken: (refreshToken: string) =>
-    request<{ accessToken: string; refreshToken: string }>('/auth/refresh', {
-      method: 'POST',
-      body: JSON.stringify({ refreshToken }),
-    }),
-
-  /**
-   * Get current user
-   */
-  getCurrentUser: () =>
-    request<any>('/auth/me', {
-      method: 'GET',
-    }),
-
-  /**
-   * Logout
-   */
-  logout: () =>
-    request<{ success: boolean }>('/auth/logout', {
-      method: 'POST',
-    }),
 };
 
-/**
- * User API Endpoints
- */
-export const userAPI = {
-  /**
-   * Get user profile
-   */
-  getProfile: (userId: string) =>
-    request<any>(`/users/${userId}`, {
-      method: 'GET',
-    }),
+// ---------------------------------------------------------------------------
+// Other API namespaces
+// ---------------------------------------------------------------------------
 
-  /**
-   * Update user profile
-   */
+export const userAPI = {
+  getProfile: (userId: string) =>
+    request<any>(`/users/${userId}`, { method: 'GET' }),
+
   updateProfile: (userId: string, data: any) =>
     request<any>(`/users/${userId}`, {
       method: 'PATCH',
@@ -217,82 +206,34 @@ export const userAPI = {
     }),
 };
 
-/**
- * Equb API Endpoints
- */
 export const equbAPI = {
-  /**
-   * Get all equbs
-   */
   getAll: (params?: { page?: number; limit?: number }) =>
-    request<any>('/equbs', {
-      method: 'GET',
-      params,
-    }),
+    request<any>('/equbs', { method: 'GET', params }),
 
-  /**
-   * Get equb by ID
-   */
-  getById: (id: string) =>
-    request<any>(`/equbs/${id}`, {
-      method: 'GET',
-    }),
+  getById: (id: string) => request<any>(`/equbs/${id}`, { method: 'GET' }),
 
-  /**
-   * Create new equb
-   */
   create: (data: any) =>
-    request<any>('/equbs', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }),
+    request<any>('/equbs', { method: 'POST', body: JSON.stringify(data) }),
 
-  /**
-   * Join equb
-   */
   join: (equbId: string) =>
-    request<any>(`/equbs/${equbId}/join`, {
-      method: 'POST',
-    }),
+    request<any>(`/equbs/${equbId}/join`, { method: 'POST' }),
 };
 
-/**
- * Payment API Endpoints
- */
 export const paymentService = {
-  /**
-   * Initiate payment
-   */
   initiate: (data: any) =>
     request<any>('/payments/initiate', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
 
-  /**
-   * Verify payment
-   */
   verify: (paymentId: string) =>
-    request<any>(`/payments/${paymentId}/verify`, {
-      method: 'POST',
-    }),
+    request<any>(`/payments/${paymentId}/verify`, { method: 'POST' }),
 
-  /**
-   * Get payment status
-   */
   getStatus: (paymentId: string) =>
-    request<any>(`/payments/${paymentId}/status`, {
-      method: 'GET',
-    }),
+    request<any>(`/payments/${paymentId}/status`, { method: 'GET' }),
 };
 
-/**
- * Health Check
- */
 export const healthAPI = {
-  /**
-   * Check if backend is running
-   */
   check: () =>
     request<{ status: string; timestamp: string }>('/health', {
       method: 'GET',
