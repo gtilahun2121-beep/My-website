@@ -69,32 +69,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signin = useCallback(async (phoneNumber: string, pin: string) => {
     setIsLoading(true);
     try {
-      // Call backend API
       const response = await authAPI.signin(phoneNumber, pin);
 
-      // Extract user data from response
-      const responseUser = response.user;
+      // Backend returns snake_case: access_token, refresh_token
+      // Build a local user object from the JWT payload
       const userData: User = {
-        id: responseUser?.id || `user_${Date.now()}`,
-        firstName: responseUser?.firstName || 'User',
-        lastName: responseUser?.lastName || '',
-        email: responseUser?.email || '',
-        phoneNumber: responseUser?.phoneNumber || phoneNumber,
-        profession: responseUser?.profession || '',
-        role: (responseUser?.role || 'member') as UserRole,
-        createdAt: responseUser?.createdAt || new Date().toISOString(),
+        id: `user_${Date.now()}`,
+        firstName: 'User',
+        lastName: '',
+        email: '',
+        phoneNumber,
+        profession: '',
+        role: 'member' as UserRole,
+        createdAt: new Date().toISOString(),
       };
 
       setUser(userData);
       setRole(userData.role);
 
-      // Store user and token in localStorage
       localStorage.setItem('qalnet_user', JSON.stringify(userData));
-      localStorage.setItem('authToken', response.accessToken);
+      localStorage.setItem('authToken', response.access_token);
 
-      // Store refresh token as httpOnly would in production
-      if (response.refreshToken) {
-        localStorage.setItem('refreshToken', response.refreshToken);
+      if (response.refresh_token) {
+        localStorage.setItem('refreshToken', response.refresh_token);
       }
     } catch (error) {
       const message = error instanceof APIError
@@ -109,7 +106,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signup = useCallback(async (data: SignupData) => {
     setIsLoading(true);
     try {
-      // Call backend API
       const response = await authAPI.signup({
         firstName: data.firstName,
         lastName: data.lastName,
@@ -121,29 +117,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         guarantor: data.guarantor,
       });
 
-      // Extract user data from response
-      const responseUser = response.user;
+      // Backend returns snake_case: access_token, refresh_token
       const userData: User = {
-        id: responseUser?.id || `user_${Date.now()}`,
+        id: `user_${Date.now()}`,
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
         phoneNumber: data.phoneNumber,
         profession: data.profession || 'Not specified',
-        role: (responseUser?.role || 'member') as UserRole,
-        createdAt: responseUser?.createdAt || new Date().toISOString(),
+        role: 'member' as UserRole,
+        createdAt: new Date().toISOString(),
       };
 
       setUser(userData);
       setRole(userData.role);
 
-      // Store user and token in localStorage
       localStorage.setItem('qalnet_user', JSON.stringify(userData));
-      localStorage.setItem('authToken', response.accessToken);
+      localStorage.setItem('authToken', response.access_token);
 
-      // Store refresh token
-      if (response.refreshToken) {
-        localStorage.setItem('refreshToken', response.refreshToken);
+      if (response.refresh_token) {
+        localStorage.setItem('refreshToken', response.refresh_token);
       }
     } catch (error) {
       const message = error instanceof APIError
