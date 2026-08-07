@@ -36,7 +36,18 @@ export class DebitTask implements OnModuleInit {
     onModuleInit(): void {
         const redis = new Redis(
             process.env.REDIS_URL ?? 'redis://localhost:6379',
+            {
+                enableReadyCheck: false,   // don't throw if Redis isn't ready
+                maxRetriesPerRequest: null, // let Redlock handle retries
+                lazyConnect: true,          // don't connect until first command
+            },
         );
+
+        // Suppress unhandled error events — ioredis emits these when Redis
+        // is unavailable. Without this listener Node.js crashes the process.
+        redis.on('error', (err: Error) => {
+            this.logger.warn(`[Redis] Connection error (debit-task): ${err.message}`);
+        });
 
         this.redlock = new Redlock([redis as unknown as Redlock.CompatibleRedisClient], {
             retryCount: 3,
