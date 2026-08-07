@@ -1,29 +1,47 @@
-# Dependencies
+# ── Dependencies ──────────────────────────────────────────────────────────────
 node_modules/
+.pnp
+.pnp.*
 
-# Build output
+# ── Build outputs ─────────────────────────────────────────────────────────────
 dist/
 build/
+.next/
+out/
 
-# Environment secrets — NEVER commit these
+# ── Turbo ─────────────────────────────────────────────────────────────────────
+.turbo/
+
+# ── Environment — NEVER commit real secrets ───────────────────────────────────
 .env
 .env.local
 .env.*.local
 
-# Logs
+# ── Logs ──────────────────────────────────────────────────────────────────────
 *.log
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
 
-# OS artifacts
+# ── OS artifacts ──────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
 
-# IDE
+# ── IDE ───────────────────────────────────────────────────────────────────────
 .vscode/
 .idea/
 
-# Test coverage
+# ── Test coverage ─────────────────────────────────────────────────────────────
 coverage/
 
-# NestJS
+# ── TypeScript ────────────────────────────────────────────────────────────────
 *.js.map
+*.tsbuildinfo
+next-env.d.ts
+
+# ── Vercel ────────────────────────────────────────────────────────────────────
+.vercel
+
+# ── Misc ──────────────────────────────────────────────────────────────────────
+*.pem

@@ -1,0 +1,29 @@
+{
+    "extends": "@qalnet/typescript-config/nestjs.json",
+    "compilerOptions": {
+        "outDir": "./dist",
+        "baseUrl": "./",
+        "paths": {
+            "@common/*": [
+                "src/common/*"
+            ],
+            "@config/*": [
+                "src/config/*"
+            ],
+            "@modules/*": [
+                "src/modules/*"
+            ],
+            "@qalnet/shared-types": [
+                "../../packages/shared-types/src"
+            ]
+        }
+    },
+    "include": [
+        "src"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist",
+        "test"
+    ]
+}
