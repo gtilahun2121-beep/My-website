@@ -75,10 +75,14 @@ export class PaymentsService implements OnModuleInit {
     constructor(private readonly repo: PaymentsRepository) { }
 
     onModuleInit(): void {
-        const redis = new Redis(process.env.REDIS_URL ?? 'redis://localhost:6379', {
-            enableReadyCheck: false,   // don't throw if Redis isn't ready
+        const redisUrl = process.env.REDIS_URL ?? 'redis://localhost:6379';
+        const isTls = redisUrl.startsWith('rediss://');
+
+        const redis = new Redis(redisUrl, {
+            enableReadyCheck: false,    // don't throw if Redis isn't ready
             maxRetriesPerRequest: null, // let Redlock handle retries
             lazyConnect: true,          // don't connect until first command
+            tls: isTls ? {} : undefined, // Upstash requires TLS (rediss://)
         });
 
         // Suppress unhandled error events — ioredis emits these when Redis
