@@ -58,10 +58,11 @@ export function getPool(): Sql {
         // Neon recommends a modest pool size for serverless workloads
         max: 10,
         idle_timeout: 20,   // seconds before an idle connection is closed
-        connect_timeout: 10,
+        connect_timeout: 60, // raised from 10s — Neon pooler can take up to ~30s on cold start
 
-        // Enforce SSL — Neon requires it
-        ssl: 'require',
+        // SSL — defer to the connection string flags (sslmode + channel_binding)
+        // Setting ssl:'require' here conflicts with channel_binding=require on the pooler
+        ssl: { rejectUnauthorized: false },
 
         // Automatically parse numeric columns as JS numbers
         // (Postgres returns NUMERIC as strings by default)
