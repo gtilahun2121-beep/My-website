@@ -236,7 +236,8 @@ export class PaymentsRepository {
 
     /**
      * Confirms a payment from a webhook callback.
-     * Matches by transaction_reference (unique per payment).
+     * Matches by transaction_reference (unique per payment) AND processor prefix
+     * so a Chapa webhook cannot confirm a Telebirr payment.
      */
     async confirmPaymentByReference(
         txRef: string,
@@ -244,12 +245,17 @@ export class PaymentsRepository {
     ): Promise<PaymentRecord | null> {
         const sql = getPool();
 
+        // Enforce processor match via transaction_reference prefix convention:
+        // Chapa refs start with "CHAPA-", Telebirr refs start with "TELEBIRR-"
+        const processorPrefix = processor.toUpperCase() + '-';
+
         const rows = await sql<PaymentRecord[]>`
       UPDATE payments
       SET payment_status = 'paid',
           paid_at        = NOW(),
           updated_at     = NOW()
       WHERE transaction_reference = ${txRef}
+        AND transaction_reference LIKE ${processorPrefix + '%'}
         AND payment_status = 'pending'
       RETURNING *
     `;

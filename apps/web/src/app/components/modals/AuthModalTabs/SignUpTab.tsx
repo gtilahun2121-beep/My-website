@@ -302,9 +302,7 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
         email: formData.email,
         password: formData.pin,
         phoneNumber: formData.phoneNumber,
-        profession: '',
         fayda: formData.fayda,
-        guarantor: '',
       });
 
       console.log('✅ Signup successful!');

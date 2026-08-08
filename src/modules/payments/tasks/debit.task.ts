@@ -103,26 +103,25 @@ export class DebitTask implements OnModuleInit {
                     { userId: member.user_id, userRole: 'participant' },
                     async (tx) => {
 
-                        // (3) Find and lock the pending payment row
-                        const pendingPayment = await this.repo.findPendingPayment(
-                            member.user_id,
-                            equb.id,
-                            equb.current_round,
-                        );
+                        // (3) Find AND lock the pending payment row inside the transaction
+                        // Using a single query to eliminate the race window between
+                        // find and lock that existed when two calls were used.
+                        const locked = await tx<import('../payments.repository').PaymentRecord[]>`
+                            SELECT * FROM payments
+                            WHERE user_id      = ${member.user_id}
+                              AND equb_id      = ${equb.id}
+                              AND round_number = ${equb.current_round}
+                              AND payment_status = 'pending'
+                            FOR UPDATE SKIP LOCKED
+                            LIMIT 1
+                        `;
 
-                        if (!pendingPayment || pendingPayment.payment_status !== 'pending') {
-                            return; // Already paid or no record — skip
-                        }
-
-                        const locked = await this.repo.lockPaymentForUpdate(
-                            pendingPayment.id,
-                            tx,
-                        );
-
-                        // (4) Re-verify after lock — race condition guard
-                        if (!locked || locked.payment_status !== 'pending') {
+                        // (4) If no row returned, another pod already holds the lock — skip
+                        if (!locked[0] || locked[0].payment_status !== 'pending') {
                             return;
                         }
+
+                        const pendingPayment = locked[0];
 
                         // (5a) Try wallet first
                         const walletDeducted = await this.repo.deductWalletBalance(

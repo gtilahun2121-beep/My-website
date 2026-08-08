@@ -9,26 +9,59 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- =========================================================================
 -- CUSTOM TYPES AND ENUMS
 -- =========================================================================
-CREATE TYPE user_role AS ENUM ('participant', 'host', 'admin');
-CREATE TYPE verification_status AS ENUM ('pending', 'verified', 'rejected');
-CREATE TYPE equb_status AS ENUM ('open', 'active', 'completed', 'cancelled');
-CREATE TYPE payment_status AS ENUM ('pending', 'paid', 'auto_debited', 'failed');
-CREATE TYPE payout_status AS ENUM ('pending', 'approved', 'batched', 'completed', 'failed');
-CREATE TYPE ticket_status AS ENUM ('open', 'in_progress', 'resolved', 'rejected');
-CREATE TYPE trust_tier AS ENUM ('standard', 'bronze', 'silver', 'gold', 'verified_trust');
-CREATE TYPE alert_category AS ENUM ('operational', 'social_trust', 'system_policy');
+DO $$ BEGIN
+  CREATE TYPE user_role AS ENUM ('participant', 'host', 'admin');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  CREATE TYPE verification_status AS ENUM ('pending', 'verified', 'rejected');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  CREATE TYPE equb_status AS ENUM ('open', 'active', 'completed', 'cancelled');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  CREATE TYPE payment_status AS ENUM ('pending', 'paid', 'auto_debited', 'failed');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  CREATE TYPE payout_status AS ENUM ('pending', 'approved', 'batched', 'completed', 'failed');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  CREATE TYPE ticket_status AS ENUM ('open', 'in_progress', 'resolved', 'rejected');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  CREATE TYPE trust_tier AS ENUM ('standard', 'bronze', 'silver', 'gold', 'verified_trust');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  CREATE TYPE alert_category AS ENUM ('operational', 'social_trust', 'system_policy');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- =========================================================================
 -- USERS TABLE (ENCRYPTED SECURE PROFILE LEDGER WITH FAYDA ID)
 -- =========================================================================
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
   id                UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
   phone             VARCHAR(20)  UNIQUE NOT NULL,
   email             VARCHAR(255) UNIQUE NOT NULL,
   telegram_handle   VARCHAR(100) UNIQUE,
   telegram_chat_id  BIGINT       UNIQUE,
   password_hash     VARCHAR(255) NOT NULL,
-  fayda_id          BYTEA,       -- Application-level encrypted Fayda ID (pgp_sym_encrypt)
+  first_name        VARCHAR(100) NOT NULL,
+  last_name         VARCHAR(100) NOT NULL,
+  fayda_id          VARCHAR(100) NOT NULL,
   role              user_role    NOT NULL DEFAULT 'participant',
   is_active         BOOLEAN      NOT NULL DEFAULT TRUE,
   created_at        TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -36,9 +69,19 @@ CREATE TABLE users (
 );
 
 -- =========================================================================
+-- REFRESH TOKENS (SESSION MANAGEMENT)
+-- =========================================================================
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+  user_id    UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  token_hash VARCHAR(255) NOT NULL,
+  expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =========================================================================
 -- SYSTEMIC CREDIT SCORE INDEX
 -- =========================================================================
-CREATE TABLE credit_scores (
+CREATE TABLE IF NOT EXISTS credit_scores (
   id                        UUID    PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id                   UUID    UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   trust_score               INTEGER NOT NULL DEFAULT 500 CHECK (trust_score BETWEEN 300 AND 850),
@@ -51,7 +94,7 @@ CREATE TABLE credit_scores (
 -- =========================================================================
 -- LOCAL DIGITAL WALLETS
 -- =========================================================================
-CREATE TABLE wallets (
+CREATE TABLE IF NOT EXISTS wallets (
   id         UUID           PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id    UUID           UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   balance    NUMERIC(15, 2) NOT NULL DEFAULT 0.00 CHECK (balance >= 0.00),
@@ -65,7 +108,7 @@ CREATE TABLE wallets (
 -- the split ratio, so it must never be hardcoded in application logic.
 -- Constraint enforces: host_commission_rate + admin_fee_rate = total_fee_rate
 -- =========================================================================
-CREATE TABLE fee_config (
+CREATE TABLE IF NOT EXISTS fee_config (
   id                    UUID           PRIMARY KEY DEFAULT gen_random_uuid(),
   total_fee_rate        NUMERIC(8, 6)  NOT NULL DEFAULT 0.001
                           CHECK (total_fee_rate > 0 AND total_fee_rate <= 0.05),
@@ -81,14 +124,15 @@ CREATE TABLE fee_config (
     CHECK (ABS((host_commission_rate + admin_fee_rate) - total_fee_rate) < 0.000001)
 );
 
--- Seed default fee config: 0.1% total → 0.02% host + 0.08% admin
+-- Seed default fee config only if table is empty
 INSERT INTO fee_config (total_fee_rate, host_commission_rate, admin_fee_rate, is_active)
-VALUES (0.001, 0.0002, 0.0008, TRUE);
+SELECT 0.001, 0.0002, 0.0008, TRUE
+WHERE NOT EXISTS (SELECT 1 FROM fee_config);
 
 -- =========================================================================
 -- EQUB POOL GROUPS (WITH ACCUMULATING SOCIAL FUNDS)
 -- =========================================================================
-CREATE TABLE equb_groups (
+CREATE TABLE IF NOT EXISTS equb_groups (
   id                  UUID           PRIMARY KEY DEFAULT gen_random_uuid(),
   host_id             UUID           NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
   name                VARCHAR(100)   NOT NULL,
@@ -108,7 +152,7 @@ CREATE TABLE equb_groups (
 -- =========================================================================
 -- MEMBERSHIPS TABLE (WITH AUTO-DEBIT CONSENT)
 -- =========================================================================
-CREATE TABLE memberships (
+CREATE TABLE IF NOT EXISTS memberships (
   id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id            UUID NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
   equb_id            UUID NOT NULL REFERENCES equb_groups(id) ON DELETE RESTRICT,
@@ -124,7 +168,7 @@ CREATE TABLE memberships (
 -- host_commission_deducted = host's host_commission_rate cut
 -- Both rates are resolved at runtime from the active fee_config row
 -- =========================================================================
-CREATE TABLE payments (
+CREATE TABLE IF NOT EXISTS payments (
   id                          UUID           PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id                     UUID           NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
   equb_id                     UUID           NOT NULL REFERENCES equb_groups(id) ON DELETE RESTRICT,
@@ -146,7 +190,7 @@ CREATE TABLE payments (
 -- =========================================================================
 -- ROTATION PAYOUT RECORDS
 -- =========================================================================
-CREATE TABLE payouts (
+CREATE TABLE IF NOT EXISTS payouts (
   id               UUID           PRIMARY KEY DEFAULT gen_random_uuid(),
   equb_id          UUID           NOT NULL REFERENCES equb_groups(id) ON DELETE RESTRICT,
   round_number     INTEGER        NOT NULL CHECK (round_number > 0),
@@ -160,7 +204,7 @@ CREATE TABLE payouts (
 -- =========================================================================
 -- MULTI-SIGNATURE APPROVAL TRACKER (FOR HIGH-CAPITAL POTS >= 1M ETB)
 -- =========================================================================
-CREATE TABLE multisig_approvals (
+CREATE TABLE IF NOT EXISTS multisig_approvals (
   id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   payout_id    UUID NOT NULL REFERENCES payouts(id) ON DELETE CASCADE,
   approver_id  UUID NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
@@ -171,7 +215,7 @@ CREATE TABLE multisig_approvals (
 -- =========================================================================
 -- B2C BATCHED PAYOUT SCHEDULER
 -- =========================================================================
-CREATE TABLE payout_batches (
+CREATE TABLE IF NOT EXISTS payout_batches (
   id                    UUID           PRIMARY KEY DEFAULT gen_random_uuid(),
   payout_id             UUID           NOT NULL REFERENCES payouts(id) ON DELETE CASCADE,
   amount                NUMERIC(15, 2) NOT NULL CHECK (amount > 0.00),
@@ -184,7 +228,7 @@ CREATE TABLE payout_batches (
 -- =========================================================================
 -- SECONDARY MARKET LOTTERY SLOT TRADES ("WIN SELLING" LEDGER)
 -- =========================================================================
-CREATE TABLE payout_slot_trades (
+CREATE TABLE IF NOT EXISTS payout_slot_trades (
   id                   UUID           PRIMARY KEY DEFAULT gen_random_uuid(),
   equb_id              UUID           NOT NULL REFERENCES equb_groups(id) ON DELETE CASCADE,
   round_number         INTEGER        NOT NULL CHECK (round_number > 0),
@@ -199,7 +243,7 @@ CREATE TABLE payout_slot_trades (
 -- =========================================================================
 -- COMMUNAL SOCIAL FUND PROPOSALS
 -- =========================================================================
-CREATE TABLE social_proposals (
+CREATE TABLE IF NOT EXISTS social_proposals (
   id           UUID           PRIMARY KEY DEFAULT gen_random_uuid(),
   equb_id      UUID           NOT NULL REFERENCES equb_groups(id) ON DELETE CASCADE,
   proposer_id  UUID           NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
@@ -213,7 +257,7 @@ CREATE TABLE social_proposals (
 -- =========================================================================
 -- SOCIAL FUND DEMOCRATIC VOTES
 -- =========================================================================
-CREATE TABLE social_votes (
+CREATE TABLE IF NOT EXISTS social_votes (
   id          UUID    PRIMARY KEY DEFAULT gen_random_uuid(),
   proposal_id UUID    NOT NULL REFERENCES social_proposals(id) ON DELETE CASCADE,
   user_id     UUID    NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
@@ -225,7 +269,7 @@ CREATE TABLE social_votes (
 -- =========================================================================
 -- NOTIFICATION ENGINE DISPATCH LOGS
 -- =========================================================================
-CREATE TABLE notifications (
+CREATE TABLE IF NOT EXISTS notifications (
   id                 UUID           PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id            UUID           NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   category           alert_category NOT NULL,
@@ -239,7 +283,7 @@ CREATE TABLE notifications (
 -- =========================================================================
 -- RECONCILIATION AND DISPUTE TICKET SYSTEM
 -- =========================================================================
-CREATE TABLE reconciliation_tickets (
+CREATE TABLE IF NOT EXISTS reconciliation_tickets (
   id                    UUID           PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id               UUID           NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
   payment_id            UUID           REFERENCES payments(id) ON DELETE SET NULL,
@@ -255,7 +299,7 @@ CREATE TABLE reconciliation_tickets (
 -- =========================================================================
 -- CRB DEFAULTER BLACKLIST RECORD
 -- =========================================================================
-CREATE TABLE crb_blacklists (
+CREATE TABLE IF NOT EXISTS crb_blacklists (
   id          UUID    PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id     UUID    UNIQUE NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
   reason      TEXT    NOT NULL,
@@ -267,7 +311,7 @@ CREATE TABLE crb_blacklists (
 -- =========================================================================
 -- USSD ACTIVE SESSIONS
 -- =========================================================================
-CREATE TABLE ussd_sessions (
+CREATE TABLE IF NOT EXISTS ussd_sessions (
   id               UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   phone_number     VARCHAR(20) NOT NULL,
   session_id       VARCHAR(150) UNIQUE NOT NULL,
@@ -280,7 +324,7 @@ CREATE TABLE ussd_sessions (
 -- LOTTERY DRAWS RECORD (WITH SVG CANVAS DATA)
 -- Winner selected via OS-level CSPRNG (Python secrets module)
 -- =========================================================================
-CREATE TABLE lottery_draws (
+CREATE TABLE IF NOT EXISTS lottery_draws (
   id              UUID    PRIMARY KEY DEFAULT gen_random_uuid(),
   equb_id         UUID    NOT NULL REFERENCES equb_groups(id) ON DELETE RESTRICT,
   round_number    INTEGER NOT NULL CHECK (round_number > 0),
@@ -296,7 +340,7 @@ CREATE TABLE lottery_draws (
 -- =========================================================================
 -- SECURITY AUDIT TRAIL LOGS
 -- =========================================================================
-CREATE TABLE audit_logs (
+CREATE TABLE IF NOT EXISTS audit_logs (
   id           UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   table_name   VARCHAR(100) NOT NULL,
   action       VARCHAR(20)  NOT NULL,
@@ -310,15 +354,15 @@ CREATE TABLE audit_logs (
 -- =========================================================================
 -- INDEX OPTIMIZATIONS
 -- =========================================================================
-CREATE INDEX idx_users_phone         ON users(phone);
-CREATE INDEX idx_credit_scores_user  ON credit_scores(user_id);
-CREATE INDEX idx_wallets_user        ON wallets(user_id);
-CREATE INDEX idx_memberships_equb    ON memberships(equb_id);
-CREATE INDEX idx_payments_lookup     ON payments(user_id, equb_id, round_number);
-CREATE INDEX idx_payments_unpaid     ON payments(payment_status) WHERE payment_status = 'pending';
-CREATE INDEX idx_payout_batches_date ON payout_batches(scheduled_date) WHERE status = 'pending';
-CREATE INDEX idx_reconciliation_ref  ON reconciliation_tickets(transaction_reference);
-CREATE INDEX idx_fee_config_active   ON fee_config(is_active, effective_from);
+CREATE INDEX IF NOT EXISTS idx_users_phone         ON users(phone);
+CREATE INDEX IF NOT EXISTS idx_credit_scores_user  ON credit_scores(user_id);
+CREATE INDEX IF NOT EXISTS idx_wallets_user        ON wallets(user_id);
+CREATE INDEX IF NOT EXISTS idx_memberships_equb    ON memberships(equb_id);
+CREATE INDEX IF NOT EXISTS idx_payments_lookup     ON payments(user_id, equb_id, round_number);
+CREATE INDEX IF NOT EXISTS idx_payments_unpaid     ON payments(payment_status) WHERE payment_status = 'pending';
+CREATE INDEX IF NOT EXISTS idx_payout_batches_date ON payout_batches(scheduled_date) WHERE status = 'pending';
+CREATE INDEX IF NOT EXISTS idx_reconciliation_ref  ON reconciliation_tickets(transaction_reference);
+CREATE INDEX IF NOT EXISTS idx_fee_config_active   ON fee_config(is_active, effective_from);
 
 -- =========================================================================
 -- DATABASE AUDIT ENGINE TRIGGER
@@ -350,18 +394,22 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trg_audit_users    ON users;
 CREATE TRIGGER trg_audit_users
   AFTER INSERT OR UPDATE OR DELETE ON users
   FOR EACH ROW EXECUTE FUNCTION process_audit_log();
 
+DROP TRIGGER IF EXISTS trg_audit_payments ON payments;
 CREATE TRIGGER trg_audit_payments
   AFTER INSERT OR UPDATE OR DELETE ON payments
   FOR EACH ROW EXECUTE FUNCTION process_audit_log();
 
+DROP TRIGGER IF EXISTS trg_audit_wallets  ON wallets;
 CREATE TRIGGER trg_audit_wallets
   AFTER INSERT OR UPDATE OR DELETE ON wallets
   FOR EACH ROW EXECUTE FUNCTION process_audit_log();
 
+DROP TRIGGER IF EXISTS trg_audit_fee_config ON fee_config;
 CREATE TRIGGER trg_audit_fee_config
   AFTER INSERT OR UPDATE OR DELETE ON fee_config
   FOR EACH ROW EXECUTE FUNCTION process_audit_log();
@@ -396,23 +444,28 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 -- RLS Isolation Policies (defense-in-depth even if application tier logic fails)
+DROP POLICY IF EXISTS user_isolation_read  ON users;
 CREATE POLICY user_isolation_read ON users
   FOR SELECT TO public
   USING (id = current_user_id() OR current_user_role() = 'admin');
 
+DROP POLICY IF EXISTS user_isolation_write ON users;
 CREATE POLICY user_isolation_write ON users
   FOR UPDATE TO public
   USING (id = current_user_id() OR current_user_role() = 'admin')
   WITH CHECK (id = current_user_id() OR current_user_role() = 'admin');
 
+DROP POLICY IF EXISTS wallet_isolation_read ON wallets;
 CREATE POLICY wallet_isolation_read ON wallets
   FOR SELECT TO public
   USING (user_id = current_user_id() OR current_user_role() = 'admin');
 
+DROP POLICY IF EXISTS payment_isolation_read ON payments;
 CREATE POLICY payment_isolation_read ON payments
   FOR SELECT TO public
   USING (user_id = current_user_id() OR current_user_role() = 'admin');
 
+DROP POLICY IF EXISTS payment_isolation_write ON payments;
 CREATE POLICY payment_isolation_write ON payments
   FOR ALL TO public
   USING (user_id = current_user_id() OR current_user_role() = 'admin')

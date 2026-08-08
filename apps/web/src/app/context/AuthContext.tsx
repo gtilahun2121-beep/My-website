@@ -1,182 +1,275 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
+/**
+ * AuthContext.tsx
+ *
+ * Provides authentication state and methods to the entire frontend app.
+ *
+ * Key design decisions:
+ *  - Access token stored in localStorage under 'authToken' (read by api.ts).
+ *  - Refresh token stored in localStorage under 'refreshToken' as backup;
+ *    the backend also sets it as an HttpOnly cookie (qalnet_refresh).
+ *  - User profile is hydrated from the decoded JWT payload (no separate /me call needed).
+ *  - UserRole matches the backend DB enum: 'participant' | 'host' | 'admin'.
+ *    Do NOT map 'participant' → 'member' or use 'guest' — those are legacy values
+ *    that will break RBAC guards.
+ */
+
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  ReactNode,
+  useEffect,
+} from 'react';
 import { authAPI, APIError } from '@/app/services/api';
+import type { UserRole, JwtPayload } from '@qalnet/shared-types';
 
-export type UserRole = 'guest' | 'member' | 'admin';
+// ---------------------------------------------------------------------------
+// User type — derived from the JWT payload + UI state
+// ---------------------------------------------------------------------------
 
-interface User {
-  id: string;
+export interface User {
+  id: string;           // sub claim from JWT
+  firstName: string;    // first_name from JWT
+  lastName: string;     // last_name from JWT
+  email: string;        // email from JWT
+  phoneNumber: string;  // phone from JWT
+  role: UserRole;       // 'participant' | 'host' | 'admin'
+  trustTier: string;    // trust_tier from JWT
+  createdAt: string;    // ISO timestamp (set to now at login time)
+}
+
+// ---------------------------------------------------------------------------
+// Context shape
+// ---------------------------------------------------------------------------
+
+export interface SignupData {
   firstName: string;
   lastName: string;
   email: string;
+  password: string;     // 4-digit PIN — padded by api.ts before sending
   phoneNumber: string;
-  profession: string;
-  role: UserRole;
-  createdAt: string;
+  fayda: string;        // 16-digit Fayda national ID
+  telegramHandle?: string;
 }
 
 interface AuthContextType {
   user: User | null;
-  role: UserRole;
   isAuthenticated: boolean;
   isLoading: boolean;
-  signin: (phoneNumber: string, pin: string) => Promise<void>;
+  signin: (identifier: string, pin: string) => Promise<void>;
   signup: (data: SignupData) => Promise<void>;
-  signout: () => void;
+  signout: () => Promise<void>;
+  /**
+   * Resets the user's PIN via the backend.
+   * NOTE: The backend does not yet expose a PIN-reset endpoint.
+   * This calls POST /api/v1/auth/reset-pin when it becomes available.
+   * Until then it throws an informative error.
+   */
   resetPin: (phoneNumber: string, newPin: string) => Promise<void>;
-}
-
-interface SignupData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  phoneNumber: string;
-  profession: string;
-  fayda: string;
-  guarantor: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// ---------------------------------------------------------------------------
+// Storage keys — single source of truth to prevent conflicts across services
+// ---------------------------------------------------------------------------
+
+const STORAGE = {
+  ACCESS_TOKEN: 'authToken',       // used by api.ts request() helper
+  REFRESH_TOKEN: 'refreshToken',
+  USER: 'qalnet_user',
+} as const;
+
+// ---------------------------------------------------------------------------
+// JWT decode helper (client-side, no verification)
+// ---------------------------------------------------------------------------
+
+function decodeJwtPayload(token: string): JwtPayload | null {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const decoded = JSON.parse(
+      // Use atob for browser compatibility; Buffer for SSR edge cases
+      typeof window !== 'undefined'
+        ? atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'))
+        : Buffer.from(parts[1], 'base64url').toString(),
+    );
+    return decoded as JwtPayload;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Hydrates a User object from the decoded JWT payload.
+ * Falls back to form data when JWT fields are missing.
+ */
+function userFromJwt(payload: JwtPayload, fallback?: Partial<User>): User {
+  return {
+    id: payload.sub,
+    firstName: payload.first_name || fallback?.firstName || '',
+    lastName: payload.last_name || fallback?.lastName || '',
+    email: payload.email || fallback?.email || '',
+    phoneNumber: payload.phone || fallback?.phoneNumber || '',
+    // Role from JWT is authoritative — never remap 'participant' → 'member'
+    role: payload.role || 'participant',
+    trustTier: payload.trust_tier || 'standard',
+    createdAt: new Date().toISOString(),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Provider
+// ---------------------------------------------------------------------------
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [role, setRole] = useState<UserRole>('guest');
   const [isLoading, setIsLoading] = useState(true);
 
-  // Initialize from localStorage on mount
+  // Restore session from localStorage on mount
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedUser = localStorage.getItem('qalnet_user');
-      const storedToken = localStorage.getItem('authToken');
-
-      if (storedUser && storedToken) {
-        try {
-          const parsedUser = JSON.parse(storedUser);
-          setUser(parsedUser);
-          setRole(parsedUser.role || 'member');
-        } catch (error) {
-          console.error('Failed to parse stored user:', error);
-          localStorage.removeItem('qalnet_user');
-          localStorage.removeItem('authToken');
-        }
-      }
+    if (typeof window === 'undefined') {
       setIsLoading(false);
+      return;
     }
+
+    const storedToken = localStorage.getItem(STORAGE.ACCESS_TOKEN);
+    const storedUser = localStorage.getItem(STORAGE.USER);
+
+    if (storedToken && storedUser) {
+      try {
+        // Verify the token is not expired before restoring
+        const payload = decodeJwtPayload(storedToken);
+        const now = Math.floor(Date.now() / 1000);
+
+        if (payload && payload.exp && payload.exp > now) {
+          setUser(JSON.parse(storedUser) as User);
+        } else {
+          // Token expired — clear stale session
+          localStorage.removeItem(STORAGE.ACCESS_TOKEN);
+          localStorage.removeItem(STORAGE.REFRESH_TOKEN);
+          localStorage.removeItem(STORAGE.USER);
+        }
+      } catch {
+        localStorage.removeItem(STORAGE.ACCESS_TOKEN);
+        localStorage.removeItem(STORAGE.REFRESH_TOKEN);
+        localStorage.removeItem(STORAGE.USER);
+      }
+    }
+
+    setIsLoading(false);
   }, []);
 
-  const signin = useCallback(async (phoneNumber: string, pin: string) => {
+  // ── signin ──────────────────────────────────────────────────────────────────
+
+  const signin = useCallback(async (identifier: string, pin: string) => {
     setIsLoading(true);
     try {
-      const response = await authAPI.signin(phoneNumber, pin);
+      // api.ts handles PIN padding and sends { identifier, password: padPin(pin) }
+      const response = await authAPI.signin(identifier, pin);
 
-      // Backend returns snake_case: access_token, refresh_token
-      // Build a local user object from the JWT payload
-      const userData: User = {
-        id: `user_${Date.now()}`,
-        firstName: 'User',
-        lastName: '',
-        email: '',
-        phoneNumber,
-        profession: '',
-        role: 'member' as UserRole,
-        createdAt: new Date().toISOString(),
-      };
+      const payload = decodeJwtPayload(response.access_token);
+      if (!payload) throw new Error('Invalid token received from server.');
+
+      const userData = userFromJwt(payload, { phoneNumber: identifier });
 
       setUser(userData);
-      setRole(userData.role);
-
-      localStorage.setItem('qalnet_user', JSON.stringify(userData));
-      localStorage.setItem('authToken', response.access_token);
-
+      localStorage.setItem(STORAGE.ACCESS_TOKEN, response.access_token);
+      localStorage.setItem(STORAGE.USER, JSON.stringify(userData));
       if (response.refresh_token) {
-        localStorage.setItem('refreshToken', response.refresh_token);
+        localStorage.setItem(STORAGE.REFRESH_TOKEN, response.refresh_token);
       }
     } catch (error) {
-      const message = error instanceof APIError
-        ? error.data?.message || error.message
-        : error instanceof Error ? error.message : 'Sign in failed';
+      const message =
+        error instanceof APIError
+          ? error.data?.message || error.message
+          : error instanceof Error
+            ? error.message
+            : 'Sign in failed';
       throw new Error(message);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
+  // ── signup ──────────────────────────────────────────────────────────────────
+
   const signup = useCallback(async (data: SignupData) => {
     setIsLoading(true);
     try {
+      // api.ts maps camelCase → snake_case and pads the PIN before sending
       const response = await authAPI.signup({
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
         password: data.password,
         phoneNumber: data.phoneNumber,
-        profession: data.profession,
         fayda: data.fayda,
-        guarantor: data.guarantor,
+        telegramHandle: data.telegramHandle,
       });
 
-      // Backend returns snake_case: access_token, refresh_token
-      const userData: User = {
-        id: `user_${Date.now()}`,
+      const payload = decodeJwtPayload(response.access_token);
+      if (!payload) throw new Error('Invalid token received from server.');
+
+      const userData = userFromJwt(payload, {
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
         phoneNumber: data.phoneNumber,
-        profession: data.profession || 'Not specified',
-        role: 'member' as UserRole,
-        createdAt: new Date().toISOString(),
-      };
+      });
 
       setUser(userData);
-      setRole(userData.role);
-
-      localStorage.setItem('qalnet_user', JSON.stringify(userData));
-      localStorage.setItem('authToken', response.access_token);
-
+      localStorage.setItem(STORAGE.ACCESS_TOKEN, response.access_token);
+      localStorage.setItem(STORAGE.USER, JSON.stringify(userData));
       if (response.refresh_token) {
-        localStorage.setItem('refreshToken', response.refresh_token);
+        localStorage.setItem(STORAGE.REFRESH_TOKEN, response.refresh_token);
       }
     } catch (error) {
-      const message = error instanceof APIError
-        ? error.data?.message || error.message
-        : error instanceof Error ? error.message : 'Sign up failed';
+      const message =
+        error instanceof APIError
+          ? error.data?.message || error.message
+          : error instanceof Error
+            ? error.message
+            : 'Sign up failed';
       throw new Error(message);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  const signout = useCallback(() => {
-    setUser(null);
-    setRole('guest');
-    localStorage.removeItem('qalnet_user');
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('refreshToken');
-  }, []);
+  // ── signout ─────────────────────────────────────────────────────────────────
 
-  const resetPin = useCallback(async (phoneNumber: string, newPin: string) => {
-    setIsLoading(true);
+  const signout = useCallback(async () => {
     try {
-      // Call backend API to reset PIN
-      await authAPI.resetPin(phoneNumber, '', newPin); // OTP would be sent separately
-
-      // PIN reset successful - user needs to sign in again with new PIN
-      signout();
-    } catch (error) {
-      const message = error instanceof APIError
-        ? error.data?.message || error.message
-        : error instanceof Error ? error.message : 'PIN reset failed';
-      throw new Error(message);
+      // Tell the backend to revoke the refresh token
+      await authAPI.logout();
+    } catch {
+      // Ignore errors on logout — clear the session regardless
     } finally {
-      setIsLoading(false);
+      setUser(null);
+      localStorage.removeItem(STORAGE.ACCESS_TOKEN);
+      localStorage.removeItem(STORAGE.REFRESH_TOKEN);
+      localStorage.removeItem(STORAGE.USER);
     }
-  }, [signout]);
+  }, []);
+
+  // ── resetPin ─────────────────────────────────────────────────────────────
+
+  const resetPin = useCallback(async (_phoneNumber: string, _newPin: string) => {
+    // TODO: Call POST /api/v1/auth/reset-pin when the backend exposes this endpoint.
+    // For now we throw a user-friendly message so the UI can show a toast.
+    throw new Error(
+      'PIN reset via SMS OTP is not yet available. Please contact support to reset your PIN.',
+    );
+  }, []);
+
+  // ── context value ───────────────────────────────────────────────────────────
 
   const value: AuthContextType = {
     user,
-    role,
     isAuthenticated: user !== null,
     isLoading,
     signin,

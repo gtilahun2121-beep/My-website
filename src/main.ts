@@ -46,8 +46,13 @@ async function bootstrap() {
     );
 
     // CORS — restrict to trusted origins in production
+    const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',').map(o => o.trim()).filter(Boolean);
     app.enableCors({
-        origin: process.env.ALLOWED_ORIGINS?.split(',') ?? '*',
+        origin: allowedOrigins?.length
+            ? allowedOrigins
+            : process.env.NODE_ENV === 'production'
+                ? false          // block all cross-origin in prod if env var missing
+                : 'http://localhost:3001',
         credentials: true,
     });
 
