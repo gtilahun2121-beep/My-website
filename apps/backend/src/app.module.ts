@@ -12,6 +12,10 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { AuthModule } from './modules/auth/auth.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { SocialModule } from './modules/social/social.module';
+import { UsersModule } from './modules/users/users.module';
+import { EqubsModule } from './modules/equbs/equbs.module';
+import { WalletModule } from './modules/wallet/wallet.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
     imports: [
@@ -31,6 +35,10 @@ import { SocialModule } from './modules/social/social.module';
         AuthModule,
         PaymentsModule,
         SocialModule,
+        UsersModule,
+        EqubsModule,
+        WalletModule,
+        NotificationsModule,
     ],
 })
 export class AppModule { }
