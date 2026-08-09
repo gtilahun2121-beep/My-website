@@ -1,38 +1,95 @@
 /**
  * Auth-related shared types.
- * Mirror of backend DTOs — kept in sync here so the frontend
- * doesn't need to duplicate type definitions.
+ *
+ * These mirror the backend DTOs and controller response shapes EXACTLY.
+ * Changes here must be kept in sync with:
+ *   - apps/backend/src/modules/auth/dto/register.dto.ts
+ *   - apps/backend/src/modules/auth/dto/login.dto.ts
+ *   - apps/backend/src/modules/auth/auth.controller.ts
+ *   - apps/backend/src/modules/auth/auth.service.ts (JwtPayload)
  */
 
+import { UserRole } from './common';
+
+// ── Registration ─────────────────────────────────────────────────────────────
+
+/**
+ * Payload for POST /api/v1/auth/register.
+ * All fields are snake_case to match the backend RegisterDto directly.
+ */
 export interface RegisterRequest {
-    email: string;
+    first_name: string;       // min 1, max 100
+    last_name: string;        // min 1, max 100
+    email: string;            // valid email, max 255
+    /**
+     * The raw password (or padded PIN) sent to the backend.
+     * Frontend pads 4-digit PINs: "1234" → "1234QN1234!" before sending.
+     * Min 8 chars, must contain letter + number.
+     */
     password: string;
-    fullName: string;
-    phone?: string;
+    phone: string;            // +251[79]\d{8} E.164 format
+    fayda_id: string;         // exactly 16 digits
+    telegram_handle?: string; // optional, @handle format
 }
 
+// ── Login ────────────────────────────────────────────────────────────────────
+
+/**
+ * Payload for POST /api/v1/auth/login.
+ * `identifier` accepts either a phone number (+251...) or an email address.
+ */
 export interface LoginRequest {
-    email: string;
+    identifier: string; // phone OR email — NOT just email
+    /**
+     * The raw password (or padded PIN).
+     * Must be padded identically to registration: "1234" → "1234QN1234!"
+     */
     password: string;
 }
 
-export interface AuthTokens {
-    accessToken: string;
-    /** Refresh token is sent as an HttpOnly cookie — not in the response body */
-    expiresIn: number;
+// ── Token Response ────────────────────────────────────────────────────────────
+
+/**
+ * Response body from /register, /login, and /refresh.
+ * Note: the refresh token is ALSO sent as an HttpOnly cookie (qalnet_refresh).
+ * Browser clients should rely on the cookie; mobile/USSD clients use the body.
+ * Fields are snake_case to match the backend JSON response exactly.
+ */
+export interface AuthTokenResponse {
+    access_token: string;
+    refresh_token: string;
+    token_type: 'Bearer';
 }
 
-export interface UserProfile {
-    id: string;
-    email: string;
-    fullName: string;
-    phone?: string;
-    role: import('./common').UserRole;
-    isVerified: boolean;
-    createdAt: string;
-}
+// ── Refresh ───────────────────────────────────────────────────────────────────
 
+/**
+ * Optional body for POST /api/v1/auth/refresh.
+ * Browser clients send the cookie automatically; only needed for non-browser.
+ */
 export interface RefreshTokenRequest {
-    /** Sent automatically via HttpOnly cookie — not required in body */
-    refreshToken?: string;
+    refresh_token?: string;
+}
+
+// ── Logout ────────────────────────────────────────────────────────────────────
+
+/** Response from POST /api/v1/auth/logout */
+export interface LogoutResponse {
+    message: string;
+}
+
+// ── User Profile (decoded from JWT) ──────────────────────────────────────────
+
+/**
+ * User profile hydrated from the decoded JWT access token.
+ * Maps directly from JwtPayload fields.
+ */
+export interface UserProfile {
+    id: string;          // sub claim
+    phone: string;
+    email: string;
+    first_name: string;
+    last_name: string;
+    role: UserRole;
+    trust_tier: string;
 }

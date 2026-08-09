@@ -1,0 +1,386 @@
+'use client';
+
+import { useState } from 'react';
+import { useAuth } from '@/app/context/AuthContext';
+import { Language, defaultLanguage } from '@/i18n/config';
+
+interface DiagramRegistrationFormProps {
+  lang?: Language;
+  onSuccess?: () => void;
+  onError?: (message: string) => void;
+}
+
+export default function DiagramRegistrationForm({
+  lang = defaultLanguage,
+  onSuccess,
+  onError,
+}: DiagramRegistrationFormProps) {
+  const { signup } = useAuth();
+  const [step, setStep] = useState(1); // 1-4
+  const [submitting, setSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [fayda, setFayda] = useState({ verified: false, verifying: false });
+
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    phoneNumber: '+2519',
+    email: '',
+    fayda: '',
+    password: '',
+    confirmPassword: '',
+    pin: '',
+    otp: '',
+  });
+
+  const updateField = (field: string, value: string) => {
+    if (field === 'phoneNumber') {
+      if (!value.startsWith('+2519')) value = '+2519';
+      const digits = value.replace(/\D/g, '');
+      if (digits.length > 12) value = '+' + digits.substring(0, 12);
+    } else if (field === 'fayda') {
+      value = value.replace(/\D/g, '').slice(0, 16);
+    } else if (field === 'pin') {
+      value = value.replace(/\D/g, '').slice(0, 6);
+    } else if (field === 'otp') {
+      value = value.replace(/\D/g, '').slice(0, 5);
+    }
+    setFormData(prev => ({ ...prev, [field]: value }));
+    setErrors(prev => ({ ...prev, [field]: '' }));
+  };
+
+  const handleCreateAccount = async () => {
+    if (formData.otp.length !== 5) {
+      setErrors({ otp: 'OTP must be 5 digits' });
+      return;
+    }
+
+    if (formData.password.length < 8) {
+      setErrors({ password: 'Password must be at least 8 characters' });
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setErrors({ confirmPassword: 'Passwords do not match' });
+      return;
+    }
+
+    if (formData.pin.length < 4) {
+      setErrors({ pin: 'PIN must be at least 4 digits' });
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      console.log('Creating account with:', {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phoneNumber: formData.phoneNumber,
+        fayda: formData.fayda,
+      });
+
+      await signup({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        password: formData.password,
+        phoneNumber: formData.phoneNumber,
+        fayda: formData.fayda,
+      });
+
+      console.log('Signup successful, calling onSuccess');
+      setSubmitting(false);
+      onSuccess?.();
+    } catch (err) {
+      setSubmitting(false);
+      const msg = err instanceof Error ? err.message : 'Registration failed';
+      console.error('Signup error:', msg);
+      setErrors({ submit: msg });
+      onError?.(msg);
+    }
+  };
+
+  const handleNext = () => {
+    if (step === 1) {
+      if (formData.firstName.length < 2 || formData.lastName.length < 2) {
+        setErrors({ firstName: 'Min 2 chars', lastName: 'Min 2 chars' });
+        return;
+      }
+      setStep(2);
+    } else if (step === 2) {
+      const phoneDigits = formData.phoneNumber.replace(/\D/g, '');
+      if (phoneDigits.length !== 10 || !formData.email.endsWith('@gmail.com')) {
+        if (phoneDigits.length !== 10) setErrors({ phoneNumber: '+2519 + 8 digits' });
+        if (!formData.email.endsWith('@gmail.com')) setErrors({ email: '@gmail.com only' });
+        return;
+      }
+      setStep(3);
+    } else if (step === 3) {
+      if (!fayda.verified) {
+        setErrors({ fayda: 'Please verify Fayda first' });
+        return;
+      }
+      setStep(4);
+    }
+  };
+
+  return (
+    <div className="w-full max-w-2xl mx-auto p-8 bg-white rounded-2xl shadow-2xl">
+      {/* Progress Bar */}
+      <div className="mb-8">
+        <div className="flex justify-between mb-4">
+          {[1, 2, 3, 4].map(s => (
+            <div key={s} className={`flex-1 text-center ${s <= step ? 'text-[#0d7e4d]' : 'text-gray-400'}`}>
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold mx-auto mb-2 ${
+                s < step ? 'bg-[#0d7e4d] text-white' : s === step ? 'bg-[#0d7e4d] text-white' : 'bg-gray-200'
+              }`}>
+                {s < step ? '✓' : s}
+              </div>
+              <span className="text-xs font-semibold">{['Personal', 'Contact', 'Fayda', 'Security'][s-1]}</span>
+            </div>
+          ))}
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="bg-[#0d7e4d] h-2 rounded-full transition-all" style={{ width: `${(step/4)*100}%` }} />
+        </div>
+      </div>
+
+      <h2 className="text-2xl font-bold mb-6">Step {step} of 4</h2>
+
+      {/* STEP 1: Personal Information */}
+      {step === 1 && (
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-semibold mb-2">👤 First Name</label>
+            <input
+              type="text"
+              placeholder="John"
+              value={formData.firstName}
+              onChange={e => updateField('firstName', e.target.value)}
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#0d7e4d] focus:outline-none"
+            />
+            {errors.firstName && <p className="text-red-500 text-sm">{errors.firstName}</p>}
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold mb-2">👤 Last Name</label>
+            <input
+              type="text"
+              placeholder="Doe"
+              value={formData.lastName}
+              onChange={e => updateField('lastName', e.target.value)}
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#0d7e4d] focus:outline-none"
+            />
+            {errors.lastName && <p className="text-red-500 text-sm">{errors.lastName}</p>}
+          </div>
+
+          <button
+            onClick={handleNext}
+            className="w-full bg-[#0d7e4d] text-white font-bold py-3 rounded-lg hover:bg-[#0a5c38] mt-6"
+          >
+            Next →
+          </button>
+        </div>
+      )}
+
+      {/* STEP 2: Contact Information */}
+      {step === 2 && (
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-semibold mb-2">📱 Phone Number</label>
+            <input
+              type="tel"
+              placeholder="+2519 + 8 digits"
+              value={formData.phoneNumber}
+              onChange={e => updateField('phoneNumber', e.target.value)}
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#0d7e4d] focus:outline-none"
+            />
+            {errors.phoneNumber && <p className="text-red-500 text-sm">{errors.phoneNumber}</p>}
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold mb-2">📧 Email Address</label>
+            <input
+              type="email"
+              placeholder="user@gmail.com"
+              value={formData.email}
+              onChange={e => updateField('email', e.target.value)}
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#0d7e4d] focus:outline-none"
+            />
+            {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+          </div>
+
+          <div className="flex gap-3">
+            <button
+              onClick={() => setStep(1)}
+              className="flex-1 border-2 border-[#0d7e4d] text-[#0d7e4d] font-bold py-3 rounded-lg hover:bg-gray-50"
+            >
+              ← Back
+            </button>
+            <button
+              onClick={handleNext}
+              className="flex-1 bg-[#0d7e4d] text-white font-bold py-3 rounded-lg hover:bg-[#0a5c38]"
+            >
+              Next →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* STEP 3: Fayda Verification */}
+      {step === 3 && (
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-semibold mb-2">🆔 Fayda Number</label>
+            <input
+              type="text"
+              placeholder="1234567890123456"
+              value={formData.fayda}
+              onChange={e => updateField('fayda', e.target.value)}
+              disabled={fayda.verified}
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#0d7e4d] focus:outline-none disabled:bg-gray-100"
+            />
+            {errors.fayda && <p className="text-red-500 text-sm">{errors.fayda}</p>}
+          </div>
+
+          {fayda.verified && (
+            <div className="bg-green-50 border-2 border-green-300 rounded-lg p-4 flex items-center gap-3">
+              <span className="text-2xl">✓</span>
+              <div>
+                <p className="font-bold text-green-800">Identity Verified</p>
+                <p className="text-sm text-green-700">Fayda ID confirmed</p>
+              </div>
+            </div>
+          )}
+
+          <button
+            onClick={async () => {
+              if (formData.fayda.length !== 16) {
+                setErrors({ fayda: 'Must be 16 digits' });
+                return;
+              }
+              setFayda({ verified: false, verifying: true });
+              await new Promise(r => setTimeout(r, 1500));
+              setFayda({ verified: true, verifying: false });
+              setErrors({});
+            }}
+            disabled={fayda.verified || fayda.verifying}
+            className={`w-full font-bold py-3 rounded-lg ${
+              fayda.verified ? 'bg-green-100 text-green-800 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'
+            }`}
+          >
+            {fayda.verifying ? '⏳ Verifying...' : fayda.verified ? '✓ Verified' : 'Verify with Fayda'}
+          </button>
+
+          <div className="flex gap-3">
+            <button
+              onClick={() => setStep(2)}
+              className="flex-1 border-2 border-[#0d7e4d] text-[#0d7e4d] font-bold py-3 rounded-lg hover:bg-gray-50"
+            >
+              ← Back
+            </button>
+            <button
+              onClick={handleNext}
+              disabled={!fayda.verified}
+              className={`flex-1 font-bold py-3 rounded-lg ${
+                fayda.verified ? 'bg-[#0d7e4d] text-white hover:bg-[#0a5c38]' : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
+            >
+              Next →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* STEP 4: Create Password & PIN, then OTP */}
+      {step === 4 && (
+        <div className="space-y-4">
+          <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-4 mb-6">
+            <p className="text-sm text-blue-900 font-semibold">Step 4 of 4: Security</p>
+            <p className="text-xs text-blue-800 mt-2">Create Password & PIN, then verify with OTP</p>
+          </div>
+
+          {/* Password */}
+          <div>
+            <label className="block text-sm font-semibold mb-2">🔒 Create Password</label>
+            <input
+              type="password"
+              placeholder="Min 8 characters"
+              value={formData.password}
+              onChange={e => updateField('password', e.target.value)}
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#0d7e4d] focus:outline-none"
+            />
+            {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
+          </div>
+
+          {/* Confirm Password */}
+          <div>
+            <label className="block text-sm font-semibold mb-2">🔒 Confirm Password</label>
+            <input
+              type="password"
+              placeholder="Re-enter password"
+              value={formData.confirmPassword}
+              onChange={e => updateField('confirmPassword', e.target.value)}
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#0d7e4d] focus:outline-none"
+            />
+            {errors.confirmPassword && <p className="text-red-500 text-sm">{errors.confirmPassword}</p>}
+          </div>
+
+          {/* PIN */}
+          <div>
+            <label className="block text-sm font-semibold mb-2">🔐 Create PIN</label>
+            <input
+              type="password"
+              placeholder="4-6 digits"
+              maxLength={6}
+              value={formData.pin}
+              onChange={e => updateField('pin', e.target.value)}
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#0d7e4d] focus:outline-none"
+            />
+            {errors.pin && <p className="text-red-500 text-sm">{errors.pin}</p>}
+          </div>
+
+          <hr className="my-6" />
+
+          {/* OTP Verification */}
+          <div className="bg-orange-50 border-2 border-orange-300 rounded-lg p-4">
+            <p className="text-sm text-orange-900 font-semibold">📱 OTP Verification</p>
+            <p className="text-xs text-orange-800 mt-2">Enter SMS or Email OTP</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold mb-2">Enter OTP</label>
+            <input
+              type="text"
+              placeholder="00000"
+              value={formData.otp}
+              onChange={e => updateField('otp', e.target.value)}
+              maxLength={5}
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#0d7e4d] focus:outline-none text-center text-2xl tracking-widest"
+            />
+            {errors.otp && <p className="text-red-500 text-sm text-center">{errors.otp}</p>}
+          </div>
+
+          {errors.submit && <p className="text-red-500 text-sm text-center">{errors.submit}</p>}
+
+          <div className="flex gap-3">
+            <button
+              onClick={() => setStep(3)}
+              className="flex-1 border-2 border-[#0d7e4d] text-[#0d7e4d] font-bold py-3 rounded-lg hover:bg-gray-50"
+            >
+              ← Back
+            </button>
+            <button
+              onClick={handleCreateAccount}
+              disabled={submitting}
+              className="flex-1 bg-[#0d7e4d] text-white font-bold py-3 rounded-lg hover:bg-[#0a5c38] disabled:opacity-50"
+            >
+              {submitting ? '⏳ Creating...' : '🎉 Create Account'}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

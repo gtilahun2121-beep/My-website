@@ -86,33 +86,33 @@ export default function JoinEqubPage() {
                 <div className="space-y-2 text-sm mb-4">
                   <div className="flex justify-between">
                     <span className="text-gray-600">{lang === 'en' ? 'Members' : 'አባሎች'}</span>
-                    <span className="font-bold">{equb.members?.length || equb.size || 0}</span>
+                    <span className="font-bold">{equb.member_count ?? 0}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">{lang === 'en' ? 'Monthly Contribution' : 'ወር መዋጮ'}</span>
-                    <span className="font-bold text-[#0d7e4d]">ETB {equb.contributionAmount || equb.contribution || 0}</span>
+                    <span className="font-bold text-[#0d7e4d]">ETB {equb.contribution_amount}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">{lang === 'en' ? 'Duration' : 'ጊዜ'}</span>
-                    <span className="font-bold">{equb.cycleDays ? equb.cycleDays * equb.totalRounds + ' days' : equb.duration || 'N/A'}</span>
+                    <span className="font-bold">{equb.cycle_days * equb.total_rounds} days</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">{lang === 'en' ? 'Open Slots' : 'ክፍት ቦታ'}</span>
-                    <span className={`font-bold ${equb.openSlots === 0 ? 'text-red-600' : 'text-green-600'}`}>
-                      {equb.openSlots !== undefined ? equb.openSlots : (equb.totalRounds || 0) - (equb.members?.length || 0)}
+                    <span className={`font-bold ${equb.open_slots === 0 ? 'text-red-600' : 'text-green-600'}`}>
+                      {equb.open_slots}
                     </span>
                   </div>
                 </div>
                 <button
-                  disabled={equb.openSlots === 0 || ((equb.totalRounds || 0) - (equb.members?.length || 0)) <= 0}
+                  disabled={equb.open_slots === 0}
                   onClick={() => handleJoin(equb.id)}
                   className={`w-full font-bold py-2 rounded-lg transition-all ${
-                    (equb.openSlots === 0 || ((equb.totalRounds || 0) - (equb.members?.length || 0)) <= 0)
+                    equb.open_slots === 0
                       ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
                       : 'bg-[#0d7e4d] text-white hover:bg-[#0a5c38]'
                   }`}
                 >
-                  {(equb.openSlots === 0 || ((equb.totalRounds || 0) - (equb.members?.length || 0)) <= 0) ? (lang === 'en' ? 'Full' : 'ሙላ') : (lang === 'en' ? 'Join Now' : 'ተቀላቀል')}
+                  {equb.open_slots === 0 ? (lang === 'en' ? 'Full' : 'ሙላ') : (lang === 'en' ? 'Join Now' : 'ተቀላቀል')}
                 </button>
               </div>
             )) : (

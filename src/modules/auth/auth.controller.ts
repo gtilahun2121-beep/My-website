@@ -143,9 +143,16 @@ export class AuthController {
         // Full verification happens inside refreshTokens()
         let userId: string;
         try {
+            const parts = incomingToken.split('.');
+            if (parts.length !== 3) {
+                throw new Error('Not a valid JWT structure');
+            }
             const decoded = JSON.parse(
-                Buffer.from(incomingToken.split('.')[1], 'base64url').toString(),
+                Buffer.from(parts[1], 'base64url').toString(),
             ) as JwtPayload;
+            if (!decoded?.sub) {
+                throw new Error('Missing sub claim');
+            }
             userId = decoded.sub;
         } catch {
             throw new UnauthorizedException('Malformed refresh token.');

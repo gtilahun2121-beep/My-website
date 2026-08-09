@@ -30,6 +30,9 @@ import type {
   CastVoteRequest,
   FileTicketRequest,
   FlagCrbRequest,
+  EqubGroup,
+  Wallet,
+  WalletTransaction,
 } from '@qalnet/shared-types';
 
 const API_BASE_URL =
@@ -407,9 +410,11 @@ export const userAPI = {
 
 export const equbAPI = {
   getAll: (params?: { page?: number; limit?: number }) =>
-    request<any>('/equbs', { method: 'GET', params }),
+    request<EqubGroup[]>('/equbs', { method: 'GET', params }),
 
-  getById: (id: string) => request<any>(`/equbs/${id}`, { method: 'GET' }),
+  getById: (id: string) => request<EqubGroup>(`/equbs/${id}`, { method: 'GET' }),
+
+  getMine: () => request<EqubGroup[]>('/equbs/mine', { method: 'GET' }),
 
   create: (data: any) =>
     request<any>('/equbs', { method: 'POST', body: JSON.stringify(data) }),
@@ -423,11 +428,18 @@ export const equbAPI = {
 // ---------------------------------------------------------------------------
 
 export const walletAPI = {
-  getBalance: () => request<any>('/wallets/me', { method: 'GET' }),
+  getBalance: () => request<Wallet>('/wallets/me', { method: 'GET' }),
+  getTransactions: () =>
+    request<WalletTransaction[]>('/wallets/me/transactions', { method: 'GET' }),
   deposit: (amount: number) =>
     request<any>('/wallets/deposit', {
       method: 'POST',
       body: JSON.stringify({ amount }),
+    }),
+  withdraw: (amount: number, method?: string, phone?: string) =>
+    request<any>('/wallets/withdraw', {
+      method: 'POST',
+      body: JSON.stringify({ amount, method, phone }),
     }),
 };
 

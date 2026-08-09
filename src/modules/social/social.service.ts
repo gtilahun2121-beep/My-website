@@ -24,7 +24,7 @@ import {
 import { SocialRepository, VoteTally } from './social.repository';
 import { CreateProposalDto } from './dto/create-proposal.dto';
 import { CastVoteDto } from './dto/cast-vote.dto';
-import { RlsContext } from '../../config/database.config';
+import { RlsContext, getPool } from '../../config/database.config';
 
 @Injectable()
 export class SocialService {
@@ -251,8 +251,7 @@ export class SocialService {
         );
 
         // Notify admin of new ticket via system_policy channel
-        const sql_pool = (await import('../../config/database.config')).getPool();
-        const adminRows = await sql_pool<{ id: string }[]>`
+        const adminRows = await getPool() <{ id: string }[]>`
       SELECT id FROM users WHERE role = 'admin' LIMIT 1
     `;
 

@@ -11,12 +11,28 @@
  */
 
 import * as path from 'path';
+import * as fs from 'fs';
 import * as dotenv from 'dotenv';
 
 // Load .env before anything else — ensures process.env is populated
 // even when turbo invokes the process from the monorepo root.
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
-dotenv.config({ path: path.resolve(__dirname, '../../../apps/backend/.env') });
+// __dirname differs by how the app is launched:
+//   - source:      apps/backend/src
+//   - compiled:    apps/backend/dist/apps/backend/src
+// Try every candidate path and load the first .env files that exist.
+const envCandidates = [
+    // compiled layout
+    path.resolve(__dirname, '../../../../../.env'), // monorepo root
+    path.resolve(__dirname, '../../../../.env'),    // apps/backend
+    // source layout
+    path.resolve(__dirname, '../../../.env'),       // monorepo root
+    path.resolve(__dirname, '../../.env'),          // apps/backend
+];
+for (const file of envCandidates) {
+    if (fs.existsSync(file)) {
+        dotenv.config({ path: file });
+    }
+}
 dotenv.config(); // fallback: .env in current working directory
 
 import { NestFactory } from '@nestjs/core';
@@ -54,9 +70,26 @@ async function bootstrap() {
         }),
     );
 
-    // CORS — restrict to trusted origins in production
+    // CORS — restrict to trusted origins. A wildcard origin combined with
+    // credentials: true is rejected by every browser, so we must reflect the
+    // specific request origin instead of sending "*".
+    const allowedOrigins = (
+        process.env.ALLOWED_ORIGINS ??
+        'http://localhost:3000,http://localhost:3001,http://localhost:5173'
+    )
+        .split(',')
+        .map((o) => o.trim())
+        .filter(Boolean);
+
     app.enableCors({
-        origin: process.env.ALLOWED_ORIGINS?.split(',') ?? '*',
+        origin(origin, callback) {
+            // Allow non-browser clients (curl, mobile, USSD) that send no Origin
+            if (!origin || allowedOrigins.includes(origin)) {
+                callback(null, true);
+            } else {
+                callback(new Error('Not allowed by CORS'));
+            }
+        },
         credentials: true,
     });
 
