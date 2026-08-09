@@ -6,7 +6,7 @@ export class UsersRepository {
     async findById(id: string) {
         const sql = getPool();
         const rows = await sql`
-            SELECT id, first_name, last_name, phone, email, telegram_handle, role, is_active, created_at
+            SELECT id, first_name, last_name, phone, email, telegram_handle, profile_photo, role, is_active, created_at
             FROM users WHERE id = ${id}
         `;
         return rows[0];
@@ -14,7 +14,7 @@ export class UsersRepository {
 
     async update(id: string, data: any) {
         const sql = getPool();
-        const allowed = ['first_name', 'last_name', 'phone', 'email', 'telegram_handle'];
+        const allowed = ['first_name', 'last_name', 'phone', 'email', 'telegram_handle', 'profile_photo'];
         const sets: string[] = [];
         const values: any[] = [];
 
@@ -34,7 +34,7 @@ export class UsersRepository {
             UPDATE users
             SET ${sets.join(', ')}, updated_at = NOW()
             WHERE id = $${values.length}
-            RETURNING id, first_name, last_name, phone, email, telegram_handle, role, is_active, created_at
+            RETURNING id, first_name, last_name, phone, email, telegram_handle, profile_photo, role, is_active, created_at
         `, values);
         return rows[0];
     }

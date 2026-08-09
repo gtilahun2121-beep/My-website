@@ -19,6 +19,7 @@
 import {
     Body,
     Controller,
+    Get,
     HttpCode,
     HttpStatus,
     Post,
@@ -40,6 +41,8 @@ import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { TwoFactorCodeDto, TwoFactorLoginDto } from './dto/two-factor.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtPayload } from './auth.service';
@@ -103,12 +106,21 @@ export class AuthController {
         dto: LoginDto,
         @Res({ passthrough: true }) res: Response,
     ) {
-        const tokens = await this.authService.login(dto);
-        this.setRefreshCookie(res, tokens.refresh_token);
+        const result = await this.authService.login(dto);
+
+        // 2FA step required — do NOT issue tokens or set the refresh cookie yet.
+        if ('two_factor_required' in result) {
+            return {
+                two_factor_required: true,
+                mfa_token: result.mfa_token,
+            };
+        }
+
+        this.setRefreshCookie(res, result.refresh_token);
 
         return {
-            access_token: tokens.access_token,
-            refresh_token: tokens.refresh_token,
+            access_token: result.access_token,
+            refresh_token: result.refresh_token,
             token_type: 'Bearer',
         };
     }
@@ -180,6 +192,92 @@ export class AuthController {
         res.clearCookie(REFRESH_COOKIE_NAME, { path: '/api/v1/auth' });
 
         return { message: 'Logged out successfully.' };
+    }
+
+    // ── Password / PIN change ─────────────────────────────────────────────────
+
+    @Post('change-password')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Change PIN/password after verifying the current one' })
+    @ApiResponse({ status: 200, description: 'Password changed.' })
+    @ApiResponse({ status: 400, description: 'Validation error.' })
+    @ApiResponse({ status: 401, description: 'Current PIN incorrect.' })
+    async changePassword(
+        @CurrentUser() user: JwtPayload,
+        @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+        dto: ChangePasswordDto,
+    ) {
+        return this.authService.changePassword(user.sub, dto);
+    }
+
+    // ── Two-factor authentication (TOTP) ──────────────────────────────────────
+
+    @Post('2fa/setup')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Generate a TOTP secret + otpauth URL for the QR code' })
+    async setupTwoFactor(@CurrentUser() user: JwtPayload) {
+        return this.authService.setupTwoFactor(user.sub);
+    }
+
+    @Post('2fa/verify')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Verify the setup code and enable 2FA' })
+    async verifyTwoFactorSetup(
+        @CurrentUser() user: JwtPayload,
+        @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+        dto: TwoFactorCodeDto,
+    ) {
+        return this.authService.verifyTwoFactorSetup(user.sub, dto);
+    }
+
+    @Post('2fa/disable')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Disable 2FA after verifying a current code' })
+    async disableTwoFactor(
+        @CurrentUser() user: JwtPayload,
+        @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+        dto: TwoFactorCodeDto,
+    ) {
+        return this.authService.disableTwoFactor(user.sub, dto);
+    }
+
+    @Get('2fa/status')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Current 2FA status' })
+    async twoFactorStatus(@CurrentUser() user: JwtPayload) {
+        return this.authService.getTwoFactorStatus(user.sub);
+    }
+
+    // ── Second step of login when 2FA is enabled ─────────────────────────────
+
+    @Post('verify-2fa')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Complete login with a TOTP/backup code' })
+    @ApiResponse({ status: 200, description: 'Tokens issued.' })
+    @ApiResponse({ status: 401, description: 'Invalid or expired code / MFA token.' })
+    async verifyTwoFactorLogin(
+        @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+        dto: TwoFactorLoginDto,
+        @Res({ passthrough: true }) res: Response,
+    ) {
+        const tokens = await this.authService.verifyTwoFactorLogin(dto);
+        this.setRefreshCookie(res, tokens.refresh_token);
+
+        return {
+            access_token: tokens.access_token,
+            refresh_token: tokens.refresh_token,
+            token_type: 'Bearer',
+        };
     }
 
     // ── Stubs ─────────────────────────────────────────────────────────────────

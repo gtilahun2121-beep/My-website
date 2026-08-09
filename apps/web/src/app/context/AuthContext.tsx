@@ -23,7 +23,7 @@ import {
   ReactNode,
   useEffect,
 } from 'react';
-import { authAPI, APIError } from '@/app/services/api';
+import { authAPI, userAPI, APIError } from '@/app/services/api';
 import type { UserRole, JwtPayload } from '@qalnet/shared-types';
 
 // ---------------------------------------------------------------------------
@@ -39,6 +39,7 @@ export interface User {
   role: UserRole;       // 'participant' | 'host' | 'admin'
   trustTier: string;    // trust_tier from JWT
   createdAt: string;    // ISO timestamp (set to now at login time)
+  profilePhoto?: string | null; // base64 data URL, from GET /users/me
 }
 
 // ---------------------------------------------------------------------------
@@ -62,6 +63,14 @@ interface AuthContextType {
   signin: (identifier: string, pin: string) => Promise<void>;
   signup: (data: SignupData) => Promise<void>;
   signout: () => Promise<void>;
+  /**
+   * Re-fetches GET /users/me and syncs the persisted profile (e.g. profile photo).
+   */
+  refreshProfile: () => Promise<void>;
+  /**
+   * Updates the in-memory + persisted user with a new profile photo (data URL).
+   */
+  updateProfilePhoto: (photo: string | null) => void;
   /**
    * Resets the user's PIN via the backend.
    * NOTE: The backend does not yet expose a PIN-reset endpoint.
@@ -132,36 +141,74 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Restore session from localStorage on mount
   useEffect(() => {
     if (typeof window === 'undefined') {
-      setIsLoading(false);
       return;
     }
 
     const storedToken = localStorage.getItem(STORAGE.ACCESS_TOKEN);
     const storedUser = localStorage.getItem(STORAGE.USER);
 
-    if (storedToken && storedUser) {
-      try {
-        // Verify the token is not expired before restoring
-        const payload = decodeJwtPayload(storedToken);
-        const now = Math.floor(Date.now() / 1000);
+    // Defer the synchronous restore to a microtask so state updates never run
+    // inside the effect body (keeps the initial render consistent on both
+    // server and client — first paint is always unauthenticated).
+    queueMicrotask(() => {
+      if (storedToken && storedUser) {
+        try {
+          // Verify the token is not expired before restoring
+          const payload = decodeJwtPayload(storedToken);
+          const now = Math.floor(Date.now() / 1000);
 
-        if (payload && payload.exp && payload.exp > now) {
-          setUser(JSON.parse(storedUser) as User);
-        } else {
-          // Token expired — clear stale session
+          if (payload && payload.exp && payload.exp > now) {
+            setUser(JSON.parse(storedUser) as User);
+            // Pull persisted profile data (e.g. profile photo) from the backend
+            userAPI
+              .getProfile()
+              .then((profile) => {
+                setUser((prev) => {
+                  if (!prev) return prev;
+                  const next = { ...prev, profilePhoto: profile?.profile_photo ?? null };
+                  localStorage.setItem(STORAGE.USER, JSON.stringify(next));
+                  return next;
+                });
+              })
+              .catch(() => {
+                // profile fetch is best-effort
+              });
+          } else {
+            // Token expired — clear stale session
+            localStorage.removeItem(STORAGE.ACCESS_TOKEN);
+            localStorage.removeItem(STORAGE.REFRESH_TOKEN);
+            localStorage.removeItem(STORAGE.USER);
+          }
+        } catch {
           localStorage.removeItem(STORAGE.ACCESS_TOKEN);
           localStorage.removeItem(STORAGE.REFRESH_TOKEN);
           localStorage.removeItem(STORAGE.USER);
         }
-      } catch {
-        localStorage.removeItem(STORAGE.ACCESS_TOKEN);
-        localStorage.removeItem(STORAGE.REFRESH_TOKEN);
-        localStorage.removeItem(STORAGE.USER);
       }
-    }
 
-    setIsLoading(false);
+      setIsLoading(false);
+    });
   }, []);
+
+  // ── profile photo ────────────────────────────────────────────────────────
+
+  const updateProfilePhoto = useCallback((photo: string | null) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const next = { ...prev, profilePhoto: photo };
+      localStorage.setItem(STORAGE.USER, JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
+  const refreshProfile = useCallback(async () => {
+    try {
+      const profile = await userAPI.getProfile();
+      updateProfilePhoto(profile?.profile_photo ?? null);
+    } catch {
+      // profile fetch is best-effort
+    }
+  }, [updateProfilePhoto]);
 
   // ── signin ──────────────────────────────────────────────────────────────────
 
@@ -182,6 +229,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (response.refresh_token) {
         localStorage.setItem(STORAGE.REFRESH_TOKEN, response.refresh_token);
       }
+      void refreshProfile();
     } catch (error) {
       const message =
         error instanceof APIError
@@ -193,7 +241,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [refreshProfile]);
 
   // ── signup ──────────────────────────────────────────────────────────────────
 
@@ -276,6 +324,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signup,
     signout,
     resetPin,
+    refreshProfile,
+    updateProfilePhoto,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

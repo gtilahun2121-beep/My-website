@@ -42,6 +42,15 @@ export interface CreateUserInput {
     telegram_handle?: string;
 }
 
+export interface UserSettingsRecord {
+    user_id: string;
+    two_factor_secret: string | null;
+    two_factor_enabled: boolean;
+    backup_codes: string[];
+    theme: string;
+    updated_at: Date;
+}
+
 // ---------------------------------------------------------------------------
 // Repository
 // ---------------------------------------------------------------------------
@@ -210,6 +219,97 @@ export class AuthRepository {
 
         await sql`
       DELETE FROM refresh_tokens WHERE user_id = ${userId}
+    `;
+    }
+
+    // ── User Settings (TOTP 2FA + theme) ────────────────────────────────────
+
+    /**
+     * Returns the user_settings row (or the seeded defaults).
+     * Mirrors the users read pattern: runs without RLS context, exactly
+     * like findByIdentifier / findById.
+     */
+    async getSettings(userId: string): Promise<UserSettingsRecord | null> {
+        const sql = getPool();
+
+        const rows = await sql<UserSettingsRecord[]>`
+      SELECT user_id, two_factor_secret, two_factor_enabled, backup_codes, theme, updated_at
+      FROM user_settings
+      WHERE user_id = ${userId}
+      LIMIT 1
+    `;
+
+        return rows[0] ?? null;
+    }
+
+    /** Stores a pending TOTP secret (2FA not enabled until verified). */
+    async setTwoFactorSecret(userId: string, secret: string): Promise<void> {
+        const sql = getPool();
+
+        await sql`
+      INSERT INTO user_settings (user_id, two_factor_secret)
+      VALUES (${userId}, ${secret})
+      ON CONFLICT (user_id)
+      DO UPDATE SET
+        two_factor_secret = EXCLUDED.two_factor_secret,
+        updated_at = NOW()
+    `;
+    }
+
+    /** Enables 2FA and stores the hashed backup codes. */
+    async enableTwoFactor(
+        userId: string,
+        secret: string,
+        backupCodeHashes: string[],
+    ): Promise<void> {
+        const sql = getPool();
+
+        await sql`
+      INSERT INTO user_settings (user_id, two_factor_secret, two_factor_enabled, backup_codes)
+      VALUES (${userId}, ${secret}, TRUE, ${backupCodeHashes})
+      ON CONFLICT (user_id)
+      DO UPDATE SET
+        two_factor_secret  = EXCLUDED.two_factor_secret,
+        two_factor_enabled = TRUE,
+        backup_codes       = EXCLUDED.backup_codes,
+        updated_at         = NOW()
+    `;
+    }
+
+    /** Disables 2FA and clears the secret + backup codes. */
+    async disableTwoFactor(userId: string): Promise<void> {
+        const sql = getPool();
+
+        await sql`
+      UPDATE user_settings
+      SET two_factor_secret  = NULL,
+          two_factor_enabled = FALSE,
+          backup_codes       = '{}',
+          updated_at         = NOW()
+      WHERE user_id = ${userId}
+    `;
+    }
+
+    /** Consumes (removes) a used backup code hash — one-time use. */
+    async removeBackupCode(userId: string, hash: string): Promise<void> {
+        const sql = getPool();
+
+        await sql`
+      UPDATE user_settings
+      SET backup_codes = array_remove(backup_codes, ${hash}),
+          updated_at = NOW()
+      WHERE user_id = ${userId}
+    `;
+    }
+
+    /** Updates the Argon2id password hash (password/PIN change). */
+    async updatePasswordHash(userId: string, passwordHash: string): Promise<void> {
+        const sql = getPool();
+
+        await sql`
+      UPDATE users
+      SET password_hash = ${passwordHash}, updated_at = NOW()
+      WHERE id = ${userId}
     `;
     }
 }

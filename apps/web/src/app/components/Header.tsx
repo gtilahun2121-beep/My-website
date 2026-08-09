@@ -4,6 +4,10 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Language, languages } from '@/i18n/config';
 import { translations } from '@/i18n/translations';
+import { useAuth } from '@/app/context/AuthContext';
+import { useNotifications } from '@/app/hooks/useNotifications';
+import ProfileDrawer from '@/app/components/layout/ProfileDrawer';
+import NotificationsDrawer from '@/app/components/notifications/NotificationsDrawer';
 
 interface HeaderProps {
   lang: Language;
@@ -14,7 +18,13 @@ interface HeaderProps {
 
 export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthenticated = false }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const t = translations[lang];
+
+  const { user, isAuthenticated: authAuthenticated } = useAuth();
+  const authenticated = isAuthenticated || authAuthenticated;
+  const { unreadCount, refresh } = useNotifications(authenticated);
 
   const navItems = [
     { label: t.home, href: '/' },
@@ -22,20 +32,49 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
     { label: t.docs, href: '/docs' },
   ];
 
+  const initials =
+    (user?.firstName?.[0] || '') + (user?.lastName?.[0] || '') || '👤';
+
+  const openNotifications = () => {
+    refresh();
+    setNotificationsOpen(true);
+  };
+
   return (
     <header className="bg-gradient-to-r from-[#0d7e4d] to-[#ce1126] shadow-2xl sticky top-0 z-50 border-b-4 border-[#d4af37]">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex justify-between items-center">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
+          {/* Left corner: profile + logo */}
+          <div className="flex items-center gap-3">
+            {/* Profile Avatar */}
+            {authenticated && (
+              <button
+                onClick={() => setProfileOpen(true)}
+                className="relative w-10 h-10 rounded-full overflow-hidden bg-white flex items-center justify-center text-[#0d7e4d] font-black text-sm uppercase shadow-md hover:scale-105 transition-transform border-2 border-[#d4af37]"
+                aria-label="Open profile"
+              >
+                {user?.profilePhoto ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={user.profilePhoto}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  initials
+                )}
+              </button>
+            )}
+            <Link href="/" className="flex items-center gap-3 group">
             <div className="w-10 h-10 bg-gradient-to-br from-[#d4af37] to-[#ce1126] rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
               <span className="text-[#0d7e4d] font-black text-lg">🇪🇹</span>
             </div>
             <div>
               <span className="font-black text-2xl text-white drop-shadow-lg">QalNet</span>
-              <p className="text-xs text-white/80 font-semibold -mt-1">Ethiopia's Digital Equb</p>
+              <p className="text-xs text-white/80 font-semibold -mt-1">Ethiopia&apos;s Digital Equb</p>
             </div>
           </Link>
+          </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-6">
@@ -52,6 +91,28 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
 
           {/* Right Section */}
           <div className="flex items-center gap-3">
+            {/* Notifications Bell */}
+            {authenticated && (
+              <button
+                onClick={openNotifications}
+                className="relative p-2 hover:bg-white/20 rounded-full transition-all text-white"
+                aria-label="Notifications"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                  />
+                </svg>
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-[#ce1126] border-2 border-white rounded-full text-[10px] font-black text-white flex items-center justify-center">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
+              </button>
+            )}
+
             {/* Language Selector */}
             <select
               value={lang}
@@ -66,7 +127,7 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
             </select>
 
             {/* Sign Up Button */}
-            {!isAuthenticated && (
+            {!authenticated && (
               <button
                 onClick={onSignUpClick}
                 className="hidden sm:inline-block px-6 py-2 bg-white text-[#0d7e4d] font-bold rounded-full hover:shadow-lg transition-all text-sm"
@@ -100,7 +161,7 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
                 {item.label}
               </Link>
             ))}
-            {!isAuthenticated && (
+            {!authenticated && (
               <button
                 onClick={() => {
                   onSignUpClick?.();
@@ -114,6 +175,18 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
           </div>
         )}
       </nav>
+
+      {/* Drawers */}
+      <ProfileDrawer
+        isOpen={profileOpen && authenticated}
+        onClose={() => setProfileOpen(false)}
+        language={lang}
+      />
+      <NotificationsDrawer
+        isOpen={notificationsOpen && authenticated}
+        onClose={() => setNotificationsOpen(false)}
+        language={lang}
+      />
     </header>
   );
 }

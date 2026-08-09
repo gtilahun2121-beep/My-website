@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  turbopack: {
+    root: require('path').join(__dirname, '..', '..'),
+  },
   reactStrictMode: true,
   images: { remotePatterns: [{ hostname: '**' }] },
   // Optimization flags for faster builds
