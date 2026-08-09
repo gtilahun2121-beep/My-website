@@ -17,21 +17,18 @@ interface SignInTabProps {
 
 export default function SignInTab({ lang = defaultLanguage, onSuccess, onError }: SignInTabProps) {
   const { signin, isLoading } = useAuth();
-  const [formData, setFormData] = useState({ phoneNumber: '+2519', pin: '' });
+  const [formData, setFormData] = useState({ phoneNumber: '', pin: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [successMessage, setSuccessMessage] = useState('');
 
   const handleFieldChange = (field: string, value: string) => {
     let finalValue = value;
     if (field === 'phoneNumber') {
-      // Keep +2519 prefix
-      if (!value.startsWith('+2519')) {
-        value = '+2519';
-      }
-      // Allow only digits after +2519
+      // Accept +2519 (Ethio Telecom) or +2517 (Safaricom) — never force a prefix.
+      // A full Ethiopian number is 12 digits: 251 (country) + 9 local digits.
       const digitsOnly = value.replace(/\D/g, '');
-      if (digitsOnly.length > 10) {
-        value = '+' + digitsOnly.substring(0, 10);
+      if (digitsOnly.length > 12) {
+        value = '+' + digitsOnly.substring(0, 12);
       }
       finalValue = value;
     } else if (field === 'pin') {

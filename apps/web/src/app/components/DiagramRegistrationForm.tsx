@@ -37,7 +37,7 @@ export default function DiagramRegistrationForm({
     if (field === 'phoneNumber') {
       if (!value.startsWith('+2519')) value = '+2519';
       const digits = value.replace(/\D/g, '');
-      if (digits.length > 10) value = '+' + digits.substring(0, 10);
+      if (digits.length > 12) value = '+' + digits.substring(0, 12);
     } else if (field === 'fayda') {
       value = value.replace(/\D/g, '').slice(0, 16);
     } else if (field === 'pin') {

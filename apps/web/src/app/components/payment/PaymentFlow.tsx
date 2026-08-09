@@ -29,7 +29,7 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({
   language,
 }) => {
   const [step, setStep] = useState<PaymentStep>('method-selection');
-  const [selectedMethod, setSelectedMethod] = useState<'telebirr' | 'cbe' | 'wallet' | null>(null);
+  const [selectedMethod, setSelectedMethod] = useState<'telebirr' | 'chapa' | 'wallet' | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [transactionRef, setTransactionRef] = useState<string | null>(null);
@@ -50,9 +50,9 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({
       available: true,
     },
     {
-      id: 'cbe',
-      name: 'CBE Bank',
-      description: 'Direct CBE bank transfer',
+      id: 'chapa',
+      name: 'Chapa',
+      description: 'Pay via Chapa payment gateway',
       icon: '🏦',
       available: true,
     },
@@ -68,7 +68,6 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({
       const result = await paymentsAPI.checkout({
         equb_id: equbId,
         round_number: roundNumber,
-        amount,
         payment_method: selectedMethod,
       });
       setTransactionRef(result.payment_id ?? result.paymentId ?? null);

@@ -13,7 +13,29 @@ export class UsersRepository {
     }
 
     async update(id: string, data: any) {
-        // Stub for update logic
-        return { success: true, updated: true };
+        const sql = getPool();
+        const allowed = ['first_name', 'last_name', 'phone', 'email', 'telegram_handle'];
+        const sets: string[] = [];
+        const values: any[] = [];
+
+        for (const key of allowed) {
+            if (data[key] !== undefined) {
+                values.push(data[key]);
+                sets.push(`${key} = $${values.length}`);
+            }
+        }
+
+        if (sets.length === 0) {
+            return this.findById(id);
+        }
+
+        values.push(id);
+        const rows = await sql.unsafe(`
+            UPDATE users
+            SET ${sets.join(', ')}, updated_at = NOW()
+            WHERE id = $${values.length}
+            RETURNING id, first_name, last_name, phone, email, telegram_handle, role, is_active, created_at
+        `, values);
+        return rows[0];
     }
 }

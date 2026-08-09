@@ -8,28 +8,67 @@ import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
 import api from '@/app/services/api';
 import { useEffect } from 'react';
+import type { WalletTransaction } from '@qalnet/shared-types';
+
+interface TxnRow {
+  id: string;
+  type: string;
+  equb: string;
+  amount: string;
+  date: string;
+  status: string;
+}
 
 export default function WalletPage() {
   const { isAuthenticated } = useAuth();
   const [lang, setLang] = useState<Language>(defaultLanguage);
-  const [balance, setBalance] = useState(12500);
+  const [balance, setBalance] = useState(0);
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [depositAmount, setDepositAmount] = useState('');
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('telebirr');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [transactions, setTransactions] = useState([
-    { type: 'Payment', equb: 'Gold Equb', amount: '-ETB 5,000', date: '2024-02-10', status: '✓ Completed' },
-    { type: 'Payout', equb: 'Community Fund', amount: '+ETB 8,000', date: '2024-02-05', status: '✓ Completed' },
-    { type: 'Payment', equb: 'Business Support', amount: '-ETB 5,000', date: '2024-02-01', status: '✓ Completed' },
-    { type: 'Deposit', equb: 'Bank Transfer', amount: '+ETB 10,000', date: '2024-01-28', status: '✓ Completed' },
-  ]);
+  const [transactions, setTransactions] = useState<TxnRow[]>([]);
+
+  const refreshTransactions = () => {
+    api.walletAPI
+      .getTransactions()
+      .then((txns) => setTransactions(txns.map(mapTxn)))
+      .catch(console.error);
+  };
+
+  const mapTxn = (txn: WalletTransaction): TxnRow => {
+    const outgoing = txn.direction === 'payment' || txn.direction === 'withdrawal';
+    const amount = `${outgoing ? '-' : '+'}ETB ${txn.amount.toLocaleString('en-US')}`;
+    const date = new Date(txn.created_at).toISOString().split('T')[0];
+    const type =
+      txn.direction === 'payment'
+        ? 'Payment'
+        : txn.direction === 'payout'
+          ? 'Payout'
+          : txn.direction === 'deposit'
+            ? 'Deposit'
+            : 'Withdrawal';
+    return {
+      id: txn.id,
+      type,
+      equb: txn.equb_name,
+      amount,
+      date,
+      status: `✓ ${txn.status}`,
+    };
+  };
 
   useEffect(() => {
     if (isAuthenticated) {
-      api.walletAPI.getBalance()
+      api.walletAPI
+        .getBalance()
         .then((data) => setBalance(data.balance))
+        .catch(console.error);
+      api.walletAPI
+        .getTransactions()
+        .then((txns) => setTransactions(txns.map(mapTxn)))
         .catch(console.error);
     }
   }, [isAuthenticated]);
@@ -53,19 +92,16 @@ export default function WalletPage() {
     try {
       const res = await api.walletAPI.deposit(amount);
       setBalance(res.balance);
-      setTransactions([
-        { type: 'Deposit', equb: 'Bank Transfer', amount: `+ETB ${amount}`, date: new Date().toISOString().split('T')[0], status: '✓ Completed' },
-        ...transactions
-      ]);
       setShowDepositModal(false);
       setDepositAmount('');
+      refreshTransactions();
     } catch (error) {
       console.error(error);
       alert('Deposit failed');
     }
   };
 
-  const handleWithdraw = () => {
+  const handleWithdraw = async () => {
     const amount = parseFloat(withdrawAmount);
     if (!withdrawAmount || amount <= 0) {
       alert('Please enter a valid amount');
@@ -79,18 +115,21 @@ export default function WalletPage() {
       alert('Please enter phone number');
       return;
     }
-    
+
     const methodName = paymentMethods.find(m => m.id === selectedPaymentMethod)?.name || 'Bank Transfer';
-    
-    setBalance(balance - amount);
-    setTransactions([
-      { type: 'Withdrawal', equb: `${methodName} (${phoneNumber})`, amount: `-ETB ${amount}`, date: new Date().toISOString().split('T')[0], status: '✓ Completed' },
-      ...transactions
-    ]);
-    setShowWithdrawModal(false);
-    setWithdrawAmount('');
-    setPhoneNumber('');
-    setSelectedPaymentMethod('telebirr');
+
+    try {
+      const res = await api.walletAPI.withdraw(amount, methodName, phoneNumber);
+      setBalance(res.balance);
+      setShowWithdrawModal(false);
+      setWithdrawAmount('');
+      setPhoneNumber('');
+      setSelectedPaymentMethod('telebirr');
+      refreshTransactions();
+    } catch (error) {
+      console.error(error);
+      alert('Withdrawal failed');
+    }
   };
 
   if (!isAuthenticated) {

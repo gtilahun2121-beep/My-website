@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Language, defaultLanguage } from '@/i18n/config';
 import { translations } from '@/i18n/translations';
 import { useAuth } from '@/app/context/AuthContext';
@@ -12,15 +13,11 @@ import { useEffect } from 'react';
 
 export default function DashboardPage() {
   const { user, isAuthenticated, signout } = useAuth();
+  const router = useRouter();
   const [lang, setLang] = useState<Language>(defaultLanguage);
   const t = translations[lang];
 
-  console.log('🔍 Dashboard Page Loaded');
-  console.log('isAuthenticated:', isAuthenticated);
-  console.log('user:', user);
-
   if (!isAuthenticated || !user) {
-    console.log('❌ Not authenticated, redirecting...');
     return (
       <main className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -35,50 +32,61 @@ export default function DashboardPage() {
     );
   }
 
-  console.log('✅ User authenticated, showing dashboard');
-
   // Check if user is new (first login)
   const isNewUser = !user.id || user.id.includes('user_');
 
   const [walletBalance, setWalletBalance] = useState(0);
   const [equbs, setEqubs] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<any[]>([]);
 
   useEffect(() => {
     if (isAuthenticated) {
       Promise.all([
         api.walletAPI.getBalance().catch(() => ({ balance: 0 })),
-        api.equbAPI.getAll().catch(() => []),
-        api.notificationsAPI.getNotifications().catch(() => [])
-      ]).then(([walletRes, equbsRes, notifRes]) => {
+        api.equbAPI.getMine().catch(() => []),
+        api.notificationsAPI.getNotifications().catch(() => []),
+        api.walletAPI.getTransactions().catch(() => [])
+      ]).then(([walletRes, equbsRes, notifRes, txnsRes]) => {
         setWalletBalance(walletRes.balance || 0);
         setEqubs(equbsRes || []);
         setNotifications(notifRes || []);
+        setTransactions(txnsRes || []);
       });
     }
   }, [isAuthenticated]);
 
   const activeEqubs = equbs.length;
-  const nextPaymentDays = 5;
-  const nextPayoutMonths = 3;
+  const nextContribution = equbs.reduce((sum, e) => sum + (e.contribution_amount || 0), 0);
+  const nextPayout = equbs.reduce((sum, e) => sum + (e.total_amount || 0), 0);
 
-  const recentActivity = [
-    {
-      icon: '✅',
-      action: lang === 'en' ? 'Payment Completed' : 'ክፍያ ተጠናቀቀ',
-      time: '2 hours ago',
-    },
-    {
-      icon: '➕',
-      action: lang === 'en' ? 'Joined Gold Equb' : 'Gold Equb ተጠምዱ',
-      time: '1 day ago',
-    },
-    {
-      icon: '✏️',
-      action: lang === 'en' ? 'Profile Updated' : 'ፕሮፋይል ተዘምነ',
-      time: '3 days ago',
-    },
-  ];
+  const recentActivity = transactions.slice(0, 5).map((txn: any) => {
+    const outgoing = txn.direction === 'payment' || txn.direction === 'withdrawal';
+    const icon =
+      txn.direction === 'payment'
+        ? '💳'
+        : txn.direction === 'withdrawal'
+          ? '🏦'
+          : txn.direction === 'payout'
+            ? '🏆'
+            : '💰';
+    const label =
+      txn.direction === 'payment'
+        ? 'Payment Completed'
+        : txn.direction === 'withdrawal'
+          ? 'Withdrawal Completed'
+          : txn.direction === 'payout'
+            ? 'Payout Received'
+            : 'Deposit Completed';
+    return {
+      icon,
+      action: `${lang === 'en' ? label : label}: ${txn.equb_name} (${outgoing ? '-' : '+'}ETB ${Number(txn.amount).toLocaleString('en-US')})`,
+      time: new Date(txn.created_at).toLocaleDateString(lang === 'en' ? 'en-US' : 'am-ET', {
+        month: 'short',
+        day: 'numeric',
+      }),
+    };
+  });
 
   const handleSignOut = () => {
     signout();
@@ -187,31 +195,31 @@ export default function DashboardPage() {
             </p>
           </div>
 
-          {/* Card 3: Next Payment Date */}
+          {/* Card 3: Next Contribution Due */}
           <div className="bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-300 rounded-lg p-6 shadow-md">
             <div className="flex items-center justify-between mb-2">
               <p className="text-orange-700 font-bold text-sm">
-                {lang === 'en' ? 'Next Payment' : 'ቀጣይ ክፍያ'}
+                {lang === 'en' ? 'Next Contribution' : 'ቀጣይ መዋጮ'}
               </p>
               <p className="text-2xl">📅</p>
             </div>
-            <p className="text-3xl font-black text-orange-900">{nextPaymentDays} days</p>
+            <p className="text-3xl font-black text-orange-900">ETB {nextContribution.toLocaleString()}</p>
             <p className="text-xs text-orange-700 mt-2">
-              {lang === 'en' ? 'Payment due soon' : 'ክፍያ ቀርቧል'}
+              {lang === 'en' ? 'Due per cycle across your Equbs' : 'በየዑደት የሚከፈል'}
             </p>
           </div>
 
-          {/* Card 4: Next Payout Date */}
+          {/* Card 4: Next Payout Pot */}
           <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-300 rounded-lg p-6 shadow-md">
             <div className="flex items-center justify-between mb-2">
               <p className="text-purple-700 font-bold text-sm">
-                {lang === 'en' ? 'Next Payout' : 'ቀጣይ ክፍሌ'}
+                {lang === 'en' ? 'Payout Pot' : 'ክፍያ ማሰባሰብያ'}
               </p>
               <p className="text-2xl">🏆</p>
             </div>
-            <p className="text-3xl font-black text-purple-900">{nextPayoutMonths}m away</p>
+            <p className="text-3xl font-black text-purple-900">ETB {nextPayout.toLocaleString()}</p>
             <p className="text-xs text-purple-700 mt-2">
-              {lang === 'en' ? 'When you receive payout' : 'ክፍሌ የሚገኙበት ጊዜ'}
+              {lang === 'en' ? 'Total pot across your Equbs' : 'በእርስዎ Equbs ላይ ያለ ድምር'}
             </p>
           </div>
         </div>
@@ -230,14 +238,18 @@ export default function DashboardPage() {
                   <p className="text-gray-600 mb-4">
                     {lang === 'en' ? 'You haven\'t joined any Equb yet' : 'አሁንም ሙሉ Equb ተጠምዱ አልነበሩም'}
                   </p>
-                  <button className="px-6 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-all">
+                  <button onClick={() => router.push('/discover')} className="px-6 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-all">
                     {lang === 'en' ? 'Join an Equb' : 'Equb ተጠምዱ'}
                   </button>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {equbs.map((equb, idx) => (
-                    <div key={idx} className="flex justify-between items-center p-3 sm:p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                    <button
+                      key={idx}
+                      onClick={() => router.push(`/equbs/${equb.id}`)}
+                      className="w-full flex justify-between items-center p-3 sm:p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors text-left"
+                    >
                       <div className="flex items-center gap-3 sm:gap-4">
                         <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-full flex items-center justify-center shadow-sm text-lg sm:text-xl shrink-0">
                           {equb.name ? equb.name.charAt(0) : 'E'}
@@ -245,17 +257,15 @@ export default function DashboardPage() {
                         <div className="min-w-0">
                           <h4 className="font-bold text-gray-900 truncate">{equb.name || 'Unnamed Equb'}</h4>
                           <p className="text-xs sm:text-sm text-gray-500 truncate">
-                            {lang === 'en' ? 'Position' : 'ተራ'}: {equb.position || 'N/A'} • {equb.members?.length || equb.size || 0} {lang === 'en' ? 'members' : 'አባሎች'}
+                            {lang === 'en' ? 'Round' : 'ዑደት'}: {equb.current_round ?? 0} / {equb.total_rounds ?? 0} • {equb.member_count ?? 0} {lang === 'en' ? 'members' : 'አባሎች'}
                           </p>
                         </div>
                       </div>
                       <div className="text-right shrink-0 ml-2">
-                        <p className="font-bold text-[#0d7e4d] text-sm sm:text-base">ETB {equb.contributionAmount || equb.contribution || 0}</p>
-                        <p className="text-[10px] sm:text-xs text-gray-500">
-                          {lang === 'en' ? 'Next' : 'ቀጣይ'}: {equb.nextPaymentDate || 'N/A'}
-                        </p>
+                        <p className="font-bold text-[#0d7e4d] text-sm sm:text-base">ETB {equb.contribution_amount || 0}</p>
+                        <p className="text-[10px] sm:text-xs text-gray-500 uppercase">{equb.status || ''}</p>
                       </div>
-                    </div>
+                    </button>
                   ))}
                 </div>
               )}
@@ -268,16 +278,16 @@ export default function DashboardPage() {
               </h2>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <button className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 rounded-lg font-bold hover:shadow-lg transition-all text-center">
+                <button onClick={() => router.push('/discover')} className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 rounded-lg font-bold hover:shadow-lg transition-all text-center">
                   ➕ {lang === 'en' ? 'Join an Equb' : 'Equb ተጠምዱ'}
                 </button>
-                <button className="bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-4 rounded-lg font-bold hover:shadow-lg transition-all text-center">
+                <button onClick={() => router.push('/create-equb')} className="bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-4 rounded-lg font-bold hover:shadow-lg transition-all text-center">
                   🆕 {lang === 'en' ? 'Create an Equb' : 'Equb ፍጠር'}
                 </button>
-                <button className="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-6 py-4 rounded-lg font-bold hover:shadow-lg transition-all text-center">
+                <button onClick={() => router.push('/wallet')} className="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-6 py-4 rounded-lg font-bold hover:shadow-lg transition-all text-center">
                   💳 {lang === 'en' ? 'Make Payment' : 'ክፍያ ክፍል'}
                 </button>
-                <button className="bg-gradient-to-r from-orange-600 to-orange-700 text-white px-6 py-4 rounded-lg font-bold hover:shadow-lg transition-all text-center">
+                <button onClick={() => router.push('/wallet')} className="bg-gradient-to-r from-orange-600 to-orange-700 text-white px-6 py-4 rounded-lg font-bold hover:shadow-lg transition-all text-center">
                   👥 {lang === 'en' ? 'Invite Friends' : 'ጓደኞቹን ጋብዝ'}
                 </button>
               </div>

@@ -18,9 +18,9 @@ export class ValidationSchema {
     if (!phone) {
       return { valid: false, error: 'Phone number is required' };
     }
-    // Accept: +251912345678, 0912345678, 9 followed by 8 digits, spaces/dashes allowed
+    // Accept: +251912345678, +251712345678, 0912345678, 9/7 followed by 8 digits, spaces/dashes allowed
     const cleanPhone = phone.replace(/[\s\-()]/g, '');
-    if (!cleanPhone.match(/^(\+251|0|251)?9\d{8}$/)) {
+    if (!cleanPhone.match(/^(\+251|0|251)?[79]\d{8}$/)) {
       return { valid: false, error: 'Enter valid Ethiopian phone (9XX XXX XXXX)' };
     }
     return { valid: true };
