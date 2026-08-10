@@ -12,7 +12,7 @@ import api from '@/app/services/api';
 import { useEffect } from 'react';
 
 export default function DashboardPage() {
-  const { user, isAuthenticated, signout } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const router = useRouter();
   const [lang, setLang] = useState<Language>(defaultLanguage);
   const t = translations[lang];
@@ -35,30 +35,20 @@ export default function DashboardPage() {
   // Check if user is new (first login)
   const isNewUser = !user.id || user.id.includes('user_');
 
-  const [walletBalance, setWalletBalance] = useState(0);
-  const [equbs, setEqubs] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
 
   useEffect(() => {
     if (isAuthenticated) {
       Promise.all([
-        api.walletAPI.getBalance().catch(() => ({ balance: 0 })),
-        api.equbAPI.getMine().catch(() => []),
         api.notificationsAPI.getNotifications().catch(() => []),
         api.walletAPI.getTransactions().catch(() => [])
-      ]).then(([walletRes, equbsRes, notifRes, txnsRes]) => {
-        setWalletBalance(walletRes.balance || 0);
-        setEqubs(equbsRes || []);
+      ]).then(([notifRes, txnsRes]) => {
         setNotifications(notifRes || []);
         setTransactions(txnsRes || []);
       });
     }
   }, [isAuthenticated]);
-
-  const activeEqubs = equbs.length;
-  const nextContribution = equbs.reduce((sum, e) => sum + (e.contribution_amount || 0), 0);
-  const nextPayout = equbs.reduce((sum, e) => sum + (e.total_amount || 0), 0);
 
   const recentActivity = transactions.slice(0, 5).map((txn: any) => {
     const outgoing = txn.direction === 'payment' || txn.direction === 'withdrawal';
@@ -88,10 +78,6 @@ export default function DashboardPage() {
     };
   });
 
-  const handleSignOut = () => {
-    signout();
-  };
-
   return (
     <main className="min-h-screen flex flex-col bg-gray-50">
       <Header
@@ -108,12 +94,6 @@ export default function DashboardPage() {
             <h1 className="text-4xl font-black text-gray-900">
               {lang === 'en' ? 'Welcome, ' : 'ደህና መጡ, '}{user.firstName} 👋
             </h1>
-            <button
-              onClick={handleSignOut}
-              className="px-4 py-2 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition-all"
-            >
-              {lang === 'en' ? 'Sign Out' : 'ወጣ'}
-            </button>
           </div>
           <p className="text-gray-600">
             {lang === 'en'
@@ -163,114 +143,9 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Summary Cards - The 3 Key Questions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {/* Card 1: Wallet Balance */}
-          <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-300 rounded-lg p-6 shadow-md">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-green-700 font-bold text-sm">
-                {lang === 'en' ? 'Wallet Balance' : 'ዋሊት ሚዛን'}
-              </p>
-              <p className="text-2xl">💰</p>
-            </div>
-            <p className="text-3xl font-black text-green-900">
-              ETB {walletBalance.toLocaleString()}
-            </p>
-            <p className="text-xs text-green-700 mt-2">
-              {lang === 'en' ? 'Available balance' : 'ክፍት ሚዛን'}
-            </p>
-          </div>
-
-          {/* Card 2: Active Equbs */}
-          <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-300 rounded-lg p-6 shadow-md">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-blue-700 font-bold text-sm">
-                {lang === 'en' ? 'Active Equbs' : 'ንቅናቄ Equbs'}
-              </p>
-              <p className="text-2xl">👥</p>
-            </div>
-            <p className="text-3xl font-black text-blue-900">{activeEqubs}</p>
-            <p className="text-xs text-blue-700 mt-2">
-              {lang === 'en' ? 'Groups you\'re part of' : 'ነዋ ክፍሎች'}
-            </p>
-          </div>
-
-          {/* Card 3: Next Contribution Due */}
-          <div className="bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-300 rounded-lg p-6 shadow-md">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-orange-700 font-bold text-sm">
-                {lang === 'en' ? 'Next Contribution' : 'ቀጣይ መዋጮ'}
-              </p>
-              <p className="text-2xl">📅</p>
-            </div>
-            <p className="text-3xl font-black text-orange-900">ETB {nextContribution.toLocaleString()}</p>
-            <p className="text-xs text-orange-700 mt-2">
-              {lang === 'en' ? 'Due per cycle across your Equbs' : 'በየዑደት የሚከፈል'}
-            </p>
-          </div>
-
-          {/* Card 4: Next Payout Pot */}
-          <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-300 rounded-lg p-6 shadow-md">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-purple-700 font-bold text-sm">
-                {lang === 'en' ? 'Payout Pot' : 'ክፍያ ማሰባሰብያ'}
-              </p>
-              <p className="text-2xl">🏆</p>
-            </div>
-            <p className="text-3xl font-black text-purple-900">ETB {nextPayout.toLocaleString()}</p>
-            <p className="text-xs text-purple-700 mt-2">
-              {lang === 'en' ? 'Total pot across your Equbs' : 'በእርስዎ Equbs ላይ ያለ ድምር'}
-            </p>
-          </div>
-        </div>
-
         {/* Three Main Sections */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Section 1: My Equbs - Question: What is my current Equb status? */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                👥 {lang === 'en' ? 'My Equbs' : 'የእኔ Equbs'}
-              </h2>
-
-              {equbs.length === 0 ? (
-                <div className="text-center py-12">
-                  <p className="text-gray-600 mb-4">
-                    {lang === 'en' ? 'You haven\'t joined any Equb yet' : 'አሁንም ሙሉ Equb ተጠምዱ አልነበሩም'}
-                  </p>
-                  <button onClick={() => router.push('/discover')} className="px-6 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-all">
-                    {lang === 'en' ? 'Join an Equb' : 'Equb ተጠምዱ'}
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {equbs.map((equb, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => router.push(`/equbs/${equb.id}`)}
-                      className="w-full flex justify-between items-center p-3 sm:p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors text-left"
-                    >
-                      <div className="flex items-center gap-3 sm:gap-4">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-full flex items-center justify-center shadow-sm text-lg sm:text-xl shrink-0">
-                          {equb.name ? equb.name.charAt(0) : 'E'}
-                        </div>
-                        <div className="min-w-0">
-                          <h4 className="font-bold text-gray-900 truncate">{equb.name || 'Unnamed Equb'}</h4>
-                          <p className="text-xs sm:text-sm text-gray-500 truncate">
-                            {lang === 'en' ? 'Round' : 'ዑደት'}: {equb.current_round ?? 0} / {equb.total_rounds ?? 0} • {equb.member_count ?? 0} {lang === 'en' ? 'members' : 'አባሎች'}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right shrink-0 ml-2">
-                        <p className="font-bold text-[#0d7e4d] text-sm sm:text-base">ETB {equb.contribution_amount || 0}</p>
-                        <p className="text-[10px] sm:text-xs text-gray-500 uppercase">{equb.status || ''}</p>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
             {/* Quick Actions - Question: What should I do next? */}
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">

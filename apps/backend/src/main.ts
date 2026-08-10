@@ -39,6 +39,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
+import { json } from 'express';
 
 import { AppModule } from './app.module';
 import { VaultConfig } from './config/vault.config';
@@ -60,6 +61,9 @@ async function bootstrap() {
 
     // Parse cookies — needed for HttpOnly refresh token
     app.use(cookieParser());
+
+    // Allow larger JSON bodies — needed for base64 profile photo updates
+    app.use(json({ limit: '2mb' }));
 
     // Global validation pipe — strips unknown fields, enforces DTOs
     app.useGlobalPipes(

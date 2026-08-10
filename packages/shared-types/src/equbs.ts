@@ -112,6 +112,8 @@ export interface UserProfileData {
     phone: string;
     email: string;
     telegram_handle: string | null;
+    /** Base64 data URL of the user's profile photo, if set. */
+    profile_photo: string | null;
     role: UserRole;
     is_active: boolean;
     created_at: string;

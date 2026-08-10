@@ -405,6 +405,58 @@ export const userAPI = {
 };
 
 // ---------------------------------------------------------------------------
+// Admin API (role: admin only)
+// ---------------------------------------------------------------------------
+
+export interface AdminCustomer {
+  id: string;
+  first_name: string;
+  last_name: string;
+  phone: string;
+  email: string;
+  telegram_handle: string | null;
+  profile_photo: string | null;
+  role: 'participant' | 'host' | 'admin';
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface AdminCustomerSummary {
+  total: number;
+  active: number;
+  hosts: number;
+  new_this_month: number;
+}
+
+export interface AdminCustomerListResponse {
+  items: AdminCustomer[];
+  total: number;
+  page: number;
+  limit: number;
+  summary: AdminCustomerSummary;
+}
+
+export interface ListUsersParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  role?: 'participant' | 'host' | 'admin';
+  status?: 'active' | 'inactive';
+}
+
+export const adminAPI = {
+  /**
+   * GET /api/v1/admin/users
+   * Lists registered customers (admin only). Requires a JWT whose role is 'admin'.
+   */
+  listUsers: (params: ListUsersParams = {}) =>
+    request<AdminCustomerListResponse>('/admin/users', {
+      method: 'GET',
+      params,
+    }),
+};
+
+// ---------------------------------------------------------------------------
 // Equb API
 // ---------------------------------------------------------------------------
 
@@ -473,6 +525,7 @@ export default {
   paymentsAPI,
   socialAPI,
   userAPI,
+  adminAPI,
   equbAPI,
   walletAPI,
   notificationsAPI,
