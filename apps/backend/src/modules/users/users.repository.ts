@@ -139,4 +139,26 @@ export class UsersRepository {
         `, values);
         return rows[0];
     }
+
+    /**
+     * Admin reset of a user's PIN. Replaces the password hash AND clears the
+     * whole login-lockout state so a permanently blocked account is unblocked.
+     * Runs inside an admin RLS context (users UPDATE policy requires
+     * current_user_role() = 'admin').
+     */
+    async resetPinAndUnlock(adminId: string, userId: string, passwordHash: string) {
+        return withAdminContext(adminId, async (sql) => {
+            const rows = await sql`
+                UPDATE users
+                SET password_hash         = ${passwordHash},
+                    failed_login_attempts = 0,
+                    lockout_stage         = 0,
+                    locked_until          = NULL,
+                    updated_at            = NOW()
+                WHERE id = ${userId}
+                RETURNING id, first_name, last_name, phone, email, role, is_active, created_at
+            `;
+            return rows[0] ?? null;
+        });
+    }
 }

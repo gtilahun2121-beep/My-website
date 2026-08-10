@@ -58,11 +58,17 @@ export function getPool(): Sql {
         // Neon recommends a modest pool size for serverless workloads
         max: 10,
         idle_timeout: 20,   // seconds before an idle connection is closed
+        max_lifetime: 1800, // seconds before a connection is recycled (30 min)
         connect_timeout: 60, // raised from 10s — Neon pooler can take up to ~30s on cold start
 
         // SSL — defer to the connection string flags (sslmode + channel_binding)
         // Setting ssl:'require' here conflicts with channel_binding=require on the pooler
         ssl: { rejectUnauthorized: false },
+
+        // Log unexpected connection closures (pool reconnects automatically
+        // on the next query)
+        onclose: (connId) =>
+            console.warn(`[DatabaseConfig] Connection ${connId} closed.`),
 
         // Automatically parse numeric columns as JS numbers
         // (Postgres returns NUMERIC as strings by default)
@@ -87,6 +93,9 @@ export function getPool(): Sql {
 /**
  * Bootstrap function called once in main.ts.
  * Resolves the DATABASE_URL from VaultConfig and warms the pool.
+ *
+ * The warm-up probe is retried with backoff so a slow Neon pooler cold start
+ * (or a transient network blip) does not crash the process on first attempt.
  */
 export async function initDatabase(): Promise<void> {
     const secrets: QalNetSecrets = await VaultConfig.load();
@@ -94,11 +103,36 @@ export async function initDatabase(): Promise<void> {
     // Cache the URL in process.env so getPool() can access it synchronously
     process.env._DB_URL_CACHE = secrets.DATABASE_URL;
 
-    // Warm the pool with a lightweight probe
+    // Warm the pool with a lightweight probe — retry up to 3 times
     const sql = getPool();
-    await sql`SELECT 1`;
+    const maxAttempts = 3;
+    let lastError: unknown;
 
-    console.log('[DatabaseConfig] Neon connection pool initialised.');
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+            await sql`SELECT 1`;
+            console.log('[DatabaseConfig] Neon connection pool initialised.');
+            return;
+        } catch (err) {
+            lastError = err;
+            if (attempt < maxAttempts) {
+                const delayMs = attempt * 1500;
+                console.warn(
+                    `[DatabaseConfig] Warm-up probe failed (attempt ${attempt}/${maxAttempts}). ` +
+                    `Retrying in ${delayMs}ms…`,
+                );
+                await new Promise((resolve) => setTimeout(resolve, delayMs));
+            }
+        }
+    }
+
+    const detail =
+        lastError instanceof Error ? ` Last error: ${lastError.message}` : '';
+    throw new Error(
+        '[DatabaseConfig] Unable to connect to Neon after multiple attempts. ' +
+        'Check that outbound TCP 5432 is reachable from this network and that ' +
+        'DATABASE_URL points to the correct pooled endpoint.' + detail,
+    );
 }
 
 // ---------------------------------------------------------------------------

@@ -30,6 +30,9 @@ export interface UserRecord {
     role: 'participant' | 'host' | 'admin';
     is_active: boolean;
     created_at: Date;
+    failed_login_attempts: number;
+    lockout_stage: number;
+    locked_until: Date | null;
 }
 
 export interface CreateUserInput {
@@ -74,7 +77,8 @@ export class AuthRepository {
         const rows = await sql<UserRecord[]>`
       SELECT
         id, phone, email, first_name, last_name, fayda_id, telegram_handle,
-        password_hash, role, is_active, created_at
+        password_hash, role, is_active, created_at,
+        failed_login_attempts, lockout_stage, locked_until
       FROM users
       WHERE phone = ${identifier}
          OR email = ${identifier.toLowerCase()}
@@ -93,13 +97,45 @@ export class AuthRepository {
         const rows = await sql<UserRecord[]>`
       SELECT
         id, phone, email, first_name, last_name, fayda_id, telegram_handle,
-        password_hash, role, is_active, created_at
+        password_hash, role, is_active, created_at,
+        failed_login_attempts, lockout_stage, locked_until
       FROM users
       WHERE id = ${id}
       LIMIT 1
     `;
 
         return rows[0] ?? null;
+    }
+
+    /**
+     * Finds existing accounts matching the given email and/or phone.
+     * Used by the signup availability pre-check.
+     */
+    async findByEmailOrPhone(email?: string, phone?: string): Promise<UserRecord[]> {
+        const sql = getPool();
+
+        const clauses: string[] = [];
+        const values: string[] = [];
+
+        if (email) {
+            values.push(email.toLowerCase());
+            clauses.push(`email = $${values.length}`);
+        }
+        if (phone) {
+            values.push(phone);
+            clauses.push(`phone = $${values.length}`);
+        }
+        if (clauses.length === 0) return [];
+
+        return sql.unsafe<UserRecord[]>(
+            `SELECT
+                id, phone, email, first_name, last_name, fayda_id, telegram_handle,
+                password_hash, role, is_active, created_at,
+                failed_login_attempts, lockout_stage, locked_until
+             FROM users
+             WHERE ${clauses.join(' OR ')}`,
+            values,
+        );
     }
 
     // ── Write ───────────────────────────────────────────────────────────────
@@ -309,6 +345,82 @@ export class AuthRepository {
         await sql`
       UPDATE users
       SET password_hash = ${passwordHash}, updated_at = NOW()
+      WHERE id = ${userId}
+    `;
+    }
+
+    // ── Login lockout (escalating PIN attempts) ──────────────────────────────
+
+    /**
+     * Increments the consecutive failed-attempt counter. Returns the new count.
+     * The caller decides when to apply a lock (e.g. at 3 failures).
+     */
+    async incrementFailedAttempt(userId: string): Promise<number> {
+        const sql = getPool();
+
+        const [row] = await sql<{ failed_login_attempts: number }[]>`
+      UPDATE users
+      SET failed_login_attempts = failed_login_attempts + 1, updated_at = NOW()
+      WHERE id = ${userId}
+      RETURNING failed_login_attempts
+    `;
+
+        return row?.failed_login_attempts ?? 1;
+    }
+
+    /**
+     * Applies a lockout: resets the attempt counter and stores the stage +
+     * expiry. Stage 4 (permanent) passes lockedUntil = null.
+     */
+    async applyLockout(
+        userId: string,
+        stage: number,
+        lockedUntil: Date | null,
+    ): Promise<void> {
+        const sql = getPool();
+
+        await sql`
+      UPDATE users
+      SET failed_login_attempts = 0,
+          lockout_stage         = ${stage},
+          locked_until          = ${lockedUntil},
+          updated_at            = NOW()
+      WHERE id = ${userId}
+    `;
+    }
+
+    /**
+     * Clears an already-expired lock so the user gets a fresh set of attempts.
+     * The lockout_stage is preserved so the next failure escalates to a longer
+     * lock (6h → 1d → 3d → permanent).
+     */
+    async clearExpiredLockout(userId: string): Promise<void> {
+        const sql = getPool();
+
+        await sql`
+      UPDATE users
+      SET failed_login_attempts = 0,
+          locked_until          = NULL,
+          updated_at            = NOW()
+      WHERE id = ${userId}
+        AND locked_until IS NOT NULL
+        AND locked_until <= NOW()
+    `;
+    }
+
+    /**
+     * Resets the whole lockout state after a successful login, or when an
+     * admin manually unblocks the account.
+     */
+    async resetLoginAttempts(userId: string): Promise<void> {
+        const sql = getPool();
+
+        await sql`
+      UPDATE users
+      SET failed_login_attempts = 0,
+          lockout_stage         = 0,
+          locked_until          = NULL,
+          updated_at            = NOW()
       WHERE id = ${userId}
     `;
     }

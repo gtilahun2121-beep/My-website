@@ -40,8 +40,12 @@ export default function EqubDetailPage() {
     setJoining(true);
     setNotice(null);
     try {
-      await api.equbAPI.join(params.id);
-      setNotice('Successfully joined the Equb!');
+      const result = await api.equbAPI.join(params.id);
+      if (result?.pending) {
+        setNotice('Join request submitted — awaiting admin approval.');
+      } else {
+        setNotice('Successfully joined the Equb!');
+      }
       const fresh = await api.equbAPI.getById(params.id);
       setEqub(fresh);
     } catch (err: any) {
@@ -167,26 +171,39 @@ export default function EqubDetailPage() {
                 </div>
 
                 {notice && (
-                  <div className="bg-green-50 border border-green-300 text-green-800 rounded-lg p-4 mb-4">
+                  <div className={`border rounded-lg p-4 mb-4 ${notice.startsWith('Failed') || notice.startsWith('You are already') ? 'bg-red-50 border-red-200 text-red-700' : 'bg-green-50 border-green-300 text-green-800'}`}>
                     {notice}
                   </div>
                 )}
 
-                <button
-                  onClick={handleJoin}
-                  disabled={joining || equb.open_slots === 0}
-                  className={`w-full py-3 font-black rounded-lg transition-all ${
-                    equb.open_slots === 0
-                      ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                      : 'bg-[#0d7e4d] text-white hover:bg-[#0a5c38]'
-                  }`}
-                >
-                  {joining
-                    ? (lang === 'en' ? 'Joining...' : 'በመቀላቀል ላይ...')
-                    : equb.open_slots === 0
-                      ? (lang === 'en' ? 'Equb is Full' : 'እቁቡ ሞልቷል')
-                      : (lang === 'en' ? 'Join This Equb' : 'ይህን እቁብ ይቀላቀሉ')}
-                </button>
+                {(() => {
+                  const membership = equb.membership_status;
+                  const isFull = equb.open_slots === 0;
+                  const isPending = membership === 'pending';
+                  const isMember = membership === 'approved';
+                  const isHost = equb.is_host;
+
+                  let label = lang === 'en' ? 'Request to Join' : 'መቀላቀል ጠይቅ';
+                  let disabled = isFull || isPending || isMember || joining;
+                  if (isHost) label = lang === 'en' ? 'You host this Equb' : 'ይህን እቁብ ያስተናግዳሉ';
+                  else if (isMember) label = lang === 'en' ? '✅ You are a member' : '✅ አባል ነዎት';
+                  else if (isPending) label = lang === 'en' ? '⏳ Awaiting admin approval' : '⏳ የአስተዳዳሪ ማጽደቅ በመጠበቅ ላይ';
+                  else if (isFull) label = lang === 'en' ? 'Equb is Full' : 'እቁቡ ሞልቷል';
+
+                  return (
+                    <button
+                      onClick={handleJoin}
+                      disabled={disabled}
+                      className={`w-full py-3 font-black rounded-lg transition-all ${
+                        disabled
+                          ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                          : 'bg-[#0d7e4d] text-white hover:bg-[#0a5c38]'
+                      }`}
+                    >
+                      {joining ? (lang === 'en' ? 'Submitting...' : 'በመላክ ላይ...') : label}
+                    </button>
+                  );
+                })()}
               </div>
             </>
           ) : null}

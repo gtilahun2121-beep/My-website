@@ -1,245 +1,134 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Language, defaultLanguage } from '@/i18n/config';
-import { translations } from '@/i18n/translations';
+import type { EqubGroup, Wallet, WalletTransaction, Notification } from '@qalnet/shared-types';
+import AppShell from '@/app/components/admin/AppShell';
+import DashboardHeader from '@/app/components/dashboard/DashboardHeader';
+import FinancialSummary from '@/app/components/dashboard/FinancialSummary';
+import MyEqubs from '@/app/components/dashboard/MyEqubs';
+import ImportantAlerts from '@/app/components/dashboard/ImportantAlerts';
+import QuickActions from '@/app/components/dashboard/QuickActions';
+import RecentActivity from '@/app/components/dashboard/RecentActivity';
+import UpcomingPayments from '@/app/components/dashboard/UpcomingPayments';
+import HelpCard from '@/app/components/dashboard/HelpCard';
 import { useAuth } from '@/app/context/AuthContext';
-import Header from '@/app/components/Header';
-import Footer from '@/app/components/Footer';
 import api from '@/app/services/api';
-import { useEffect } from 'react';
+
+interface DashboardData {
+  equbs: EqubGroup[];
+  wallet: Wallet | null;
+  transactions: WalletTransaction[];
+  notifications: Notification[];
+  error: string | null;
+}
 
 export default function DashboardPage() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
-  const [lang, setLang] = useState<Language>(defaultLanguage);
-  const t = translations[lang];
+  const [data, setData] = useState<DashboardData>({
+    equbs: [],
+    wallet: null,
+    transactions: [],
+    notifications: [],
+    error: null,
+  });
+  const [loading, setLoading] = useState(true);
 
-  if (!isAuthenticated || !user) {
+  useEffect(() => {
+    if (isLoading) return;
+    if (!isAuthenticated) {
+      router.replace('/');
+      return;
+    }
+
+    let cancelled = false;
+
+    Promise.allSettled([
+      api.equbAPI.getMine(),
+      api.walletAPI.getBalance(),
+      api.walletAPI.getTransactions(),
+      api.notificationsAPI.getNotifications(),
+    ]).then(([equbsRes, walletRes, txnRes, notifRes]) => {
+      if (cancelled) return;
+      setData({
+        equbs:
+          equbsRes.status === 'fulfilled' ? equbsRes.value : [],
+        wallet: walletRes.status === 'fulfilled' ? walletRes.value : null,
+        transactions: txnRes.status === 'fulfilled' ? txnRes.value : [],
+        notifications: notifRes.status === 'fulfilled' ? notifRes.value : [],
+        error:
+          equbsRes.status === 'rejected' &&
+          equbsRes.reason instanceof Error
+            ? equbsRes.reason.message
+            : null,
+      });
+      setLoading(false);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoading, isAuthenticated, router]);
+
+  if (isLoading) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <p className="text-xl font-bold text-gray-800 mb-4">
-            {lang === 'en' ? 'Please log in first' : 'በመጀመሪያ ግባ'}
-          </p>
-          <Link href="/" className="text-blue-600 hover:underline">
-            {lang === 'en' ? 'Go to Home' : 'ወደ ቤት ሂድ'}
-          </Link>
-        </div>
-      </main>
+      <div className="min-h-screen flex items-center justify-center bg-surface">
+        <div className="w-10 h-10 rounded-full border-4 border-brand-200 border-t-brand-600 animate-spin" />
+      </div>
     );
   }
 
-  // Check if user is new (first login)
-  const isNewUser = !user.id || user.id.includes('user_');
+  if (!isAuthenticated || !user) {
+    return null;
+  }
 
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const [transactions, setTransactions] = useState<any[]>([]);
+  const totalSaved =
+    data.transactions
+      .filter((t) => t.direction === 'payment' && (t.status === 'paid' || t.status === 'auto_debited'))
+      .reduce((sum, t) => sum + Number(t.amount), 0) || null;
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      Promise.all([
-        api.notificationsAPI.getNotifications().catch(() => []),
-        api.walletAPI.getTransactions().catch(() => [])
-      ]).then(([notifRes, txnsRes]) => {
-        setNotifications(notifRes || []);
-        setTransactions(txnsRes || []);
-      });
-    }
-  }, [isAuthenticated]);
+  const memberEqubs = data.equbs.filter((e) => e.status === 'active' || e.status === 'open');
+  const nextUpcoming = [...memberEqubs].sort((a, b) => a.contribution_amount - b.contribution_amount)[0];
+  const nextPayment = nextUpcoming
+    ? {
+        amount: nextUpcoming.contribution_amount,
+        label: `${nextUpcoming.name} · Round ${Math.min(nextUpcoming.current_round + 1, nextUpcoming.total_rounds)}`,
+      }
+    : null;
 
-  const recentActivity = transactions.slice(0, 5).map((txn: any) => {
-    const outgoing = txn.direction === 'payment' || txn.direction === 'withdrawal';
-    const icon =
-      txn.direction === 'payment'
-        ? '💳'
-        : txn.direction === 'withdrawal'
-          ? '🏦'
-          : txn.direction === 'payout'
-            ? '🏆'
-            : '💰';
-    const label =
-      txn.direction === 'payment'
-        ? 'Payment Completed'
-        : txn.direction === 'withdrawal'
-          ? 'Withdrawal Completed'
-          : txn.direction === 'payout'
-            ? 'Payout Received'
-            : 'Deposit Completed';
-    return {
-      icon,
-      action: `${lang === 'en' ? label : label}: ${txn.equb_name} (${outgoing ? '-' : '+'}ETB ${Number(txn.amount).toLocaleString('en-US')})`,
-      time: new Date(txn.created_at).toLocaleDateString(lang === 'en' ? 'en-US' : 'am-ET', {
-        month: 'short',
-        day: 'numeric',
-      }),
-    };
-  });
+  const isNewUser = data.equbs.length === 0;
 
   return (
-    <main className="min-h-screen flex flex-col bg-gray-50">
-      <Header
-        lang={lang}
-        onLanguageChange={(newLang) => setLang(newLang)}
-        isAuthenticated={true}
+    <AppShell
+      title="Member Dashboard"
+      subtitle="Manage your Equbs, payments, and wallet"
+      variant="member"
+    >
+      <DashboardHeader firstName={user.firstName} isNewUser={isNewUser} />
+
+      <FinancialSummary
+        balance={data.wallet?.balance ?? null}
+        totalSaved={totalSaved}
+        activeEqubs={memberEqubs.length}
+        nextPayment={nextPayment}
+        loading={loading}
       />
 
-      {/* Main Content */}
-      <div className="flex-grow max-w-7xl mx-auto w-full px-4 py-8">
-        {/* Welcome Section */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-4">
-            <h1 className="text-4xl font-black text-gray-900">
-              {lang === 'en' ? 'Welcome, ' : 'ደህና መጡ, '}{user.firstName} 👋
-            </h1>
-          </div>
-          <p className="text-gray-600">
-            {lang === 'en'
-              ? 'Here\'s your Equb dashboard. Stay updated with your group savings.'
-              : 'ይህ የእርስዎ Equb ড్ಯಾಶ್ಬೋರ್ಡ್ ነው.'}
-          </p>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+          <MyEqubs equbs={data.equbs} loading={loading} error={data.error} />
+          <QuickActions />
         </div>
 
-        {/* Getting Started for New Users */}
-        {isNewUser && (
-          <div className="bg-blue-50 border-l-4 border-blue-600 p-6 rounded-lg mb-8">
-            <h2 className="text-lg font-bold text-blue-900 mb-4">
-              {lang === 'en' ? '🚀 Getting Started' : '🚀 ለመጀመር'}
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-              <div className="bg-white p-4 rounded-lg text-center hover:shadow-lg transition-all cursor-pointer">
-                <p className="text-2xl mb-2">✅</p>
-                <p className="font-bold text-sm text-blue-900">
-                  {lang === 'en' ? 'Fayda Verified' : 'Fayda ታገዙ'}
-                </p>
-              </div>
-              <div className="bg-white p-4 rounded-lg text-center hover:shadow-lg transition-all cursor-pointer">
-                <p className="text-2xl mb-2">📱</p>
-                <p className="font-bold text-sm text-blue-900">
-                  {lang === 'en' ? 'Phone Verified' : 'ስልክ ታገዙ'}
-                </p>
-              </div>
-              <div className="bg-white p-4 rounded-lg text-center hover:shadow-lg transition-all cursor-pointer">
-                <p className="text-2xl mb-2">➕</p>
-                <p className="font-bold text-sm text-blue-900">
-                  {lang === 'en' ? 'Join First Equb' : 'መጀመሪያ Equb ተጠምዱ'}
-                </p>
-              </div>
-              <div className="bg-white p-4 rounded-lg text-center hover:shadow-lg transition-all cursor-pointer">
-                <p className="text-2xl mb-2">💳</p>
-                <p className="font-bold text-sm text-blue-900">
-                  {lang === 'en' ? 'Add Payment Method' : 'ክፍያ ዘዴ ጨምር'}
-                </p>
-              </div>
-              <div className="bg-white p-4 rounded-lg text-center hover:shadow-lg transition-all cursor-pointer">
-                <p className="text-2xl mb-2">📖</p>
-                <p className="font-bold text-sm text-blue-900">
-                  {lang === 'en' ? 'Learn How Equb Works' : 'Equb መሠራት ይወቁ'}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Three Main Sections */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
-            {/* Quick Actions - Question: What should I do next? */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                ⚡ {lang === 'en' ? 'Quick Actions' : 'ፈጣን ድርጊቶች'}
-              </h2>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <button onClick={() => router.push('/discover')} className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 rounded-lg font-bold hover:shadow-lg transition-all text-center">
-                  ➕ {lang === 'en' ? 'Join an Equb' : 'Equb ተጠምዱ'}
-                </button>
-                <button onClick={() => router.push('/create-equb')} className="bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-4 rounded-lg font-bold hover:shadow-lg transition-all text-center">
-                  🆕 {lang === 'en' ? 'Create an Equb' : 'Equb ፍጠር'}
-                </button>
-                <button onClick={() => router.push('/wallet')} className="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-6 py-4 rounded-lg font-bold hover:shadow-lg transition-all text-center">
-                  💳 {lang === 'en' ? 'Make Payment' : 'ክፍያ ክፍል'}
-                </button>
-                <button onClick={() => router.push('/wallet')} className="bg-gradient-to-r from-orange-600 to-orange-700 text-white px-6 py-4 rounded-lg font-bold hover:shadow-lg transition-all text-center">
-                  👥 {lang === 'en' ? 'Invite Friends' : 'ጓደኞቹን ጋብዝ'}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Section 3: Notifications & Activity - Question: What has happened recently? */}
-          <div>
-            {/* Notifications */}
-            <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                🔔 {lang === 'en' ? 'Notifications' : 'ማስታወቂያዎች'}
-              </h2>
-
-              <div className="space-y-3">
-                {notifications.length > 0 ? notifications.map((notif, idx) => (
-                  <div key={idx} className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full flex items-center justify-center shadow-sm shrink-0 text-sm sm:text-base">
-                      {notif.icon || '🔔'}
-                    </div>
-                    <div>
-                      <p className="font-bold text-gray-900 text-sm sm:text-base leading-tight mb-1">{notif.title || notif.message || 'Notification'}</p>
-                      <p className="text-xs sm:text-sm text-gray-500">{notif.time || new Date(notif.created_at || Date.now()).toLocaleDateString()}</p>
-                    </div>
-                  </div>
-                )) : (
-                  <p className="text-gray-500 italic p-4">No notifications.</p>
-                )}
-              </div>
-            </div>
-
-            {/* Recent Activity */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                📊 {lang === 'en' ? 'Recent Activity' : 'ቅርብ ጊዜ ሕይወት'}
-              </h2>
-
-              <div className="space-y-3">
-                {recentActivity.map((activity, idx) => (
-                  <div
-                    key={idx}
-                    className="bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-lg p-3 hover:shadow-md transition-all"
-                  >
-                    <div className="flex items-start gap-3">
-                      <span className="text-2xl">{activity.icon}</span>
-                      <div className="flex-1">
-                        <p className="font-bold text-gray-900 text-sm">{activity.action}</p>
-                        <p className="text-xs text-gray-600">{activity.time}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom Support Section */}
-        <div className="mt-12 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-8 text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            {lang === 'en' ? 'Need Help?' : 'እርዳታ ያስፈልገ?'}
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button className="px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-all">
-              📚 {lang === 'en' ? 'Help Center' : 'ረዳት ማእከል'}
-            </button>
-            <button className="px-6 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition-all">
-              💬 {lang === 'en' ? 'Live Chat' : 'ቀጥታ ውይይት'}
-            </button>
-            <button className="px-6 py-3 bg-purple-600 text-white font-bold rounded-lg hover:bg-purple-700 transition-all">
-              ⚠️ {lang === 'en' ? 'Report Issue' : 'ችግር ሪፖርት'}
-            </button>
-          </div>
+        <div className="space-y-6">
+          <ImportantAlerts notifications={data.notifications} />
+          <UpcomingPayments equbs={data.equbs} loading={loading} />
+          <RecentActivity transactions={data.transactions} loading={loading} />
         </div>
       </div>
 
-      <Footer lang={lang} />
-    </main>
+      <HelpCard />
+    </AppShell>
   );
 }

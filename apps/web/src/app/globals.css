@@ -23,26 +23,32 @@
 
 /* ---------------------------------------------------------------------------
  * QalNet fintech design tokens (per Qalnet_DESIGN_SPEC.md §4–§5)
- * Primary teal · secondary purple · warning orange · success green · danger red
+ * Primary navy · secondary royal blue · warning orange · success green · danger red
  * Usage: bg-brand-600, text-warning-600, bg-surface, rounded-card, etc.
  * ------------------------------------------------------------------------- */
 @theme {
-  --color-brand-50: #f0fdfa;
-  --color-brand-100: #ccfbf1;
-  --color-brand-200: #99f6e4;
-  --color-brand-300: #5eead4;
-  --color-brand-400: #2dd4bf;
-  --color-brand-500: #14b8a6;
-  --color-brand-600: #0d9488;
-  --color-brand-700: #0f766e;
-  --color-brand-800: #115e59;
-  --color-brand-900: #134e4a;
+  --color-brand-50: #f0f4fb;
+  --color-brand-100: #dce5f3;
+  --color-brand-200: #b8c9e7;
+  --color-brand-300: #8aa6d6;
+  --color-brand-400: #5b80c1;
+  --color-brand-500: #3a5fa8;
+  --color-brand-600: #2b4a8c;
+  --color-brand-700: #243e75;
+  --color-brand-800: #203460;
+  --color-brand-900: #182644;
+  --color-brand-950: #0d1526;
 
-  --color-accent-50: #f5f3ff;
-  --color-accent-100: #ede9fe;
-  --color-accent-500: #8b5cf6;
-  --color-accent-600: #7c3aed;
-  --color-accent-700: #6d28d9;
+  --color-accent-50: #eff5ff;
+  --color-accent-100: #dbe9fe;
+  --color-accent-200: #b9d4fb;
+  --color-accent-300: #8fb7f8;
+  --color-accent-400: #5d92f2;
+  --color-accent-500: #3b82f6;
+  --color-accent-600: #2563eb;
+  --color-accent-700: #1e4fd8;
+  --color-accent-800: #1e42ad;
+  --color-accent-900: #1e3b8a;
 
   --color-warning-50: #fffbeb;
   --color-warning-100: #fef3c7;
@@ -62,7 +68,7 @@
   --color-danger-600: #dc2626;
   --color-danger-700: #b91c1c;
 
-  --color-surface: #f6f7f9;
+  --color-surface: #f4f6fb;
   --color-card: #ffffff;
 
   --radius-card: 16px;

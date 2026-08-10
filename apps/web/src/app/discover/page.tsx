@@ -18,7 +18,8 @@ export default function DiscoverPage() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [joiningId, setJoiningId] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [pendingIds, setPendingIds] = useState<string[]>([]);
+  const [notice, setNotice] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const loadEqubs = () => {
     api.equbAPI
@@ -47,11 +48,16 @@ export default function DiscoverPage() {
     setJoiningId(equbId);
     setNotice(null);
     try {
-      await api.equbAPI.join(equbId);
-      setNotice('Successfully joined the Equb!');
+      const result = await api.equbAPI.join(equbId);
+      if (result?.pending) {
+        setPendingIds((prev) => [...prev, equbId]);
+        setNotice({ type: 'success', text: 'Join request submitted — awaiting admin approval.' });
+      } else {
+        setNotice({ type: 'success', text: 'Successfully joined the Equb!' });
+      }
       loadEqubs();
     } catch (err: any) {
-      setNotice(err?.message || 'Failed to join Equb.');
+      setNotice({ type: 'error', text: err?.message || 'Failed to join Equb.' });
     } finally {
       setJoiningId(null);
     }
@@ -118,8 +124,8 @@ export default function DiscoverPage() {
           </div>
 
           {notice && (
-            <div className="bg-green-50 border border-green-300 text-green-800 rounded-lg p-4 mb-6">
-              {notice}
+            <div className={`border rounded-lg p-4 mb-6 ${notice.type === 'success' ? 'bg-green-50 border-green-300 text-green-800' : 'bg-red-50 border-red-200 text-red-700'}`}>
+              {notice.text}
             </div>
           )}
 
@@ -138,14 +144,14 @@ export default function DiscoverPage() {
               </h3>
               <p className="text-gray-600 mb-6">
                 {lang === 'en'
-                  ? 'Check back later or create your own Equb circle.'
-                  : 'በኋላ ይሞክሩ ወይም የራስዎን እቁብ ይፍጠሩ።'}
+                  ? 'Check back later or request an Equb from the admin.'
+                  : 'በኋላ ይሞክሩ ወይም እቁብ እንዲፈጠር ከአስተዳዳሪ ይጠይቁ።'}
               </p>
               <Link
                 href="/create-equb"
                 className="inline-block px-6 py-3 bg-[#0d7e4d] text-white font-bold rounded-lg hover:bg-[#0a5c38] transition-all"
               >
-                {lang === 'en' ? 'Create an Equb' : 'እቁብ ይፍጠሩ'}
+                {lang === 'en' ? 'Request an Equb' : 'እቁብ ይጠይቁ'}
               </Link>
             </div>
           ) : (
@@ -185,19 +191,21 @@ export default function DiscoverPage() {
                     </div>
                   </div>
                   <button
-                    disabled={equb.open_slots === 0 || joiningId === equb.id}
+                    disabled={equb.open_slots === 0 || joiningId === equb.id || pendingIds.includes(equb.id)}
                     onClick={() => handleJoin(equb.id)}
                     className={`w-full font-bold py-2 rounded-lg transition-all ${
-                      equb.open_slots === 0
+                      equb.open_slots === 0 || pendingIds.includes(equb.id)
                         ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
                         : 'bg-[#0d7e4d] text-white hover:bg-[#0a5c38]'
                     }`}
                   >
                     {joiningId === equb.id
-                      ? (lang === 'en' ? 'Joining...' : 'በመቀላቀል ላይ...')
-                      : equb.open_slots === 0
-                        ? (lang === 'en' ? 'Full' : 'ሙሉ')
-                        : (lang === 'en' ? 'Join Now' : 'ተቀላቀል')}
+                      ? (lang === 'en' ? 'Submitting...' : 'በመላክ ላይ...')
+                      : pendingIds.includes(equb.id)
+                        ? (lang === 'en' ? '⏳ Awaiting Approval' : '⏳ ጸድቆ በመጠበቅ ላይ')
+                        : equb.open_slots === 0
+                          ? (lang === 'en' ? 'Full' : 'ሙሉ')
+                          : (lang === 'en' ? 'Request to Join' : 'መቀላቀል ጠይቅ')}
                   </button>
                 </div>
               ))}

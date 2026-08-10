@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { adminAPI, APIError, AdminCustomerListResponse, ListUsersParams } from '@/app/services/api';
+import { adminAPI, APIError, AdminCustomer, AdminCustomerListResponse, ListUsersParams } from '@/app/services/api';
 import AppShell from '@/app/components/admin/AppShell';
 import KpiCard from '@/app/components/admin/KpiCard';
 import { StatusBadge, roleBadge, activeBadge, BadgeTone } from '@/app/components/admin/StatusBadge';
@@ -50,10 +50,161 @@ const STATUS_OPTIONS: { value: string; label: string }[] = [
   { value: 'inactive', label: 'Inactive' },
 ];
 
+function ResetPinModal({
+  customer,
+  onClose,
+  onSuccess,
+}: {
+  customer: AdminCustomer | null;
+  onClose: () => void;
+  onSuccess: (customer: AdminCustomer) => void;
+}) {
+  const [pin, setPin] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
+
+  if (!customer) return null;
+
+  const fullName = `${customer.first_name} ${customer.last_name}`.trim() || customer.phone;
+
+  const close = () => {
+    if (busy) return;
+    setPin('');
+    setConfirm('');
+    setError(null);
+    setDone(false);
+    onClose();
+  };
+
+  const submit = async () => {
+    setError(null);
+    if (!/^\d{4}$/.test(pin)) {
+      setError('Enter a new 4-digit PIN.');
+      return;
+    }
+    if (pin !== confirm) {
+      setError('PINs do not match.');
+      return;
+    }
+    setBusy(true);
+    try {
+      await adminAPI.resetUserPin(customer.id, pin);
+      setDone(true);
+      setTimeout(() => onSuccess(customer), 900);
+    } catch (err) {
+      const message =
+        err instanceof APIError
+          ? err.data?.message || err.message
+          : err instanceof Error
+            ? err.message
+            : 'Failed to reset the PIN.';
+      setError(message);
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div className="w-full max-w-sm bg-card rounded-card border border-slate-200 shadow-xl p-6">
+        <h2 className="text-lg font-extrabold text-slate-900">Reset PIN</h2>
+        <p className="mt-1 text-sm text-slate-500">
+          Set a new 4-digit PIN for <span className="font-bold text-slate-700">{fullName}</span>. Their account will be
+          unlocked immediately.
+        </p>
+
+        <div className="mt-4 space-y-3">
+          <div>
+            <label
+              className="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1"
+              htmlFor="reset-pin"
+            >
+              New PIN
+            </label>
+            <input
+              id="reset-pin"
+              type="password"
+              inputMode="numeric"
+              autoComplete="new-password"
+              maxLength={4}
+              value={pin}
+              onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+              placeholder="••••"
+              className="w-full py-2.5 px-3 rounded-lg bg-card border border-slate-200 text-sm text-center tracking-widest placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500"
+            />
+          </div>
+          <div>
+            <label
+              className="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1"
+              htmlFor="confirm-pin"
+            >
+              Confirm new PIN
+            </label>
+            <input
+              id="confirm-pin"
+              type="password"
+              inputMode="numeric"
+              autoComplete="new-password"
+              maxLength={4}
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value.replace(/\D/g, '').slice(0, 4))}
+              placeholder="••••"
+              className="w-full py-2.5 px-3 rounded-lg bg-card border border-slate-200 text-sm text-center tracking-widest placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500"
+            />
+          </div>
+        </div>
+
+        {error && <p className="mt-3 text-sm font-semibold text-rose-600">{error}</p>}
+        {done && <p className="mt-3 text-sm font-semibold text-emerald-600">PIN updated and account unlocked.</p>}
+
+        <div className="mt-5 flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={close}
+            disabled={busy}
+            className="px-4 py-2 rounded-lg border border-slate-200 text-sm font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-40 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={() => void submit()}
+            disabled={busy || done}
+            className="px-4 py-2 rounded-lg bg-brand-600 text-sm font-bold text-white hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {busy ? 'Resetting…' : 'Reset PIN'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function RegisteredCustomersPage() {
   const [data, setData] = useState<AdminCustomerListResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [resetTarget, setResetTarget] = useState<AdminCustomer | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const noticeRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showNotice = (msg: string) => {
+    setNotice(msg);
+    if (noticeRef.current) clearTimeout(noticeRef.current);
+    noticeRef.current = setTimeout(() => setNotice(null), 4000);
+  };
+
+  const handleResetSuccess = (customer: AdminCustomer) => {
+    setResetTarget(null);
+    const name = `${customer.first_name} ${customer.last_name}`.trim() || customer.phone;
+    showNotice(`Reset PIN for ${name} was successful. Their account has been unlocked.`);
+  };
 
   const [search, setSearch] = useState('');
   const [role, setRole] = useState('');
@@ -206,6 +357,16 @@ export default function RegisteredCustomersPage() {
         </div>
       </div>
 
+      {/* ── Success / notice banner ─────────────────────────────────────── */}
+      {notice && (
+        <div
+          role="status"
+          className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700"
+        >
+          {notice}
+        </div>
+      )}
+
       {/* ── Content ───────────────────────────────────────────────────────── */}
       {loading && !data ? (
         <SkeletonTable rows={8} columns={5} />
@@ -241,6 +402,7 @@ export default function RegisteredCustomersPage() {
                     <th className="px-5 py-3 font-bold">Role</th>
                     <th className="px-5 py-3 font-bold">Status</th>
                     <th className="px-5 py-3 font-bold text-right">Registered</th>
+                    <th className="px-5 py-3 font-bold text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -284,6 +446,15 @@ export default function RegisteredCustomersPage() {
                         <td className="px-5 py-3.5 text-slate-500 text-right whitespace-nowrap">
                           {formatDate(customer.created_at)}
                         </td>
+                        <td className="px-5 py-3.5 text-right whitespace-nowrap">
+                          <button
+                            type="button"
+                            onClick={() => setResetTarget(customer)}
+                            className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-600 hover:bg-brand-50 hover:text-brand-700 hover:border-brand-200 transition-colors"
+                          >
+                            Reset PIN
+                          </button>
+                        </td>
                       </tr>
                     );
                   })}
@@ -325,6 +496,8 @@ export default function RegisteredCustomersPage() {
           </div>
         </>
       )}
+
+      <ResetPinModal customer={resetTarget} onClose={() => setResetTarget(null)} onSuccess={handleResetSuccess} />
     </AppShell>
   );
 }

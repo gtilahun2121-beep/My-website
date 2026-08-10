@@ -11,11 +11,13 @@ import api from '@/app/services/api';
 import type { EqubGroup } from '@qalnet/shared-types';
 
 export default function MyEqubsPage() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [lang, setLang] = useState<Language>(defaultLanguage);
   const [equbs, setEqubs] = useState<EqubGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const isAdmin = user?.role === 'admin';
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -77,7 +79,7 @@ export default function MyEqubsPage() {
                   href="/create-equb"
                   className="px-6 py-3 bg-gray-200 text-gray-800 font-bold rounded-lg hover:bg-gray-300 transition-all"
                 >
-                  {lang === 'en' ? 'Create an Equb' : 'እቁብ ይፍጠሩ'}
+                  {isAdmin ? (lang === 'en' ? 'Create an Equb' : 'እቁብ ይፍጠሩ') : (lang === 'en' ? 'Request an Equb' : 'እቁብ ይጠይቁ')}
                 </Link>
               </div>
             </div>
@@ -90,11 +92,18 @@ export default function MyEqubsPage() {
                 >
                   <div className="flex justify-between items-start mb-4">
                     <h3 className="text-xl font-bold text-gray-900">{equb.name}</h3>
-                    {equb.is_host && (
-                      <span className="px-2 py-1 bg-[#d4af37]/20 text-[#8a6d1d] text-xs font-bold rounded-full">
-                        {lang === 'en' ? 'Host' : 'አዘጋጅ'}
-                      </span>
-                    )}
+                    <div className="flex gap-2">
+                      {equb.is_host && (
+                        <span className="px-2 py-1 bg-[#d4af37]/20 text-[#8a6d1d] text-xs font-bold rounded-full">
+                          {lang === 'en' ? 'Host' : 'አዘጋጅ'}
+                        </span>
+                      )}
+                      {equb.membership_status === 'pending' && (
+                        <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-bold rounded-full">
+                          {lang === 'en' ? '⏳ Pending approval' : '⏳ ጸድቆ በመጠበቅ ላይ'}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="space-y-2 text-sm mb-4">
                     <div className="flex justify-between">

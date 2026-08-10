@@ -11,7 +11,7 @@ import Footer from '@/app/components/Footer';
 import api from '@/app/services/api';
 
 export default function CreateEqubPage() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const router = useRouter();
   const [lang, setLang] = useState<Language>(defaultLanguage);
   const [loading, setLoading] = useState(false);
@@ -25,6 +25,7 @@ export default function CreateEqubPage() {
     cycle_days: '30',
   });
 
+  const isAdmin = user?.role === 'admin';
   const t = translations[lang];
 
   const set = (field: string, value: string) =>
@@ -42,19 +43,27 @@ export default function CreateEqubPage() {
     if (!totalRounds || totalRounds <= 0) return setError('Enter a valid number of rounds');
     if (!cycleDays || cycleDays < 3) return setError('Cycle must be at least 3 days');
 
+    const payload = {
+      name,
+      description: form.description.trim() || undefined,
+      contribution_amount: contribution,
+      total_rounds: totalRounds,
+      cycle_days: cycleDays,
+    };
+
     setLoading(true);
     try {
-      await api.equbAPI.create({
-        name,
-        description: form.description.trim() || undefined,
-        contribution_amount: contribution,
-        total_rounds: totalRounds,
-        cycle_days: cycleDays,
-      });
-      setSuccess(true);
-      setTimeout(() => router.push('/my-equbs'), 1500);
+      if (isAdmin) {
+        await api.equbAPI.create(payload);
+        setSuccess(true);
+        setTimeout(() => router.push('/my-equbs'), 1500);
+      } else {
+        await api.equbAPI.requestCreate(payload);
+        setSuccess(true);
+        setTimeout(() => router.push('/my-equbs'), 1500);
+      }
     } catch (err: any) {
-      setError(err?.message || 'Failed to create Equb');
+      setError(err?.message || 'Failed to submit request');
     } finally {
       setLoading(false);
     }
@@ -67,7 +76,7 @@ export default function CreateEqubPage() {
         <div className="flex-grow flex items-center justify-center">
           <div className="text-center">
             <p className="text-xl font-bold text-gray-800 mb-4">
-              {lang === 'en' ? 'Please log in to create an Equb' : 'እቁብ ለመፍጠር ይግቡ'}
+              {lang === 'en' ? 'Please log in to continue' : 'ለመቀጠል ይግቡ'}
             </p>
             <Link href="/" className="text-blue-600 hover:underline">
               {lang === 'en' ? 'Go to Home' : 'ወደ ቤት ሂድ'}
@@ -85,23 +94,42 @@ export default function CreateEqubPage() {
 
       <div className="flex-grow py-8 px-4">
         <div className="max-w-2xl mx-auto">
-          <h1 className="text-4xl font-black text-gray-900 mb-2">
-            {lang === 'en' ? 'Create an Equb 🆕' : 'እቁብ ይፍጠሩ 🆕'}
-          </h1>
-          <p className="text-gray-600 mb-8">
-            {lang === 'en'
-              ? 'Launch your own savings circle and invite members to join'
-              : 'የራስዎን የቁጠባ ክበብ ይመስርቱ እና አባላትን ይጋብዙ'}
-          </p>
+          {isAdmin ? (
+            <h1 className="text-4xl font-black text-gray-900 mb-2">
+              {lang === 'en' ? 'Create an Equb 🆕' : 'እቁብ ይፍጠሩ 🆕'}
+            </h1>
+          ) : (
+            <h1 className="text-4xl font-black text-gray-900 mb-2">
+              {lang === 'en' ? 'Request an Equb 🙋' : 'እቁብ ይጠይቁ 🙋'}
+            </h1>
+          )}
+
+          {isAdmin ? (
+            <p className="text-gray-600 mb-8">
+              {lang === 'en'
+                ? 'Launch an Equb circle on the platform. You will host it and approve its members.'
+                : 'በመድረኩ ላይ የእቁብ ክበብ ይፍጠሩ። እርስዎ ያስተናግዱታል እና አባላቱን ያጸድቃሉ።'}
+            </p>
+          ) : (
+            <p className="text-gray-600 mb-8">
+              {lang === 'en'
+                ? 'Only admins create Equbs. Send your preferred Equb details below and the admin will review and approve it for you.'
+                : 'እቁብ የሚፈጥሩት አስተዳዳሪዎች ብቻ ናቸው። የሚፈልጉትን የእቁብ ዝርዝር ከታች ይላኩ፣ አስተዳዳሪው ይመረምራል እና ያጸድቅልዎታል።'}
+            </p>
+          )}
 
           {success ? (
             <div className="bg-green-50 border-2 border-green-400 rounded-xl p-8 text-center">
               <p className="text-5xl mb-4">✅</p>
               <h3 className="text-2xl font-black text-green-800 mb-2">
-                {lang === 'en' ? 'Equb Created!' : 'እቁብ ተፈጥሯል!'}
+                {isAdmin
+                  ? (lang === 'en' ? 'Equb Created!' : 'እቁብ ተፈጥሯል!')
+                  : (lang === 'en' ? 'Request Submitted!' : 'ጥያቄ ቀርቧል!')}
               </h3>
               <p className="text-green-700">
-                {lang === 'en' ? 'Redirecting to your Equbs...' : 'ወደ እቁቦችዎ በመሄድ ላይ...'}
+                {isAdmin
+                  ? (lang === 'en' ? 'Redirecting to your Equbs...' : 'ወደ እቁቦችዎ በመሄድ ላይ...')
+                  : (lang === 'en' ? 'The admin will review your request shortly. Redirecting...' : 'አስተዳዳሪው ጥያቄዎን በቅርቡ ይመለከታል። በመሄድ ላይ...')}
               </p>
             </div>
           ) : (
@@ -181,8 +209,10 @@ export default function CreateEqubPage() {
                   className="w-full py-3 bg-gradient-to-r from-[#0d7e4d] to-[#0a5c38] text-white font-black rounded-lg hover:shadow-lg transition-all disabled:opacity-50"
                 >
                   {loading
-                    ? (lang === 'en' ? 'Creating...' : 'በመፍጠር ላይ...')
-                    : (lang === 'en' ? '🚀 Create Equb' : '🚀 እቁብ ይፍጠሩ')}
+                    ? (lang === 'en' ? 'Submitting...' : 'በመላክ ላይ...')
+                    : isAdmin
+                      ? (lang === 'en' ? '🚀 Create Equb' : '🚀 እቁብ ይፍጠሩ')
+                      : (lang === 'en' ? '📨 Submit Request to Admin' : '📨 ጥያቄ ለአስተዳዳሪ ይላኩ')}
                 </button>
               </div>
             </div>

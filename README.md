@@ -7,11 +7,18 @@ Digital Equb Platform — unified monorepo powered by [Turborepo](https://turbo.
 ```
 qalnet/
 ├── apps/
-│   ├── backend/        # NestJS API (port 3000)
-│   └── web/            # Next.js frontend (port 3001)
+│   ├── backend/          # NestJS API (port 3000)
+│   │   ├── src/          #   app.module, main, common/, config/, modules/
+│   │   ├── database/     #   schema.sql + migrations/
+│   │   └── scripts/      #   seed-admin.cjs
+│   └── web/              # Next.js frontend (port 3001)
+│       ├── src/app/      #   App Router pages, components/, services/, i18n/
+│       └── public/       #   static assets
 ├── packages/
-│   ├── shared-types/   # Shared TypeScript types (DTOs, interfaces)
-│   └── typescript-config/  # Shared tsconfig bases
+│   ├── shared-types/     #   Shared TypeScript types (DTOs, interfaces)
+│   └── typescript-config/    #   Shared tsconfig bases
+├── scripts/              # Dev/ops utilities (shared)
+│   └── db/               #   Database diagnostics + archive
 ├── turbo.json
 └── package.json
 ```
@@ -41,14 +48,11 @@ npm run dev --filter=@qalnet/backend
 npm run dev --filter=@qalnet/web
 ```
 
-### Build everything
+### Build / test / type-check
 ```bash
 npm run build
-```
-
-### Run tests
-```bash
 npm run test
+npm run type-check
 ```
 
 ## Apps
@@ -77,17 +81,19 @@ copy apps\backend\.env.example apps\backend\.env
 copy apps\web\.env.example apps\web\.env.local
 ```
 
-## Migrating existing source files
+The backend also reads the monorepo root `.env` as a fallback for shared
+variables (see `apps/backend/src/main.ts`). Do not commit real secrets.
 
-The existing source code still lives in the root `src/` and `QAL/` directories.
-Move them to their respective app folders:
+## Development Scripts
 
-```bash
-# Backend source → apps/backend/src/
-# Backend database → apps/backend/database/
+Root-level utilities live in `scripts/`:
 
-# Frontend source → apps/web/src/
-# Frontend public → apps/web/public/
-```
+| Script | Purpose |
+|--------|---------|
+| `start-ngrok.ps1` | Open an ngrok tunnel to the backend (port 3000) |
+| `update-keys.cjs` | Regenerate RSA JWT key pair in the root `.env` |
+| `test-reg.cjs` | Smoke-test `POST /api/v1/auth/register` locally |
+| `db/dbcheck.cjs` | Check DB connectivity, tables, and record counts |
+| `db/archive/` | Archived one-off diagnostics (check-rls, db-state) |
 
-See `MIGRATION.md` for the full step-by-step guide.
+Run them from the repo root, e.g. `node scripts/db/dbcheck.cjs`.

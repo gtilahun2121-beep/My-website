@@ -40,6 +40,7 @@ import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { CheckAvailabilityDto } from './dto/check-availability.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { TwoFactorCodeDto, TwoFactorLoginDto } from './dto/two-factor.dto';
@@ -91,6 +92,20 @@ export class AuthController {
             refresh_token: tokens.refresh_token, // also in body for non-browser clients
             token_type: 'Bearer',
         };
+    }
+
+    // ── Availability pre-check ────────────────────────────────────────────────
+
+    @Post('check-availability')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Check if an email and/or phone is already registered' })
+    @ApiResponse({ status: 200, description: 'Availability result.' })
+    @ApiResponse({ status: 400, description: 'Neither email nor phone provided.' })
+    async checkAvailability(
+        @Body(new ValidationPipe({ whitelist: true }))
+        dto: CheckAvailabilityDto,
+    ) {
+        return this.authService.checkAvailability(dto);
     }
 
     // ── Login ─────────────────────────────────────────────────────────────────
