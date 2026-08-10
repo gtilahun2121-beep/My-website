@@ -1,0 +1,51 @@
+/**
+ * admin.controller.ts
+ *
+ * Admin-only endpoints under /api/v1/admin.
+ * Every route requires a valid JWT whose `role` claim is `admin`.
+ */
+
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+
+import { UsersService } from './users.service';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { JwtPayload } from '../auth/auth.service';
+
+@ApiTags('Admin')
+@Controller('api/v1/admin')
+@UseGuards(JwtAuthGuard)
+export class AdminController {
+    constructor(private readonly usersService: UsersService) {}
+
+    @Get('users')
+    @UseGuards(RolesGuard)
+    @Roles('admin')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'List registered customers (paged, searchable, filterable)' })
+    @ApiResponse({ status: 200, description: 'Paged customer list + summary KPIs.' })
+    @ApiResponse({ status: 403, description: 'Forbidden — requires role admin.' })
+    async listUsers(
+        @CurrentUser() user: JwtPayload,
+        @Query('page') page?: string,
+        @Query('limit') limit?: string,
+        @Query('search') search?: string,
+        @Query('role') role?: string,
+        @Query('status') status?: string,
+    ) {
+        const parsedPage = Math.max(1, parseInt(page ?? '1', 10) || 1);
+        const parsedLimit = Math.min(100, Math.max(1, parseInt(limit ?? '20', 10) || 20));
+
+        return this.usersService.listCustomers({
+            adminId: user.sub,
+            page: parsedPage,
+            limit: parsedLimit,
+            search,
+            role,
+            status: status === 'active' || status === 'inactive' ? status : undefined,
+        });
+    }
+}

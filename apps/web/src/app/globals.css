@@ -21,6 +21,54 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* ---------------------------------------------------------------------------
+ * QalNet fintech design tokens (per Qalnet_DESIGN_SPEC.md §4–§5)
+ * Primary teal · secondary purple · warning orange · success green · danger red
+ * Usage: bg-brand-600, text-warning-600, bg-surface, rounded-card, etc.
+ * ------------------------------------------------------------------------- */
+@theme {
+  --color-brand-50: #f0fdfa;
+  --color-brand-100: #ccfbf1;
+  --color-brand-200: #99f6e4;
+  --color-brand-300: #5eead4;
+  --color-brand-400: #2dd4bf;
+  --color-brand-500: #14b8a6;
+  --color-brand-600: #0d9488;
+  --color-brand-700: #0f766e;
+  --color-brand-800: #115e59;
+  --color-brand-900: #134e4a;
+
+  --color-accent-50: #f5f3ff;
+  --color-accent-100: #ede9fe;
+  --color-accent-500: #8b5cf6;
+  --color-accent-600: #7c3aed;
+  --color-accent-700: #6d28d9;
+
+  --color-warning-50: #fffbeb;
+  --color-warning-100: #fef3c7;
+  --color-warning-500: #f59e0b;
+  --color-warning-600: #d97706;
+  --color-warning-700: #b45309;
+
+  --color-success-50: #f0fdf4;
+  --color-success-100: #dcfce7;
+  --color-success-500: #22c55e;
+  --color-success-600: #16a34a;
+  --color-success-700: #15803d;
+
+  --color-danger-50: #fef2f2;
+  --color-danger-100: #fee2e2;
+  --color-danger-500: #ef4444;
+  --color-danger-600: #dc2626;
+  --color-danger-700: #b91c1c;
+
+  --color-surface: #f6f7f9;
+  --color-card: #ffffff;
+
+  --radius-card: 16px;
+  --radius-control: 10px;
+}
+
 body {
   background: linear-gradient(135deg, #faf9f7 0%, #f0ede8 100%);
   color: var(--foreground);
