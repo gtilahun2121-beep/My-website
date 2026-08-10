@@ -31,6 +31,7 @@ import type {
   FileTicketRequest,
   FlagCrbRequest,
   EqubGroup,
+  EqubCreationRequest,
   Wallet,
   WalletTransaction,
 } from '@qalnet/shared-types';
@@ -454,6 +455,52 @@ export const adminAPI = {
       method: 'GET',
       params,
     }),
+
+  /**
+   * GET /api/v1/admin/equb-requests
+   * Lists pending Equb creation requests submitted by members (admin only).
+   */
+  listEqubRequests: () =>
+    request<EqubCreationRequest[]>('/admin/equb-requests', { method: 'GET' }),
+
+  /**
+   * POST /api/v1/admin/equb-requests/:id/approve
+   * Approves a member's creation request — creates the Equb (admin hosts it)
+   * and auto-approves the requesting member. Admin only.
+   */
+  approveEqubRequest: (requestId: string) =>
+    request<any>(`/admin/equb-requests/${requestId}/approve`, { method: 'POST' }),
+
+  /**
+   * POST /api/v1/admin/equb-requests/:id/reject
+   * Rejects a member's creation request with an optional note. Admin only.
+   */
+  rejectEqubRequest: (requestId: string, admin_notes?: string) =>
+    request<any>(`/admin/equb-requests/${requestId}/reject`, {
+      method: 'POST',
+      body: JSON.stringify({ admin_notes: admin_notes ?? '' }),
+    }),
+
+  /**
+   * GET /api/v1/admin/memberships/pending
+   * Lists pending join requests from members awaiting approval. Admin only.
+   */
+  listPendingMemberships: () =>
+    request<any[]>('/admin/memberships/pending', { method: 'GET' }),
+
+  /**
+   * POST /api/v1/admin/memberships/:id/approve
+   * Approves a member's join request. Admin only.
+   */
+  approveMembership: (membershipId: string) =>
+    request<any>(`/admin/memberships/${membershipId}/approve`, { method: 'POST' }),
+
+  /**
+   * POST /api/v1/admin/memberships/:id/reject
+   * Rejects a member's join request. Admin only.
+   */
+  rejectMembership: (membershipId: string) =>
+    request<any>(`/admin/memberships/${membershipId}/reject`, { method: 'POST' }),
 };
 
 // ---------------------------------------------------------------------------
@@ -468,11 +515,43 @@ export const equbAPI = {
 
   getMine: () => request<EqubGroup[]>('/equbs/mine', { method: 'GET' }),
 
+  /**
+   * POST /api/v1/equbs
+   * Direct creation — ADMIN ONLY (enforced by RolesGuard on the backend).
+   */
   create: (data: any) =>
     request<any>('/equbs', { method: 'POST', body: JSON.stringify(data) }),
 
+  /**
+   * POST /api/v1/equbs/:id/join
+   * Requests to join an Equb. For non-admin members the membership stays
+   * 'pending' until an admin approves it.
+   */
   join: (equbId: string) =>
     request<any>(`/equbs/${equbId}/join`, { method: 'POST' }),
+
+  /**
+   * POST /api/v1/equbs/requests
+   * A member asks the admin to create the Equb they want.
+   */
+  requestCreate: (data: {
+    name: string;
+    description?: string;
+    contribution_amount: number;
+    total_rounds: number;
+    cycle_days: number;
+  }) =>
+    request<EqubCreationRequest>('/equbs/requests', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  /**
+   * GET /api/v1/equbs/requests/mine
+   * Lists the current member's Equb creation requests and their status.
+   */
+  getMyRequests: () =>
+    request<EqubCreationRequest[]>('/equbs/requests/mine', { method: 'GET' }),
 };
 
 // ---------------------------------------------------------------------------

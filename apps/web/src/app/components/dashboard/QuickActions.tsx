@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { useAuth } from '@/app/context/AuthContext';
 
 interface Action {
   label: string;
@@ -54,6 +57,30 @@ const ACTIONS: Action[] = [
 ];
 
 export default function QuickActions() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
+
+  const actions: Action[] = isAdmin
+    ? [
+        ...ACTIONS.filter((a) => a.label !== 'Create an Equb'),
+        {
+          label: 'Create an Equb',
+          description: 'Launch a savings circle for members',
+          href: '/create-equb',
+          icon: icon('M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Zm0 0v5h5M12 11v5m-2.5-2.5h5'),
+          iconBg: 'bg-accent-100 text-accent-600',
+        },
+      ]
+    : ACTIONS.map((a) =>
+        a.label === 'Create an Equb'
+          ? {
+              ...a,
+              label: 'Request an Equb',
+              description: 'Ask the admin to create a savings circle',
+            }
+          : a,
+      );
+
   return (
     <section className="bg-card rounded-card border border-slate-200">
       <div className="px-5 pt-5 pb-3">
@@ -62,7 +89,7 @@ export default function QuickActions() {
       </div>
 
       <div className="px-5 pb-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {ACTIONS.map((action) => (
+        {actions.map((action) => (
           <Link
             key={action.label}
             href={action.href}

@@ -54,7 +54,7 @@ const MEMBER_NAV: NavItem[] = [
     icon: icon('M3 10h18M7 15h2m4 0h2M5 6h14a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1Z'),
   },
   {
-    label: 'Create an Equb',
+    label: 'Request an Equb',
     href: '/create-equb',
     icon: icon('M12 5v14m-7-7h14'),
   },
@@ -70,6 +70,11 @@ const ADMIN_NAV: NavItem[] = [
     label: 'Members',
     href: '/admin/customers',
     icon: icon('M16 11a3 3 0 1 0-6 0m6 0a3 3 0 1 1-6 0m6 0h.01M10 11h-.01M12 14c-3.87 0-7 1.57-7 3.5V21h14v-3.5C19 15.57 15.87 14 12 14Z'),
+  },
+  {
+    label: 'Approvals',
+    href: '/admin/approvals',
+    icon: icon('M9 12l2 2 4-4m5.6 2A7.5 7.5 0 1 1 6.4 6.4 7.5 7.5 0 0 1 20.6 10Z'),
   },
   {
     label: 'Payments',
