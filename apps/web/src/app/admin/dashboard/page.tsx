@@ -1,490 +1,590 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { AdminUser, AdminRole, roleDisplay, Member, KYCDocument, Dispute, FinancialRecord } from '@/app/types/admin';
-import Header from '@/app/components/Header';
-import Footer from '@/app/components/Footer';
-import { Language, defaultLanguage } from '@/i18n/config';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import { adminAPI, APIError, AdminStats, AdminRecentTransaction, AdminTopEqub } from '@/app/services/api';
+import AppShell from '@/app/components/admin/AppShell';
+import KpiCard from '@/app/components/admin/KpiCard';
+import { StatusBadge, BadgeTone } from '@/app/components/admin/StatusBadge';
+import { AreaChart, DonutChart } from '@/app/components/admin/DashboardCharts';
+import { ErrorState } from '@/app/components/admin/States';
 
-export default function AdminDashboard() {
-  const router = useRouter();
-  const [lang, setLang] = useState<Language>(defaultLanguage);
-  const [admin, setAdmin] = useState<AdminUser | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'members' | 'kyc' | 'disputes' | 'finance' | 'admin'>('overview');
+const stroke = {
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeWidth: 1.8,
+  strokeLinecap: 'round',
+  strokeLinejoin: 'round',
+} as const;
+
+const kpiIcon = (path: string) => (
+  <svg viewBox="0 0 24 24" className="w-5 h-5" {...stroke}>
+    <path d={path} />
+  </svg>
+);
+
+function money(n: number | string) {
+  return Number(n).toLocaleString('en-US', { maximumFractionDigits: 2 });
+}
+
+function formatDateTime(iso: string) {
+  try {
+    return new Date(iso).toLocaleString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  } catch {
+    return '—';
+  }
+}
+
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return 'Good morning';
+  if (h < 18) return 'Good afternoon';
+  return 'Good evening';
+}
+
+const STATUS_TONE: Record<string, BadgeTone> = {
+  paid: 'success',
+  auto_debited: 'success',
+  pending: 'warning',
+  failed: 'danger',
+};
+
+const EQUB_TONE: Record<string, BadgeTone> = {
+  open: 'info',
+  active: 'success',
+  completed: 'neutral',
+  cancelled: 'danger',
+};
+
+function statusLabel(status: string) {
+  return status.replace('_', ' ').toUpperCase();
+}
+
+export default function AdminDashboardPage() {
+  const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Sample data for demo
-  const [members] = useState<Member[]>([
-    {
-      id: '1',
-      phoneNumber: '+251911223344',
-      fullName: 'Aisha Mohammed',
-      pin: '1234',
-      faydaNumber: '12345678',
-      email: 'aisha@example.com',
-      status: 'active',
-      kycStatus: 'approved',
-      registeredAt: new Date().toISOString(),
-    },
-    {
-      id: '2',
-      phoneNumber: '+251922334455',
-      fullName: 'Tigst Kebede',
-      pin: '5678',
-      faydaNumber: '87654321',
-      email: 'tigst@example.com',
-      status: 'active',
-      kycStatus: 'pending',
-      registeredAt: new Date().toISOString(),
-    },
-  ]);
-
-  const [kycDocs] = useState<KYCDocument[]>([
-    {
-      id: 'kyc1',
-      memberId: '2',
-      memberName: 'Tigst Kebede',
-      memberPhone: '+251922334455',
-      documentType: 'id_photo',
-      documentUrl: '/mock-id.jpg',
-      submittedAt: new Date().toISOString(),
-      status: 'pending',
-    },
-  ]);
-
-  const [disputes] = useState<Dispute[]>([
-    {
-      id: 'disp1',
-      complainantId: '1',
-      complainantName: 'Aisha Mohammed',
-      respondentId: '2',
-      respondentName: 'Tigst Kebede',
-      description: 'Payment not received for round 2',
-      status: 'open',
-      priority: 'high',
-      createdAt: new Date().toISOString(),
-    },
-  ]);
-
-  const [records] = useState<FinancialRecord[]>([
-    {
-      id: 'fin1',
-      memberId: '1',
-      memberName: 'Aisha Mohammed',
-      type: 'payment',
-      amount: 500,
-      currency: 'ETB',
-      description: 'Equb round payment',
-      status: 'completed',
-      date: new Date().toISOString(),
-    },
-  ]);
+  const load = useCallback(async (showSpinner = false) => {
+    if (showSpinner) setLoading(true);
+    setError(null);
+    try {
+      const res = await adminAPI.getStats();
+      setStats(res);
+    } catch (err) {
+      const message =
+        err instanceof APIError
+          ? err.data?.message || err.message
+          : err instanceof Error
+            ? err.message
+            : 'Failed to load dashboard stats.';
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    // Check if admin is logged in
-    const adminToken = localStorage.getItem('qalnet_admin_token');
-    const adminRole = localStorage.getItem('qalnet_admin_role');
+    const t = setTimeout(() => void load(), 0);
+    return () => clearTimeout(t);
+  }, [load]);
 
-    if (!adminToken || !adminRole) {
-      router.push('/auth');
-      return;
-    }
+  const trend = useMemo(
+    () =>
+      (stats?.trend ?? []).map((p) => ({
+        label: new Date(p.date + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }),
+        value: p.count,
+      })),
+    [stats],
+  );
 
-    // Load admin data
-    const adminData = localStorage.getItem(`qalnet_admin_${adminToken}`);
-    if (adminData) {
-      const parsedAdmin = JSON.parse(adminData);
-      setAdmin(parsedAdmin);
-    } else {
-      router.push('/auth');
-    }
+  const paymentSegments = useMemo(() => {
+    const k = stats?.kpis;
+    return [
+      { label: 'Successful', value: k?.successful_payments ?? 0, color: '#16a34a' },
+      { label: 'Pending', value: k?.pending_payments ?? 0, color: '#f59e0b' },
+      { label: 'Failed', value: k?.failed_transactions ?? 0, color: '#ef4444' },
+    ];
+  }, [stats]);
 
-    setLoading(false);
-  }, [router]);
+  const donutTotal = paymentSegments.reduce((s, seg) => s + seg.value, 0);
+  const successPct =
+    donutTotal > 0 ? Math.round((paymentSegments[0].value / donutTotal) * 100) : 0;
 
-  if (loading || !admin) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-2xl font-black text-[#0d7e4d]">Loading...</div>
-      </div>
-    );
-  }
-
-  const hasPermission = (permission: string) => admin.permissions.includes(permission as any);
-
-  const containerVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+  const exportCsv = () => {
+    if (!stats?.recent_transactions?.length) return;
+    const rows = [
+      ['User', 'Phone', 'Equb', 'Round', 'Amount (ETB)', 'Status', 'Date'],
+      ...stats.recent_transactions.map((t) => [
+        `${t.user_first_name} ${t.user_last_name}`,
+        t.user_phone,
+        t.equb_name,
+        String(t.round_number),
+        t.amount,
+        t.status,
+        t.created_at,
+      ]),
+    ];
+    const csv = rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `qalnet-recent-transactions-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
+  const k = stats?.kpis;
+
+  const pendingActions = useMemo(() => {
+    const items: { icon: string; iconClass: string; title: string; description: string; href?: string; button: string }[] = [];
+    if (k) {
+      if (k.pending_withdrawals > 0)
+        items.push({
+          icon: 'M3 10h18M7 15h2m4 0h2M5 6h14a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1Z',
+          iconClass: 'bg-warning-100 text-warning-700',
+          title: `${k.pending_withdrawals} withdrawal${k.pending_withdrawals > 1 ? 's' : ''} pending`,
+          description: 'Awaiting admin review before payout.',
+          href: '/admin/approvals',
+          button: 'Review',
+        });
+      if (k.pending_payments > 0)
+        items.push({
+          icon: 'M9 12l2 2 4-4m5.6 2A7.5 7.5 0 1 1 6.4 6.4 7.5 7.5 0 0 1 20.6 10Z',
+          iconClass: 'bg-success-100 text-success-700',
+          title: `${k.pending_payments} payment${k.pending_payments > 1 ? 's' : ''} awaiting settlement`,
+          description: 'Scheduled contributions not yet collected.',
+          button: 'Monitor',
+        });
+      if (k.failed_transactions > 0)
+        items.push({
+          icon: 'M12 8v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z',
+          iconClass: 'bg-danger-100 text-danger-600',
+          title: `${k.failed_transactions} failed transaction${k.failed_transactions > 1 ? 's' : ''}`,
+          description: 'Flagged for investigation and reconciliation.',
+          button: 'Investigate',
+        });
+    }
+    return items;
+  }, [k]);
+
   return (
-    <>
-      <Header lang={lang} onLanguageChange={setLang} />
+    <AppShell title="Dashboard" subtitle="Platform overview and operational health">
+      {/* ── Welcome section ─────────────────────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-black text-slate-900">
+            {greeting()}, Admin <span aria-hidden="true">👋</span>
+          </h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Here&apos;s the current status of the QalNet platform.
+          </p>
+          <div className="mt-3">
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-card border border-slate-200 text-xs font-bold text-slate-600">
+              <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 text-brand-600" {...stroke}>
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 7v5l3 3" />
+              </svg>
+              {new Date().toLocaleDateString('en-GB', {
+                weekday: 'long',
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric',
+              })}
+            </span>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={exportCsv}
+          disabled={!stats?.recent_transactions?.length}
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-brand-600 text-white text-sm font-bold hover:bg-brand-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-sm"
+        >
+          <svg viewBox="0 0 24 24" className="w-4 h-4" {...stroke}>
+            <path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
+          </svg>
+          Export report
+        </button>
+      </div>
 
-      <div className="min-h-screen bg-gradient-to-br from-[#f5f3f0] to-[#ece8e3] py-8">
-        <div className="max-w-7xl mx-auto px-4">
-          {/* Admin Header */}
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="bg-gradient-to-r from-purple-600 to-red-600 rounded-2xl p-6 text-white mb-8 shadow-xl"
-          >
-            <div className="flex justify-between items-center">
+      {/* ── Primary KPIs ─────────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <KpiCard
+          label="Total Users"
+          value={loading && !k ? '—' : (k?.total_users ?? 0)}
+          hint={k ? `+${k.new_users_this_month} this month` : 'All registered accounts'}
+          accent="brand"
+          icon={kpiIcon('M16 11a3 3 0 1 0-6 0m6 0a3 3 0 1 1-6 0m6 0h.01M10 11h-.01M12 14c-3.87 0-7 1.57-7 3.5V21h14v-3.5C19 15.57 15.87 14 12 14Z')}
+        />
+        <KpiCard
+          label="Active Users"
+          value={loading && !k ? '—' : (k?.active_users ?? 0)}
+          hint={`${k ? money(k.hosts) : '—'} of them hosts`}
+          accent="success"
+          icon={kpiIcon('M9 12l2 2 4-4m5.6 2A7.5 7.5 0 1 1 6.4 6.4 7.5 7.5 0 0 1 20.6 10Z')}
+        />
+        <KpiCard
+          label="Total Equbs"
+          value={loading && !k ? '—' : (k?.total_equbs ?? 0)}
+          hint={k ? `${k.active_equbs} open / ${k.operational_equbs} operational` : 'Active equb circles'}
+          accent="accent"
+          icon={kpiIcon('M4 21v-9m5 9v-7m5 7V4m5 17V10')}
+        />
+        <KpiCard
+          label="Wallet Balance"
+          value={loading && !k ? '—' : `ETB ${money(k?.total_wallet_balance ?? 0)}`}
+          hint="Held across member wallets"
+          accent="warning"
+          icon={kpiIcon('M3 10h18M7 15h2m4 0h2M5 6h14a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1Z')}
+        />
+      </div>
+
+      {/* ── Main content + right panel ──────────────────────────────────────── */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
+        <div className="xl:col-span-2 space-y-6">
+          {/* ── Platform activity chart ─────────────────────────────────── */}
+          <section className="bg-card rounded-card border border-slate-200 p-5">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
               <div>
-                <h1 className="text-3xl font-black mb-2">
-                  {roleDisplay[admin.role].icon} Admin Dashboard
-                </h1>
-                <p className="text-sm">
-                  Role: <span className="font-black">{roleDisplay[admin.role].name}</span> | Email: {admin.email}
-                </p>
+                <h3 className="text-base font-black text-slate-900">Platform Activity</h3>
+                <p className="text-xs text-slate-400">New member registrations · last 30 days</p>
               </div>
-              <motion.button
-                onClick={() => {
-                  localStorage.removeItem('qalnet_admin_token');
-                  localStorage.removeItem('qalnet_admin_role');
-                  window.location.href = '/auth';
-                }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-full font-bold transition-all"
-              >
-                🚪 Logout
-              </motion.button>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-50 text-brand-700 text-xs font-bold">
+                <span className="w-1.5 h-1.5 rounded-full bg-brand-600" />
+                30d
+              </span>
             </div>
-          </motion.div>
-
-          {/* Navigation Tabs */}
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-8"
-          >
-            {[
-              { id: 'overview', label: '📊 Overview', permission: null },
-              { id: 'members', label: '👥 Members', permission: 'view_members' },
-              { id: 'kyc', label: '✅ KYC', permission: 'approve_kyc' },
-              { id: 'disputes', label: '⚖️ Disputes', permission: 'manage_disputes' },
-              { id: 'finance', label: '💰 Finance', permission: 'view_financial_records' },
-              { id: 'admin', label: '⚙️ Admin', permission: 'manage_admin_users' },
-            ].map(
-              (tab) =>
-                (tab.permission === null || hasPermission(tab.permission)) && (
-                  <motion.button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id as any)}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={`py-3 px-3 font-black rounded-lg transition-all text-sm sm:text-base ${
-                      activeTab === tab.id
-                        ? 'bg-gradient-to-r from-purple-600 to-red-600 text-white shadow-lg'
-                        : 'bg-white text-[#0d7e4d] border-2 border-[#d4af37] hover:shadow-md'
-                    }`}
-                  >
-                    {tab.label}
-                  </motion.button>
-                )
+            {loading && !stats ? (
+              <div className="h-52 animate-pulse rounded-lg bg-slate-100" />
+            ) : (
+              <AreaChart
+                data={trend}
+                color="#2563eb"
+                valueFormatter={(v) => String(v)}
+              />
             )}
-          </motion.div>
+          </section>
 
-          {/* Content Sections */}
-          {activeTab === 'overview' && (
-            <OverviewTab members={members} kycDocs={kycDocs} disputes={disputes} records={records} />
-          )}
-          {activeTab === 'members' && hasPermission('view_members') && (
-            <MembersTab members={members} admin={admin} />
-          )}
-          {activeTab === 'kyc' && hasPermission('approve_kyc') && (
-            <KYCTab documents={kycDocs} />
-          )}
-          {activeTab === 'disputes' && hasPermission('manage_disputes') && (
-            <DisputesTab disputes={disputes} />
-          )}
-          {activeTab === 'finance' && hasPermission('view_financial_records') && (
-            <FinanceTab records={records} />
-          )}
-          {activeTab === 'admin' && hasPermission('manage_admin_users') && (
-            <AdminUsersTab admin={admin} />
-          )}
+          {/* ── Secondary KPIs ──────────────────────────────────────────── */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            <KpiCard
+              label="Successful Payments"
+              value={loading && !k ? '—' : (k?.successful_payments ?? 0)}
+              hint="Paid or auto-debited"
+              accent="success"
+              icon={kpiIcon('M9 12l2 2 4-4m5.6 2A7.5 7.5 0 1 1 6.4 6.4 7.5 7.5 0 0 1 20.6 10Z')}
+            />
+            <KpiCard
+              label="Pending Withdrawals"
+              value={loading && !k ? '—' : (k?.pending_withdrawals ?? 0)}
+              hint="Awaiting payout review"
+              accent="warning"
+              icon={kpiIcon('M17 8l4 4m0 0-4 4m4-4H3')}
+            />
+            <KpiCard
+              label="Failed Transactions"
+              value={loading && !k ? '—' : (k?.failed_transactions ?? 0)}
+              hint="Flagged for investigation"
+              accent="danger"
+              icon={kpiIcon('M12 8v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z')}
+            />
+            <KpiCard
+              label="Payout Volume"
+              value={loading && !k ? '—' : `ETB ${money(k?.total_payout_volume ?? 0)}`}
+              hint="Approved & completed payouts"
+              accent="brand"
+              icon={kpiIcon('M12 3v18m0 0 4-4m-4 4-4-4')}
+            />
+          </div>
+
+          {/* ── Recent transactions table ──────────────────────────────── */}
+          <RecentTransactionsTable
+            loading={loading}
+            transactions={stats?.recent_transactions ?? []}
+          />
+        </div>
+
+        {/* ── Right operational panel ────────────────────────────────────── */}
+        <div className="space-y-6">
+          <section className="bg-card rounded-card border border-slate-200 p-5">
+            <h3 className="text-base font-black text-slate-900">Payment Health</h3>
+            <p className="text-xs text-slate-400 mb-4">Distribution of payment outcomes</p>
+            <DonutChart
+              segments={paymentSegments}
+              centerTitle={donutTotal > 0 ? `${successPct}%` : '—'}
+              centerSubtitle="success rate"
+            />
+          </section>
+
+          <TopEqubsCard loading={loading} equbs={stats?.top_equbs ?? []} />
+
+          <PendingActionsCard loading={loading} items={pendingActions} />
+
+          <QuickActionsCard />
         </div>
       </div>
 
-      <Footer lang={lang} />
-    </>
+      {error && !loading && (
+        <ErrorState
+          title="Could not load dashboard"
+          description={error}
+          onRetry={() => void load(true)}
+        />
+      )}
+    </AppShell>
   );
 }
 
-// Overview Tab Component
-function OverviewTab({ members, kycDocs, disputes, records }: any) {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-      <StatCard icon="👥" label="Total Members" value={members.length.toString()} />
-      <StatCard icon="⏳" label="Pending KYC" value={kycDocs.filter((d: any) => d.status === 'pending').length.toString()} />
-      <StatCard icon="🔴" label="Open Disputes" value={disputes.filter((d: any) => d.status === 'open').length.toString()} />
-      <StatCard icon="💵" label="Total Transactions" value={records.length.toString()} />
-    </div>
-  );
-}
+// ---------------------------------------------------------------------------
+// Recent transactions
+// ---------------------------------------------------------------------------
 
-function StatCard({ icon, label, value }: any) {
+function RecentTransactionsTable({ loading, transactions }: { loading: boolean; transactions: AdminRecentTransaction[] }) {
   return (
-    <motion.div
-      whileHover={{ scale: 1.05 }}
-      className="bg-white rounded-lg p-4 border-2 border-[#d4af37] shadow-md hover:shadow-lg transition-all"
-    >
-      <div className="text-3xl mb-2">{icon}</div>
-      <p className="text-sm text-gray-600">{label}</p>
-      <p className="text-2xl font-black text-[#0d7e4d]">{value}</p>
-    </motion.div>
-  );
-}
-
-// Members Tab Component
-function MembersTab({ members, admin }: any) {
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="bg-white rounded-2xl p-6 shadow-lg"
-    >
-      <h2 className="text-2xl font-black text-[#0d7e4d] mb-6">Members Management</h2>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b-2 border-[#d4af37]">
-              <th className="text-left py-3 font-black text-[#0d7e4d]">Name</th>
-              <th className="text-left py-3 font-black text-[#0d7e4d]">Phone</th>
-              <th className="text-left py-3 font-black text-[#0d7e4d]">Status</th>
-              <th className="text-left py-3 font-black text-[#0d7e4d]">KYC</th>
-              <th className="text-left py-3 font-black text-[#0d7e4d]">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {members.map((member: any) => (
-              <tr key={member.id} className="border-b border-gray-200 hover:bg-[#f5f3f0] transition-all">
-                <td className="py-3 font-bold text-[#0d7e4d]">{member.fullName}</td>
-                <td className="py-3">{member.phoneNumber}</td>
-                <td className="py-3">
-                  <span className={`px-3 py-1 rounded-full text-xs font-black ${
-                    member.status === 'active'
-                      ? 'bg-green-100 text-green-700'
-                      : 'bg-red-100 text-red-700'
-                  }`}>
-                    {member.status.toUpperCase()}
-                  </span>
-                </td>
-                <td className="py-3">
-                  <span className={`px-3 py-1 rounded-full text-xs font-black ${
-                    member.kycStatus === 'approved'
-                      ? 'bg-green-100 text-green-700'
-                      : member.kycStatus === 'pending'
-                      ? 'bg-yellow-100 text-yellow-700'
-                      : 'bg-red-100 text-red-700'
-                  }`}>
-                    {member.kycStatus.toUpperCase()}
-                  </span>
-                </td>
-                <td className="py-3">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="px-3 py-1 bg-[#0d7e4d] text-white rounded-lg text-xs font-bold hover:shadow-md transition-all"
-                  >
-                    View
-                  </motion.button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <section className="bg-card rounded-card border border-slate-200 overflow-hidden">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+        <div>
+          <h3 className="text-base font-black text-slate-900">Recent Transactions</h3>
+          <p className="text-xs text-slate-400">Latest payments across all equbs</p>
+        </div>
+        <Link
+          href="/admin/customers"
+          className="text-xs font-bold text-brand-700 hover:text-brand-800"
+        >
+          View members →
+        </Link>
       </div>
-    </motion.div>
-  );
-}
 
-// KYC Tab Component
-function KYCTab({ documents }: any) {
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="space-y-4"
-    >
-      {documents.map((doc: any) => (
-        <motion.div
-          key={doc.id}
-          whileHover={{ scale: 1.02 }}
-          className="bg-white rounded-lg p-4 border-2 border-[#d4af37] shadow-md"
-        >
-          <div className="flex justify-between items-start mb-3">
-            <div>
-              <h3 className="font-black text-[#0d7e4d]">{doc.memberName}</h3>
-              <p className="text-sm text-gray-600">{doc.memberPhone}</p>
+      {loading && !transactions.length ? (
+        <div className="divide-y divide-slate-100">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-6 px-5 py-4">
+              <div className="h-4 w-40 rounded bg-slate-100 animate-pulse" />
+              <div className="h-4 flex-1 rounded bg-slate-100 animate-pulse" />
+              <div className="h-4 w-20 rounded bg-slate-100 animate-pulse" />
             </div>
-            <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold">
-              {doc.status.toUpperCase()}
-            </span>
-          </div>
-          <p className="text-sm mb-4">Document Type: <strong>{doc.documentType.replace('_', ' ').toUpperCase()}</strong></p>
-          <div className="flex gap-2">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="flex-1 px-4 py-2 bg-green-500 text-white font-bold rounded-lg hover:shadow-md transition-all"
-            >
-              ✅ Approve
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="flex-1 px-4 py-2 bg-red-500 text-white font-bold rounded-lg hover:shadow-md transition-all"
-            >
-              ❌ Reject
-            </motion.button>
-          </div>
-        </motion.div>
-      ))}
-    </motion.div>
-  );
-}
-
-// Disputes Tab Component
-function DisputesTab({ disputes }: any) {
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="space-y-4"
-    >
-      {disputes.map((dispute: any) => (
-        <motion.div
-          key={dispute.id}
-          whileHover={{ scale: 1.02 }}
-          className="bg-white rounded-lg p-4 border-2 border-[#d4af37] shadow-md"
-        >
-          <div className="flex justify-between items-start mb-3">
-            <div>
-              <h3 className="font-black text-[#0d7e4d]">
-                {dispute.complainantName} vs {dispute.respondentName}
-              </h3>
-              <p className="text-sm text-gray-600">{dispute.description}</p>
-            </div>
-            <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-              dispute.priority === 'critical' ? 'bg-red-100 text-red-700'
-              : dispute.priority === 'high' ? 'bg-orange-100 text-orange-700'
-              : 'bg-yellow-100 text-yellow-700'
-            }`}>
-              {dispute.priority.toUpperCase()}
-            </span>
-          </div>
-          <div className="flex gap-2">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="flex-1 px-4 py-2 bg-blue-500 text-white font-bold rounded-lg hover:shadow-md transition-all"
-            >
-              🔍 Investigate
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="flex-1 px-4 py-2 bg-green-500 text-white font-bold rounded-lg hover:shadow-md transition-all"
-            >
-              ✓ Resolve
-            </motion.button>
-          </div>
-        </motion.div>
-      ))}
-    </motion.div>
-  );
-}
-
-// Finance Tab Component
-function FinanceTab({ records }: any) {
-  const totalAmount = records.reduce((sum: number, r: any) => sum + r.amount, 0);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-    >
-      <motion.div
-        whileHover={{ scale: 1.05 }}
-        className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg p-4 mb-6 shadow-md"
-      >
-        <p className="text-sm">Total Transactions</p>
-        <p className="text-3xl font-black">ETB {totalAmount.toLocaleString()}</p>
-      </motion.div>
-
-      <div className="bg-white rounded-2xl p-6 shadow-lg">
-        <h2 className="text-2xl font-black text-[#0d7e4d] mb-6">Transaction Records</h2>
+          ))}
+        </div>
+      ) : transactions.length === 0 ? (
+        <p className="px-5 py-12 text-center text-sm text-slate-400">No transactions yet.</p>
+      ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b-2 border-[#d4af37]">
-                <th className="text-left py-3 font-black text-[#0d7e4d]">Member</th>
-                <th className="text-left py-3 font-black text-[#0d7e4d]">Type</th>
-                <th className="text-left py-3 font-black text-[#0d7e4d]">Amount</th>
-                <th className="text-left py-3 font-black text-[#0d7e4d]">Status</th>
+              <tr className="bg-slate-50 text-left text-xs uppercase tracking-wider text-slate-500">
+                <th className="px-5 py-3 font-bold">Member</th>
+                <th className="px-5 py-3 font-bold">Equb</th>
+                <th className="px-5 py-3 font-bold">Round</th>
+                <th className="px-5 py-3 font-bold text-right">Amount</th>
+                <th className="px-5 py-3 font-bold">Status</th>
+                <th className="px-5 py-3 font-bold text-right">Date</th>
               </tr>
             </thead>
-            <tbody>
-              {records.map((record: any) => (
-                <tr key={record.id} className="border-b border-gray-200 hover:bg-[#f5f3f0] transition-all">
-                  <td className="py-3 font-bold text-[#0d7e4d]">{record.memberName}</td>
-                  <td className="py-3 capitalize">{record.type}</td>
-                  <td className="py-3 font-bold">ETB {record.amount}</td>
-                  <td className="py-3">
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                      record.status === 'completed'
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-yellow-100 text-yellow-700'
-                    }`}>
-                      {record.status.toUpperCase()}
-                    </span>
+            <tbody className="divide-y divide-slate-100">
+              {transactions.map((t) => (
+                <tr key={t.id} className="hover:bg-slate-50 transition-colors">
+                  <td className="px-5 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold shrink-0">
+                        {`${t.user_first_name?.[0] ?? ''}${t.user_last_name?.[0] ?? ''}`.toUpperCase() || '?'}
+                      </div>
+                      <div>
+                        <p className="font-bold text-slate-900">
+                          {t.user_first_name} {t.user_last_name}
+                        </p>
+                        <p className="text-xs text-slate-400">{t.user_phone}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-5 py-3 text-slate-600">{t.equb_name}</td>
+                  <td className="px-5 py-3 text-slate-500">#{t.round_number}</td>
+                  <td className="px-5 py-3 text-right font-bold text-slate-900">ETB {money(t.amount)}</td>
+                  <td className="px-5 py-3">
+                    <StatusBadge tone={STATUS_TONE[t.status] ?? 'neutral'}>{statusLabel(t.status)}</StatusBadge>
+                  </td>
+                  <td className="px-5 py-3 text-right text-slate-500 whitespace-nowrap">
+                    {formatDateTime(t.created_at)}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      </div>
-    </motion.div>
+      )}
+    </section>
   );
 }
 
-// Admin Users Tab Component
-function AdminUsersTab({ admin }: any) {
+// ---------------------------------------------------------------------------
+// Top equbs
+// ---------------------------------------------------------------------------
+
+function TopEqubsCard({ loading, equbs }: { loading: boolean; equbs: AdminTopEqub[] }) {
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="bg-white rounded-2xl p-6 shadow-lg"
-    >
-      <h2 className="text-2xl font-black text-[#0d7e4d] mb-6">Admin Users Management</h2>
-      <p className="text-gray-600 mb-6">Manage admin accounts, roles, and permissions</p>
+    <section className="bg-card rounded-card border border-slate-200 p-5">
+      <h3 className="text-base font-black text-slate-900">Top Equbs</h3>
+      <p className="text-xs text-slate-400 mb-4">Largest circles by membership</p>
 
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className="px-6 py-3 bg-gradient-to-r from-[#0d7e4d] to-[#d4af37] text-white font-black rounded-full hover:shadow-lg transition-all mb-6"
-      >
-        ➕ Add New Admin
-      </motion.button>
-
-      <div className="bg-[#f5f3f0] border-2 border-[#d4af37] rounded-lg p-4">
-        <div className="flex items-center gap-4">
-          <div className="text-3xl">👤</div>
-          <div>
-            <p className="font-black text-[#0d7e4d]">{admin.fullName}</p>
-            <p className="text-sm text-gray-600">{admin.email}</p>
-            <p className="text-xs font-bold text-[#d4af37]">{admin.role.replace('_', ' ').toUpperCase()}</p>
-          </div>
+      {loading && !equbs.length ? (
+        <div className="space-y-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-12 rounded-lg bg-slate-100 animate-pulse" />
+          ))}
         </div>
+      ) : equbs.length === 0 ? (
+        <p className="py-8 text-center text-sm text-slate-400">No equbs yet.</p>
+      ) : (
+        <ul className="space-y-3">
+          {equbs.map((e) => (
+            <li key={e.id} className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:border-brand-200 hover:bg-brand-50/50 transition-colors">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-600 to-brand-800 text-white flex items-center justify-center font-black shrink-0">
+                {e.name?.[0]?.toUpperCase() ?? 'E'}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="font-bold text-slate-900 truncate">{e.name}</p>
+                  <StatusBadge tone={EQUB_TONE[e.status] ?? 'neutral'}>{statusLabel(e.status)}</StatusBadge>
+                </div>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  {e.member_count} member{e.member_count !== 1 ? 's' : ''} · round {e.current_round}/{e.total_rounds} · ETB {money(e.total_amount)}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Pending actions
+// ---------------------------------------------------------------------------
+
+function PendingActionsCard({
+  loading,
+  items,
+}: {
+  loading: boolean;
+  items: { icon: string; iconClass: string; title: string; description: string; href?: string; button: string }[];
+}) {
+  return (
+    <section className="bg-card rounded-card border border-slate-200 p-5">
+      <h3 className="text-base font-black text-slate-900">Pending Actions</h3>
+      <p className="text-xs text-slate-400 mb-4">Operational items needing attention</p>
+
+      {loading && !items.length ? (
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="h-16 rounded-lg bg-slate-100 animate-pulse" />
+          ))}
+        </div>
+      ) : items.length === 0 ? (
+        <div className="py-8 text-center">
+          <svg viewBox="0 0 24 24" className="w-8 h-8 mx-auto text-success-600" {...stroke}>
+            <path d="M9 12l2 2 4-4m5.6 2A7.5 7.5 0 1 1 6.4 6.4 7.5 7.5 0 0 1 20.6 10Z" />
+          </svg>
+          <p className="mt-3 text-sm font-bold text-slate-800">All caught up</p>
+          <p className="mt-1 text-xs text-slate-400">No pending actions right now.</p>
+        </div>
+      ) : (
+        <ul className="space-y-3">
+          {items.map((item) => (
+            <li key={item.title} className="flex items-start gap-3 p-3 rounded-xl border border-slate-100">
+              <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${item.iconClass}`}>
+                <svg viewBox="0 0 24 24" className="w-[18px] h-[18px]" {...stroke}>
+                  <path d={item.icon} />
+                </svg>
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold text-slate-900">{item.title}</p>
+                <p className="text-xs text-slate-400 mt-0.5">{item.description}</p>
+              </div>
+              {item.href ? (
+                <Link
+                  href={item.href}
+                  className="px-3 py-1.5 rounded-lg bg-brand-50 text-brand-700 text-xs font-bold hover:bg-brand-100 transition-colors shrink-0"
+                >
+                  {item.button}
+                </Link>
+              ) : (
+                <span className="px-3 py-1.5 rounded-lg bg-slate-50 text-slate-500 text-xs font-bold shrink-0">
+                  {item.button}
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Quick actions
+// ---------------------------------------------------------------------------
+
+function QuickActionsCard() {
+  const actions: { label: string; href?: string; icon: string; disabled?: boolean }[] = [
+    {
+      label: 'Manage Users',
+      href: '/admin/customers',
+      icon: 'M16 11a3 3 0 1 0-6 0m6 0a3 3 0 1 1-6 0m6 0h.01M10 11h-.01M12 14c-3.87 0-7 1.57-7 3.5V21h14v-3.5C19 15.57 15.87 14 12 14Z',
+    },
+    {
+      label: 'Approvals',
+      href: '/admin/approvals',
+      icon: 'M9 12l2 2 4-4m5.6 2A7.5 7.5 0 1 1 6.4 6.4 7.5 7.5 0 0 1 20.6 10Z',
+    },
+    {
+      label: 'View Reports',
+      icon: 'M5 20V10m7 10V4m7 16v-7',
+      disabled: true,
+    },
+    {
+      label: 'System Settings',
+      href: '/settings',
+      icon: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm8.4-3a8.9 8.9 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a8.9 8.9 0 0 0-2-1.2L15.5 3h-4l-.4 2.6a8.9 8.9 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6a8.9 8.9 0 0 0 0 2.4l-2 1.6 2 3.4 2.4-1a8.9 8.9 0 0 0 2 1.2l.4 2.6h4l.4-2.6a8.9 8.9 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.07-.4.1-.8.1-1.2Z',
+    },
+  ];
+
+  return (
+    <section className="bg-card rounded-card border border-slate-200 p-5">
+      <h3 className="text-base font-black text-slate-900">Quick Actions</h3>
+      <p className="text-xs text-slate-400 mb-4">Common administrative tasks</p>
+      <div className="grid grid-cols-2 gap-3">
+        {actions.map((action) =>
+          action.disabled ? (
+            <div
+              key={action.label}
+              className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-200 py-5 text-slate-300 cursor-not-allowed"
+              title="Coming soon"
+            >
+              <svg viewBox="0 0 24 24" className="w-5 h-5" {...stroke}>
+                <path d={action.icon} />
+              </svg>
+              <span className="text-xs font-bold">{action.label}</span>
+            </div>
+          ) : action.href ? (
+            <Link
+              key={action.label}
+              href={action.href}
+              className="flex flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 py-5 text-slate-600 hover:text-brand-700 hover:border-brand-300 hover:bg-brand-50/50 hover:shadow-sm transition-all"
+            >
+              <svg viewBox="0 0 24 24" className="w-5 h-5" {...stroke}>
+                <path d={action.icon} />
+              </svg>
+              <span className="text-xs font-bold">{action.label}</span>
+            </Link>
+          ) : null,
+        )}
       </div>
-    </motion.div>
+    </section>
   );
 }
