@@ -7,6 +7,7 @@ import FormInput from '@/app/components/forms/FormInput';
 import FormButton from '@/app/components/forms/FormButton';
 import FormSuccess from '@/app/components/forms/FormSuccess';
 import { useAuth } from '@/app/context/AuthContext';
+import { authAPI } from '@/app/services/api';
 
 interface SignUpTabProps {
   lang?: Language;
@@ -288,6 +289,33 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
     console.log('✅ PIN validation passed');
 
     try {
+      // Pre-check: is this email/phone already registered? Show a clear message
+      // instead of submitting and relying on the backend 409.
+      try {
+        const availability = await authAPI.checkAvailability({
+          email: formData.email,
+          phoneNumber: formData.phoneNumber,
+        });
+
+        if (!availability.available) {
+          const { email_taken, phone_taken } = availability;
+          const field = email_taken && phone_taken
+            ? 'email address or phone number'
+            : email_taken
+              ? 'email address'
+              : 'phone number';
+
+          onError?.(
+            'Account Already Exists',
+            `An account with this ${field} already exists. Please sign in instead, or use a different ${field}.`,
+          );
+          return;
+        }
+      } catch {
+        // Pre-check is best-effort — if it fails, fall through and let the
+        // backend's 409 Conflict surface the "already exists" error.
+      }
+
       console.log('📤 Calling signup() with data:', {
         firstName: formData.firstName,
         lastName: formData.lastName,

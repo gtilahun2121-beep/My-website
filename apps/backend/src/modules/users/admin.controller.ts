@@ -5,10 +5,11 @@
  * Every route requires a valid JWT whose `role` claim is `admin`.
  */
 
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, Body, Post, Param, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { UsersService } from './users.service';
+import { ResetPinDto } from './dto/reset-pin.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -47,5 +48,21 @@ export class AdminController {
             role,
             status: status === 'active' || status === 'inactive' ? status : undefined,
         });
+    }
+
+    @Post('users/:id/reset-pin')
+    @UseGuards(RolesGuard)
+    @Roles('admin')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Reset a user PIN and clear any login lockout' })
+    @ApiResponse({ status: 200, description: 'PIN reset and account unlocked.' })
+    @ApiResponse({ status: 403, description: 'Forbidden — requires role admin.' })
+    @ApiResponse({ status: 404, description: 'User not found.' })
+    async resetUserPin(
+        @CurrentUser() user: JwtPayload,
+        @Param('id') userId: string,
+        @Body() dto: ResetPinDto,
+    ) {
+        return this.usersService.resetUserPin(user.sub, userId, dto.new_pin);
     }
 }

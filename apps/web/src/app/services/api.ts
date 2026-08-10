@@ -172,6 +172,23 @@ export const authAPI = {
   },
 
   /**
+   * POST /api/v1/auth/check-availability
+   * Pre-checks whether an email and/or phone is already registered.
+   * Lets the signup form tell the user before they submit.
+   */
+  checkAvailability: (data: { email?: string; phoneNumber?: string }) =>
+    request<{ available: boolean; email_taken: boolean; phone_taken: boolean }>(
+      '/auth/check-availability',
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          email: data.email || undefined,
+          phone: data.phoneNumber || undefined,
+        }),
+      },
+    ),
+
+  /**
    * POST /api/v1/auth/login
    * Authenticates with phone/email + PIN (padded identically to signup).
    *
@@ -501,6 +518,17 @@ export const adminAPI = {
    */
   rejectMembership: (membershipId: string) =>
     request<any>(`/admin/memberships/${membershipId}/reject`, { method: 'POST' }),
+
+  /**
+   * POST /api/v1/admin/users/:id/reset-pin
+   * Admin resets a user's PIN and clears any login lockout
+   * (including permanently blocked accounts). Admin only.
+   */
+  resetUserPin: (userId: string, newPin: string) =>
+    request<any>(`/admin/users/${userId}/reset-pin`, {
+      method: 'POST',
+      body: JSON.stringify({ new_pin: padPin(newPin) }),
+    }),
 };
 
 // ---------------------------------------------------------------------------

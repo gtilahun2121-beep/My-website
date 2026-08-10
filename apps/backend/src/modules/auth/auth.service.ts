@@ -30,6 +30,7 @@ import { generateSecret, generateURI, verify as verifyOtp } from 'otplib';
 import { AuthRepository, UserRecord, UserSettingsRecord } from './auth.repository';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { CheckAvailabilityDto } from './dto/check-availability.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { TwoFactorCodeDto, TwoFactorLoginDto } from './dto/two-factor.dto';
 import { VaultConfig } from '../../config/vault.config';
@@ -48,6 +49,16 @@ const ARGON2_OPTIONS: argon2.Options & { raw?: false } = {
 
 // TOTP codes are verified with a ±30s window to allow clock skew between the
 // user's authenticator app and the server.
+
+// Escalating PIN lockout (spec): 3 wrong PINs → 6h lock, then 1 day, then
+// 3 days, then permanently blocked (admin must reset the PIN).
+const MAX_FAILED_ATTEMPTS = 3;
+const LOCK_DURATIONS_MS = [
+    6 * 60 * 60 * 1000,        // stage 1: 6 hours
+    24 * 60 * 60 * 1000,       // stage 2: 1 day
+    3 * 24 * 60 * 60 * 1000,   // stage 3: 3 days
+];
+const LOCK_STAGE_PERMANENT = 4;
 
 // ---------------------------------------------------------------------------
 // JWT Payload Shape
@@ -157,16 +168,48 @@ export class AuthService {
         return this.issueTokens(user);
     }
 
+    /**
+     * Pre-checks whether an email and/or phone is already registered —
+     * lets the signup form tell the user before they submit.
+     */
+    async checkAvailability(dto: CheckAvailabilityDto): Promise<{
+        available: boolean;
+        email_taken: boolean;
+        phone_taken: boolean;
+    }> {
+        const { email, phone } = dto;
+
+        if (!email && !phone) {
+            throw new BadRequestException(
+                'Provide at least one of email or phone to check availability.',
+            );
+        }
+
+        const matches = await this.authRepository.findByEmailOrPhone(email, phone);
+        const emailLower = email?.toLowerCase();
+
+        return {
+            available: matches.length === 0,
+            email_taken: emailLower
+                ? matches.some((m) => m.email.toLowerCase() === emailLower)
+                : false,
+            phone_taken: phone
+                ? matches.some((m) => m.phone === phone)
+                : false,
+        };
+    }
+
     // ── Login ─────────────────────────────────────────────────────────────────
 
     /**
      * Authenticates a user by phone or email + password.
      *
-     * Pipeline:
-     *  1. Fetch user by identifier
-     *  2. Verify Argon2id hash (constant-time, GPU-resistant)
-     *  3. Check account is active
-     *  4. Issue access + refresh tokens
+     * Enforces an escalating PIN lockout:
+     *   - 3 wrong PINs     → locked 6 hours
+     *   - 3 more wrong     → locked 1 day
+     *   - 3 more wrong     → locked 3 days
+     *   - 3 more wrong     → permanently blocked (admin must reset the PIN)
+     * A successful login clears the entire lockout state.
      */
     async login(dto: LoginDto): Promise<AuthTokens | TwoFactorRequired> {
         const secrets = await VaultConfig.load();
@@ -179,13 +222,60 @@ export class AuthService {
             throw new UnauthorizedException('Invalid credentials.');
         }
 
+        // ── Lockout gate ─────────────────────────────────────────────────────
+        if (user.lockout_stage >= LOCK_STAGE_PERMANENT) {
+            throw new UnauthorizedException(
+                'Your account has been permanently locked due to repeated incorrect PIN attempts. Contact the administrator to reset your PIN.',
+            );
+        }
+
+        if (user.locked_until) {
+            if (user.locked_until.getTime() > Date.now()) {
+                throw new UnauthorizedException(
+                    `Too many incorrect PIN attempts. Your account is locked. Try again after ${this.formatLockEnd(user.locked_until)}.`,
+                );
+            }
+            // Lock expired — clear it, keep the stage so the next 3 failures
+            // escalate to the next (longer) lock duration.
+            await this.authRepository.clearExpiredLockout(user.id);
+            user.locked_until = null;
+            user.failed_login_attempts = 0;
+        }
+
         const isPasswordValid = await argon2.verify(
             user.password_hash,
             dto.password + secrets.ARGON2_PEPPER,
         );
 
         if (!isPasswordValid) {
-            throw new UnauthorizedException('Invalid credentials.');
+            const attempts = await this.authRepository.incrementFailedAttempt(user.id);
+            this.logger.warn(`Failed PIN attempt ${attempts}/${MAX_FAILED_ATTEMPTS} for user: ${user.id}`);
+
+            if (attempts >= MAX_FAILED_ATTEMPTS) {
+                const nextStage = user.lockout_stage + 1;
+
+                if (nextStage >= LOCK_STAGE_PERMANENT) {
+                    await this.authRepository.applyLockout(user.id, LOCK_STAGE_PERMANENT, null);
+                    throw new UnauthorizedException(
+                        'Your account has been permanently locked due to repeated incorrect PIN attempts. Contact the administrator to reset your PIN.',
+                    );
+                }
+
+                const lockedUntil = new Date(Date.now() + LOCK_DURATIONS_MS[nextStage - 1]);
+                await this.authRepository.applyLockout(user.id, nextStage, lockedUntil);
+                throw new UnauthorizedException(
+                    `Too many incorrect PIN attempts (${MAX_FAILED_ATTEMPTS}). Your account is locked for ${this.describeLock(nextStage)}.`,
+                );
+            }
+
+            throw new UnauthorizedException(
+                `Invalid PIN. ${MAX_FAILED_ATTEMPTS - attempts} attempt${MAX_FAILED_ATTEMPTS - attempts === 1 ? '' : 's'} remaining.`,
+            );
+        }
+
+        // Correct PIN — clear any lockout state before continuing.
+        if (user.lockout_stage !== 0 || user.locked_until || user.failed_login_attempts !== 0) {
+            await this.authRepository.resetLoginAttempts(user.id);
         }
 
         if (!user.is_active) {
@@ -492,5 +582,30 @@ export class AuthService {
             privateKey: secrets.JWT_PRIVATE_KEY,
             expiresIn: '5m',
         });
+    }
+
+    // ── Lockout message helpers ──────────────────────────────────────────────
+
+    /** "6 hours", "1 day", "3 days" — for a given lockout stage (1-based). */
+    private describeLock(stage: number): string {
+        switch (stage) {
+            case 1: return '6 hours';
+            case 2: return '1 day';
+            case 3: return '3 days';
+            default: return 'a while';
+        }
+    }
+
+    /** Human-readable "until <time>" for a lock expiry timestamp. */
+    private formatLockEnd(when: Date): string {
+        const totalMinutes = Math.max(1, Math.ceil((when.getTime() - Date.now()) / 60000));
+        if (totalMinutes < 60) return `${totalMinutes} minute${totalMinutes === 1 ? '' : 's'}`;
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+        if (hours < 24) {
+            return minutes > 0 ? `${hours} hour${hours === 1 ? '' : 's'} ${minutes} minute${minutes === 1 ? '' : 's'}` : `${hours} hour${hours === 1 ? '' : 's'}`;
+        }
+        const days = Math.floor(hours / 24);
+        return `${days} day${days === 1 ? '' : 's'}`;
     }
 }
