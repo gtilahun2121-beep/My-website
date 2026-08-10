@@ -3,9 +3,12 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+export type ShellVariant = 'member' | 'admin';
+
 interface SidebarProps {
   open: boolean;
   onClose: () => void;
+  variant?: ShellVariant;
 }
 
 interface NavItem {
@@ -29,7 +32,35 @@ const icon = (path: string) => (
   </svg>
 );
 
-const NAV_ITEMS: NavItem[] = [
+const MEMBER_NAV: NavItem[] = [
+  {
+    label: 'Dashboard',
+    href: '/dashboard',
+    icon: icon('M3 10.5 12 3l9 7.5M5 9.5V21h5v-6h4v6h5V9.5'),
+  },
+  {
+    label: 'My Equbs',
+    href: '/my-equbs',
+    icon: icon('M17 21v-4a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v4M7 4h10a2 2 0 0 1 2 2v15H5V6a2 2 0 0 1 2-2Zm2 6h6m-6 4h6'),
+  },
+  {
+    label: 'Discover Equbs',
+    href: '/discover',
+    icon: icon('M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm3-12-5 3.4v-2.4H8m4 4.4 3-3.4'),
+  },
+  {
+    label: 'Wallet',
+    href: '/wallet',
+    icon: icon('M3 10h18M7 15h2m4 0h2M5 6h14a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1Z'),
+  },
+  {
+    label: 'Create an Equb',
+    href: '/create-equb',
+    icon: icon('M12 5v14m-7-7h14'),
+  },
+];
+
+const ADMIN_NAV: NavItem[] = [
   {
     label: 'Dashboard',
     href: '/admin/dashboard',
@@ -69,11 +100,15 @@ const NAV_ITEMS: NavItem[] = [
 
 const FOOTER_ITEMS: NavItem[] = [
   { label: 'Help Center', disabled: true, icon: icon('M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-13a2.2 2.2 0 1 1 3.1 2c-1 .6-3.1 1.6-3.1 4m.01 3h.01') },
-  { label: 'Settings', disabled: true, icon: icon('M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm8.4-3a8.9 8.9 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a8.9 8.9 0 0 0-2-1.2L15.5 3h-4l-.4 2.6a8.9 8.9 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6a8.9 8.9 0 0 0 0 2.4l-2 1.6 2 3.4 2.4-1a8.9 8.9 0 0 0 2 1.2l.4 2.6h4l.4-2.6a8.9 8.9 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.07-.4.1-.8.1-1.2Z') },
+  {
+    label: 'Settings',
+    href: '/settings',
+    icon: icon('M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm8.4-3a8.9 8.9 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a8.9 8.9 0 0 0-2-1.2L15.5 3h-4l-.4 2.6a8.9 8.9 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6a8.9 8.9 0 0 0 0 2.4l-2 1.6 2 3.4 2.4-1a8.9 8.9 0 0 0 2 1.2l.4 2.6h4l.4-2.6a8.9 8.9 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.07-.4.1-.8.1-1.2Z') },
 ];
 
-export default function Sidebar({ open, onClose }: SidebarProps) {
+export default function Sidebar({ open, onClose, variant = 'admin' }: SidebarProps) {
   const pathname = usePathname();
+  const navItems = variant === 'member' ? MEMBER_NAV : ADMIN_NAV;
 
   const renderItem = (item: NavItem) => {
     const isActive = item.href === pathname;
@@ -106,7 +141,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       aria-label="Sidebar navigation"
     >
       {/* Brand */}
-      <div className="flex items-center gap-3 px-5 h-16 border-b border-slate-100">
+      <Link href={variant === 'member' ? '/dashboard' : '/admin/dashboard'} className="flex items-center gap-3 px-5 h-16 border-b border-slate-100" onClick={onClose}>
         <div className="w-9 h-9 rounded-xl bg-brand-600 flex items-center justify-center text-white font-black">
           Q
         </div>
@@ -114,10 +149,10 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           <p className="font-black text-slate-900 leading-none">QalNet</p>
           <p className="text-xs text-slate-400 mt-0.5">Ethiopia&apos;s Digital Equb</p>
         </div>
-      </div>
+      </Link>
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">{NAV_ITEMS.map(renderItem)}</nav>
+      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">{navItems.map(renderItem)}</nav>
 
       {/* Help card */}
       <div className="px-3 pb-3">

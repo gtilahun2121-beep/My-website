@@ -1,11 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import type { ShellVariant } from './Sidebar';
+import ProfileMenu from '../layout/ProfileMenu';
+import { languages, type Language } from '@/i18n/config';
 
 interface TopHeaderProps {
   title: string;
   subtitle?: string;
   onMenuClick: () => void;
+  variant?: ShellVariant;
 }
 
 const stroke = {
@@ -16,8 +20,24 @@ const stroke = {
   strokeLinejoin: 'round',
 } as const;
 
-export default function TopHeader({ title, subtitle, onMenuClick }: TopHeaderProps) {
+const LANG_KEY = 'qalnet_lang';
+
+export default function TopHeader({ title, subtitle, onMenuClick, variant = 'admin' }: TopHeaderProps) {
   const [search, setSearch] = useState('');
+  const [lang, setLang] = useState<Language>('en');
+
+  useEffect(() => {
+    const stored = typeof window !== 'undefined' ? localStorage.getItem(LANG_KEY) : null;
+    if (stored && (languages as Record<string, string>)[stored]) {
+      const code = stored as Language;
+      queueMicrotask(() => setLang(code));
+    }
+  }, []);
+
+  const changeLang = (next: Language) => {
+    setLang(next);
+    if (typeof window !== 'undefined') localStorage.setItem(LANG_KEY, next);
+  };
 
   return (
     <header className="sticky top-0 z-30 bg-card/90 backdrop-blur-md border-b border-slate-200">
@@ -40,27 +60,44 @@ export default function TopHeader({ title, subtitle, onMenuClick }: TopHeaderPro
           {subtitle && <p className="text-xs text-slate-400 truncate">{subtitle}</p>}
         </div>
 
-        {/* Search (desktop) */}
-        <div className="hidden md:flex flex-1 max-w-md ml-auto relative">
-          <svg
-            viewBox="0 0 24 24"
-            className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-            {...stroke}
-          >
-            <circle cx="11" cy="11" r="7" />
-            <path d="m20 20-3.2-3.2" />
-          </svg>
-          <input
-            type="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search customers, transactions…"
-            className="w-full py-2 pl-9 pr-3 rounded-lg bg-slate-50 border border-slate-200 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500"
-          />
-        </div>
+        {variant === 'admin' && (
+          <div className="hidden md:flex flex-1 max-w-md ml-auto relative">
+            <svg
+              viewBox="0 0 24 24"
+              className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+              {...stroke}
+            >
+              <circle cx="11" cy="11" r="7" />
+              <path d="m20 20-3.2-3.2" />
+            </svg>
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search customers, transactions…"
+              className="w-full py-2 pl-9 pr-3 rounded-lg bg-slate-50 border border-slate-200 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500"
+            />
+          </div>
+        )}
 
         {/* Actions */}
         <div className="flex items-center gap-1 sm:gap-2 ml-auto md:ml-0">
+          {/* Language selector */}
+          {variant === 'member' && (
+            <select
+              value={lang}
+              onChange={(e) => changeLang(e.target.value as Language)}
+              aria-label="Language"
+              className="hidden md:block py-1.5 pl-2 pr-7 rounded-lg bg-slate-50 border border-slate-200 text-sm font-semibold text-slate-600 focus:outline-none focus:ring-2 focus:ring-brand-500/40 cursor-pointer"
+            >
+              {(Object.keys(languages) as Language[]).map((code) => (
+                <option key={code} value={code}>
+                  {languages[code]}
+                </option>
+              ))}
+            </select>
+          )}
+
           {/* Notifications */}
           <button
             type="button"
@@ -74,36 +111,42 @@ export default function TopHeader({ title, subtitle, onMenuClick }: TopHeaderPro
           </button>
 
           {/* Profile */}
-          <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
-            <div className="w-9 h-9 rounded-full bg-accent-600 text-white flex items-center justify-center text-sm font-bold">
-              AD
+          {variant === 'member' ? (
+            <ProfileMenu />
+          ) : (
+            <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
+              <div className="w-9 h-9 rounded-full bg-accent-600 text-white flex items-center justify-center text-sm font-bold">
+                AD
+              </div>
+              <div className="hidden sm:block">
+                <p className="text-sm font-bold text-slate-800 leading-none">Admin</p>
+                <p className="text-xs text-slate-400 mt-0.5">Super Admin</p>
+              </div>
             </div>
-            <div className="hidden sm:block">
-              <p className="text-sm font-bold text-slate-800 leading-none">Admin</p>
-              <p className="text-xs text-slate-400 mt-0.5">Super Admin</p>
-            </div>
-          </div>
+          )}
         </div>
       </div>
 
-      {/* Search (mobile) */}
-      <div className="md:hidden px-4 pb-3 relative">
-        <svg
-          viewBox="0 0 24 24"
-          className="w-4 h-4 absolute left-7 top-2.5 text-slate-400"
-          {...stroke}
-        >
-          <circle cx="11" cy="11" r="7" />
-          <path d="m20 20-3.2-3.2" />
-        </svg>
-        <input
-          type="search"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search…"
-          className="w-full py-2 pl-9 pr-3 rounded-lg bg-slate-50 border border-slate-200 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500"
-        />
-      </div>
+      {/* Search (mobile) — admin only */}
+      {variant === 'admin' && (
+        <div className="md:hidden px-4 pb-3 relative">
+          <svg
+            viewBox="0 0 24 24"
+            className="w-4 h-4 absolute left-7 top-2.5 text-slate-400"
+            {...stroke}
+          >
+            <circle cx="11" cy="11" r="7" />
+            <path d="m20 20-3.2-3.2" />
+          </svg>
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search…"
+            className="w-full py-2 pl-9 pr-3 rounded-lg bg-slate-50 border border-slate-200 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500"
+          />
+        </div>
+      )}
     </header>
   );
 }
