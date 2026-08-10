@@ -1,16 +1,23 @@
 interface SkeletonTableProps {
   rows?: number;
   columns?: number;
+  variant?: 'light' | 'dark';
 }
 
-export function SkeletonTable({ rows = 6, columns = 6 }: SkeletonTableProps) {
+export function SkeletonTable({ rows = 6, columns = 6, variant = 'light' }: SkeletonTableProps) {
+  const cardCls =
+    variant === 'dark'
+      ? 'bg-admin-card border-admin-border'
+      : 'bg-card border-slate-200';
+  const barCls = variant === 'dark' ? 'bg-admin-elevated' : 'bg-slate-100';
+
   return (
-    <div className="bg-card rounded-card border border-slate-200 overflow-hidden" aria-busy="true">
-      <div className="divide-y divide-slate-100">
+    <div className={`rounded-card border overflow-hidden ${cardCls}`} aria-busy="true">
+      <div className="divide-y divide-admin-border-subtle">
         {Array.from({ length: rows }).map((_, r) => (
           <div key={r} className="flex items-center gap-6 px-5 py-4">
             {Array.from({ length: columns }).map((__, c) => (
-              <div key={c} className={`h-4 rounded bg-slate-100 animate-pulse ${c === 0 ? 'w-64' : c === columns - 1 ? 'w-20 ml-auto' : 'flex-1'}`} />
+              <div key={c} className={`h-4 rounded animate-pulse ${barCls} ${c === 0 ? 'w-64' : c === columns - 1 ? 'w-20 ml-auto' : 'flex-1'}`} />
             ))}
           </div>
         ))}
@@ -22,15 +29,28 @@ export function SkeletonTable({ rows = 6, columns = 6 }: SkeletonTableProps) {
 interface EmptyStateProps {
   title: string;
   description: string;
+  variant?: 'light' | 'dark';
 }
 
-export function EmptyState({ title, description }: EmptyStateProps) {
+export function EmptyState({ title, description, variant = 'light' }: EmptyStateProps) {
+  const dark = variant === 'dark';
+
   return (
-    <div className="bg-card rounded-card border border-dashed border-slate-300 py-16 px-6 text-center">
-      <div className="mx-auto w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center">
+    <div
+      className={`rounded-card border py-16 px-6 text-center ${
+        dark
+          ? 'bg-admin-card border-dashed border-admin-border-strong'
+          : 'bg-card border-dashed border-slate-300'
+      }`}
+    >
+      <div
+        className={`mx-auto w-14 h-14 rounded-2xl flex items-center justify-center ${
+          dark ? 'bg-admin-elevated' : 'bg-slate-100'
+        }`}
+      >
         <svg
           viewBox="0 0 24 24"
-          className="w-7 h-7 text-slate-400"
+          className={`w-7 h-7 ${dark ? 'text-admin-muted' : 'text-slate-400'}`}
           fill="none"
           stroke="currentColor"
           strokeWidth={1.6}
@@ -41,8 +61,12 @@ export function EmptyState({ title, description }: EmptyStateProps) {
           <path d="m20 20-3.2-3.2M8.5 11h5" />
         </svg>
       </div>
-      <p className="mt-4 text-base font-bold text-slate-800">{title}</p>
-      <p className="mt-1 text-sm text-slate-500 max-w-sm mx-auto">{description}</p>
+      <p className={`mt-4 text-base font-bold ${dark ? 'text-admin-text' : 'text-slate-800'}`}>
+        {title}
+      </p>
+      <p className={`mt-1 text-sm max-w-sm mx-auto ${dark ? 'text-admin-muted' : 'text-slate-500'}`}>
+        {description}
+      </p>
     </div>
   );
 }
@@ -51,15 +75,28 @@ interface ErrorStateProps {
   title: string;
   description: string;
   onRetry?: () => void;
+  variant?: 'light' | 'dark';
 }
 
-export function ErrorState({ title, description, onRetry }: ErrorStateProps) {
+export function ErrorState({ title, description, onRetry, variant = 'light' }: ErrorStateProps) {
+  const dark = variant === 'dark';
+
   return (
-    <div className="bg-card rounded-card border border-danger-100 py-16 px-6 text-center">
-      <div className="mx-auto w-14 h-14 rounded-2xl bg-danger-100 flex items-center justify-center">
+    <div
+      className={`rounded-card border py-16 px-6 text-center ${
+        dark
+          ? 'bg-admin-card border-danger-500/25'
+          : 'bg-card border-danger-100'
+      }`}
+    >
+      <div
+        className={`mx-auto w-14 h-14 rounded-2xl flex items-center justify-center ${
+          dark ? 'bg-danger-500/15' : 'bg-danger-100'
+        }`}
+      >
         <svg
           viewBox="0 0 24 24"
-          className="w-7 h-7 text-danger-600"
+          className={`w-7 h-7 ${dark ? 'text-danger-500' : 'text-danger-600'}`}
           fill="none"
           stroke="currentColor"
           strokeWidth={1.6}
@@ -69,8 +106,12 @@ export function ErrorState({ title, description, onRetry }: ErrorStateProps) {
           <path d="M12 8v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" />
         </svg>
       </div>
-      <p className="mt-4 text-base font-bold text-slate-800">{title}</p>
-      <p className="mt-1 text-sm text-slate-500 max-w-sm mx-auto">{description}</p>
+      <p className={`mt-4 text-base font-bold ${dark ? 'text-admin-text' : 'text-slate-800'}`}>
+        {title}
+      </p>
+      <p className={`mt-1 text-sm max-w-sm mx-auto ${dark ? 'text-admin-muted' : 'text-slate-500'}`}>
+        {description}
+      </p>
       {onRetry && (
         <button
           type="button"

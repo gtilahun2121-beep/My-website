@@ -10,6 +10,7 @@ import FormButton from '@/app/components/forms/FormButton';
 import FormError from '@/app/components/forms/FormError';
 import FormSuccess from '@/app/components/forms/FormSuccess';
 import { ValidationSchema } from '@/app/utils/validation';
+import { homePathForStoredUser } from '@/app/lib/roleHome';
 
 interface CreateAccountModalProps {
   isOpen: boolean;
@@ -125,7 +126,7 @@ export default function CreateAccountModal({
         onSuccess?.('Success', 'Welcome back! Redirecting to your dashboard...');
         setTimeout(() => {
           handleClose();
-          router.push('/dashboard');
+          router.push(homePathForStoredUser());
         }, 2000);
       } else {
         setSuccessMessage('✓ OTP verified! Complete your profile...');

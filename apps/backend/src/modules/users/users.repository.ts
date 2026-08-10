@@ -161,4 +161,23 @@ export class UsersRepository {
             return rows[0] ?? null;
         });
     }
+
+    /**
+     * Admin grants or revokes a role for a registered user. This is how the
+     * database owner promotes a member to website admin (or demotes them).
+     * Runs inside an admin RLS context (users UPDATE policy requires
+     * current_user_role() = 'admin').
+     */
+    async setUserRole(adminId: string, userId: string, role: string) {
+        return withAdminContext(adminId, async (sql) => {
+            const rows = await sql`
+                UPDATE users
+                SET role       = ${role}::user_role,
+                    updated_at = NOW()
+                WHERE id = ${userId}
+                RETURNING id, first_name, last_name, phone, email, role, is_active, created_at
+            `;
+            return rows[0] ?? null;
+        });
+    }
 }

@@ -590,6 +590,18 @@ export const adminAPI = {
       method: 'POST',
       body: JSON.stringify({ new_pin: padPin(newPin) }),
     }),
+
+  /**
+   * PATCH /api/v1/admin/users/:id/role
+   * Grant or revoke a user's role — the database owner promotes a
+   * registered member to website admin (admin console access) or
+   * demotes them. Admin only.
+   */
+  updateUserRole: (userId: string, role: 'participant' | 'host' | 'admin') =>
+    request<any>(`/admin/users/${userId}/role`, {
+      method: 'PATCH',
+      body: JSON.stringify({ role }),
+    }),
 };
 
 // ---------------------------------------------------------------------------

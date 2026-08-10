@@ -5,12 +5,13 @@
  * Every route requires a valid JWT whose `role` claim is `admin`.
  */
 
-import { Controller, Get, Query, Body, Post, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, Body, Post, Patch, Param, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { UsersService } from './users.service';
 import { AdminStatsService } from './admin-stats.service';
 import { ResetPinDto } from './dto/reset-pin.dto';
+import { UpdateRoleDto } from './dto/update-role.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -79,5 +80,22 @@ export class AdminController {
         @Body() dto: ResetPinDto,
     ) {
         return this.usersService.resetUserPin(user.sub, userId, dto.new_pin);
+    }
+
+    @Patch('users/:id/role')
+    @UseGuards(RolesGuard)
+    @Roles('admin')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Grant or revoke a user role — promote a member to website admin or demote them' })
+    @ApiResponse({ status: 200, description: 'Role updated.' })
+    @ApiResponse({ status: 400, description: 'Cannot change your own role.' })
+    @ApiResponse({ status: 403, description: 'Forbidden — requires role admin.' })
+    @ApiResponse({ status: 404, description: 'User not found.' })
+    async updateUserRole(
+        @CurrentUser() user: JwtPayload,
+        @Param('id') userId: string,
+        @Body() dto: UpdateRoleDto,
+    ) {
+        return this.usersService.setUserRole(user.sub, userId, dto.role);
     }
 }

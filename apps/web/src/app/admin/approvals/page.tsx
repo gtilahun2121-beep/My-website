@@ -3,9 +3,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { adminAPI, APIError } from '@/app/services/api';
 import AppShell from '@/app/components/admin/AppShell';
-import { StatusBadge, BadgeTone } from '@/app/components/admin/StatusBadge';
+import { StatusBadge } from '@/app/components/admin/StatusBadge';
 import { EmptyState, ErrorState } from '@/app/components/admin/States';
 import type { EqubCreationRequest } from '@qalnet/shared-types';
+import { useRequireAdmin } from '@/app/hooks/useRequireAdmin';
+import { AdminRouteLoading } from '@/app/components/admin/AdminGate';
 
 interface PendingMembership {
   id: string;
@@ -73,10 +75,11 @@ export default function AdminApprovalsPage() {
   }, []);
 
   useEffect(() => {
-    void load();
+    const t = setTimeout(() => void load(), 0);
+    return () => clearTimeout(t);
   }, [load]);
 
-  const act = async (id: string, action: () => Promise<any>, successText: string) => {
+  const act = async (id: string, action: () => Promise<unknown>, successText: string) => {
     setBusyId(id);
     setMessage(null);
     try {
@@ -99,11 +102,14 @@ export default function AdminApprovalsPage() {
   const pendingEqubCount = equbRequests.length;
   const pendingMembershipCount = memberships.length;
 
+  const { authorized } = useRequireAdmin();
+  if (!authorized) return <AdminRouteLoading />;
+
   return (
     <AppShell title="Approvals" subtitle="Review Equb creation and membership join requests">
       {/* Message banner */}
       {message && (
-        <div className="bg-brand-50 border border-brand-200 text-brand-800 rounded-lg px-4 py-3 text-sm font-semibold">
+        <div className="bg-brand-100 border border-brand-200 text-brand-700 rounded-lg px-4 py-3 text-sm font-semibold">
           {message}
         </div>
       )}
@@ -115,8 +121,8 @@ export default function AdminApprovalsPage() {
           onClick={() => setTab('equbs')}
           className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-colors ${
             tab === 'equbs'
-              ? 'bg-brand-600 text-white'
-              : 'bg-card border border-slate-200 text-slate-600 hover:bg-slate-50'
+              ? 'bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow-lg shadow-brand-900/40'
+              : 'bg-admin-card border border-admin-border text-admin-text-secondary hover:bg-admin-card-hover'
           }`}
         >
           Equb Requests {pendingEqubCount > 0 && <span className="ml-1 opacity-80">({pendingEqubCount})</span>}
@@ -126,8 +132,8 @@ export default function AdminApprovalsPage() {
           onClick={() => setTab('memberships')}
           className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-colors ${
             tab === 'memberships'
-              ? 'bg-brand-600 text-white'
-              : 'bg-card border border-slate-200 text-slate-600 hover:bg-slate-50'
+              ? 'bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow-lg shadow-brand-900/40'
+              : 'bg-admin-card border border-admin-border text-admin-text-secondary hover:bg-admin-card-hover'
           }`}
         >
           Join Requests {pendingMembershipCount > 0 && <span className="ml-1 opacity-80">({pendingMembershipCount})</span>}
@@ -135,7 +141,7 @@ export default function AdminApprovalsPage() {
       </div>
 
       {loading ? (
-        <div className="bg-card rounded-card border border-slate-200 p-8 text-center text-slate-400 text-sm font-semibold">
+        <div className="bg-admin-card rounded-card border border-admin-border p-8 text-center text-admin-muted text-sm font-semibold">
           Loading…
         </div>
       ) : error ? (
@@ -147,6 +153,7 @@ export default function AdminApprovalsPage() {
               : 'We could not load the approvals. Please try again.'
           }
           onRetry={() => void load()}
+          variant="dark"
         />
       ) : tab === 'equbs' ? (
         <EqubRequestsSection
@@ -193,39 +200,40 @@ function EqubRequestsSection({
       <EmptyState
         title="No Equb creation requests"
         description="When members ask the admin to create an Equb, their requests will appear here."
+        variant="dark"
       />
     );
   }
 
   return (
-    <div className="bg-card rounded-card border border-slate-200 overflow-hidden">
-      <div className="divide-y divide-slate-100">
+    <div className="bg-admin-card rounded-card border border-admin-border overflow-hidden">
+      <div className="divide-y divide-admin-border-subtle">
         {requests.map((req) => (
           <div key={req.id} className="p-5 flex flex-col lg:flex-row lg:items-center gap-4">
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <p className="font-bold text-slate-900">{req.name}</p>
-                <StatusBadge tone="warning">pending</StatusBadge>
+                <p className="font-bold text-admin-text">{req.name}</p>
+                <StatusBadge tone="warning" variant="dark">pending</StatusBadge>
               </div>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-admin-muted">
                 Requested by{' '}
-                <span className="font-bold text-slate-700">
+                <span className="font-bold text-admin-text-secondary">
                   {req.requester_first_name} {req.requester_last_name}
                 </span>{' '}
                 · {req.requester_phone} · {formatDate(req.created_at)}
               </p>
               {req.description && (
-                <p className="mt-1.5 text-sm text-slate-600 line-clamp-2">{req.description}</p>
+                <p className="mt-1.5 text-sm text-admin-text-secondary line-clamp-2">{req.description}</p>
               )}
-              <div className="mt-2 flex flex-wrap gap-3 text-xs text-slate-500">
+              <div className="mt-2 flex flex-wrap gap-3 text-xs text-admin-muted">
                 <span>
-                  Contribution: <strong className="text-slate-700">ETB {money(req.contribution_amount)}</strong>
+                  Contribution: <strong className="text-admin-text">ETB {money(req.contribution_amount)}</strong>
                 </span>
                 <span>
-                  Rounds: <strong className="text-slate-700">{req.total_rounds}</strong>
+                  Rounds: <strong className="text-admin-text">{req.total_rounds}</strong>
                 </span>
                 <span>
-                  Cycle: <strong className="text-slate-700">{req.cycle_days} days</strong>
+                  Cycle: <strong className="text-admin-text">{req.cycle_days} days</strong>
                 </span>
               </div>
             </div>
@@ -234,7 +242,7 @@ function EqubRequestsSection({
                 type="button"
                 onClick={() => onApprove(req.id)}
                 disabled={busyId !== null}
-                className="px-4 py-2 rounded-lg bg-green-600 text-white text-sm font-bold hover:bg-green-700 disabled:opacity-50 transition-colors"
+                className="px-4 py-2 rounded-lg bg-success-600 text-white text-sm font-bold hover:bg-success-500 disabled:opacity-50 transition-colors"
               >
                 {busyId === req.id ? 'Working…' : '✅ Approve & Create'}
               </button>
@@ -242,7 +250,7 @@ function EqubRequestsSection({
                 type="button"
                 onClick={() => onReject(req.id)}
                 disabled={busyId !== null}
-                className="px-4 py-2 rounded-lg border border-red-200 text-red-600 text-sm font-bold hover:bg-red-50 disabled:opacity-50 transition-colors"
+                className="px-4 py-2 rounded-lg border border-danger-500/40 text-danger-500 text-sm font-bold hover:bg-danger-500/10 disabled:opacity-50 transition-colors"
               >
                 Reject
               </button>
@@ -272,31 +280,32 @@ function MembershipsSection({
       <EmptyState
         title="No pending join requests"
         description="When members request to join an Equb, their requests will appear here."
+        variant="dark"
       />
     );
   }
 
   return (
-    <div className="bg-card rounded-card border border-slate-200 overflow-hidden">
-      <div className="divide-y divide-slate-100">
+    <div className="bg-admin-card rounded-card border border-admin-border overflow-hidden">
+      <div className="divide-y divide-admin-border-subtle">
         {memberships.map((m) => (
           <div key={m.id} className="p-5 flex flex-col lg:flex-row lg:items-center gap-4">
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <p className="font-bold text-slate-900">
+                <p className="font-bold text-admin-text">
                   {m.user_first_name} {m.user_last_name}
                 </p>
-                <StatusBadge tone="warning">pending</StatusBadge>
+                <StatusBadge tone="warning" variant="dark">pending</StatusBadge>
               </div>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-admin-muted">
                 {m.user_phone} · {m.user_email || 'no email'}
               </p>
-              <div className="mt-2 flex flex-wrap gap-3 text-xs text-slate-500">
+              <div className="mt-2 flex flex-wrap gap-3 text-xs text-admin-muted">
                 <span>
-                  Equb: <strong className="text-slate-700">{m.equb_name}</strong>
+                  Equb: <strong className="text-admin-text">{m.equb_name}</strong>
                 </span>
                 <span>
-                  Contribution: <strong className="text-slate-700">ETB {money(m.equb_contribution)}</strong>
+                  Contribution: <strong className="text-admin-text">ETB {money(m.equb_contribution)}</strong>
                 </span>
                 <span>Requested {formatDate(m.joined_at)}</span>
               </div>
@@ -306,7 +315,7 @@ function MembershipsSection({
                 type="button"
                 onClick={() => onApprove(m.id)}
                 disabled={busyId !== null}
-                className="px-4 py-2 rounded-lg bg-green-600 text-white text-sm font-bold hover:bg-green-700 disabled:opacity-50 transition-colors"
+                className="px-4 py-2 rounded-lg bg-success-600 text-white text-sm font-bold hover:bg-success-500 disabled:opacity-50 transition-colors"
               >
                 {busyId === m.id ? 'Working…' : '✅ Approve'}
               </button>
@@ -314,7 +323,7 @@ function MembershipsSection({
                 type="button"
                 onClick={() => onReject(m.id)}
                 disabled={busyId !== null}
-                className="px-4 py-2 rounded-lg border border-red-200 text-red-600 text-sm font-bold hover:bg-red-50 disabled:opacity-50 transition-colors"
+                className="px-4 py-2 rounded-lg border border-danger-500/40 text-danger-500 text-sm font-bold hover:bg-danger-500/10 disabled:opacity-50 transition-colors"
               >
                 Reject
               </button>

@@ -9,6 +9,7 @@ import Footer from '@/app/components/Footer';
 import FormInput from '@/app/components/forms/FormInput';
 import FormButton from '@/app/components/forms/FormButton';
 import FormError from '@/app/components/forms/FormError';
+import { homePathForStoredUser } from '@/app/lib/roleHome';
 
 export default function CompleteProfilePage() {
   const router = useRouter();
@@ -64,8 +65,8 @@ export default function CompleteProfilePage() {
       // Simulate API call to save profile
       await new Promise((resolve) => setTimeout(resolve, 2000));
       
-      // Redirect to dashboard after profile completion
-      router.push('/dashboard');
+      // Redirect to the role-appropriate dashboard after profile completion
+      router.push(homePathForStoredUser());
     } catch (error) {
       console.error('Profile completion failed:', error);
     } finally {

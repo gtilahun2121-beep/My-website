@@ -43,6 +43,11 @@ export interface CreateUserInput {
     last_name: string;
     fayda_id: string;
     telegram_handle?: string;
+    /**
+     * Classified at registration: the platform owner's phone/email becomes
+     * 'admin', everyone else 'participant'. Defaults to 'participant'.
+     */
+    role?: 'participant' | 'admin';
 }
 
 export interface UserSettingsRecord {
@@ -160,7 +165,7 @@ export class AuthRepository {
             const result = await sql.begin(async (tx) => {
                 // 1. Insert user
                 const [user] = await tx<UserRecord[]>`
-          INSERT INTO users (phone, email, password_hash, first_name, last_name, fayda_id, telegram_handle)
+          INSERT INTO users (phone, email, password_hash, first_name, last_name, fayda_id, telegram_handle, role)
           VALUES (
             ${input.phone},
             ${input.email.toLowerCase()},
@@ -168,7 +173,8 @@ export class AuthRepository {
             ${input.first_name},
             ${input.last_name},
             ${input.fayda_id},
-            ${input.telegram_handle ?? null}
+            ${input.telegram_handle ?? null},
+            ${input.role ?? 'participant'}
           )
           RETURNING id, phone, email, first_name, last_name, fayda_id, telegram_handle,
                     password_hash, role, is_active, created_at

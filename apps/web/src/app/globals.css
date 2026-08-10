@@ -23,47 +23,53 @@
 
 /* ---------------------------------------------------------------------------
  * QalNet fintech design tokens (per Qalnet_DESIGN_SPEC.md §4–§5)
- * Primary navy · secondary royal blue · warning orange · success green · danger red
+ * Primary teal · secondary purple · warning orange · success green · danger red
  * Usage: bg-brand-600, text-warning-600, bg-surface, rounded-card, etc.
  * ------------------------------------------------------------------------- */
 @theme {
-  --color-brand-50: #f0f4fb;
-  --color-brand-100: #dce5f3;
-  --color-brand-200: #b8c9e7;
-  --color-brand-300: #8aa6d6;
-  --color-brand-400: #5b80c1;
-  --color-brand-500: #3a5fa8;
-  --color-brand-600: #2b4a8c;
-  --color-brand-700: #243e75;
-  --color-brand-800: #203460;
-  --color-brand-900: #182644;
-  --color-brand-950: #0d1526;
+  --color-brand-50: #f0fdfa;
+  --color-brand-100: #ccfbf1;
+  --color-brand-200: #99f6e4;
+  --color-brand-300: #5eead4;
+  --color-brand-400: #2dd4bf;
+  --color-brand-500: #14b8a6;
+  --color-brand-600: #0d9488;
+  --color-brand-700: #0f766e;
+  --color-brand-800: #115e59;
+  --color-brand-900: #134e4a;
+  --color-brand-950: #042f2e;
 
-  --color-accent-50: #eff5ff;
-  --color-accent-100: #dbe9fe;
-  --color-accent-200: #b9d4fb;
-  --color-accent-300: #8fb7f8;
-  --color-accent-400: #5d92f2;
-  --color-accent-500: #3b82f6;
-  --color-accent-600: #2563eb;
-  --color-accent-700: #1e4fd8;
-  --color-accent-800: #1e42ad;
-  --color-accent-900: #1e3b8a;
+  --color-accent-50: #faf5ff;
+  --color-accent-100: #f3e8ff;
+  --color-accent-200: #e9d5ff;
+  --color-accent-300: #d8b4fe;
+  --color-accent-400: #c084fc;
+  --color-accent-500: #a855f7;
+  --color-accent-600: #9333ea;
+  --color-accent-700: #7e22ce;
+  --color-accent-800: #6b21a8;
+  --color-accent-900: #581c87;
 
   --color-warning-50: #fffbeb;
   --color-warning-100: #fef3c7;
+  --color-warning-300: #fcd34d;
+  --color-warning-400: #fbbf24;
   --color-warning-500: #f59e0b;
   --color-warning-600: #d97706;
   --color-warning-700: #b45309;
 
   --color-success-50: #f0fdf4;
   --color-success-100: #dcfce7;
+  --color-success-300: #86efac;
+  --color-success-400: #4ade80;
   --color-success-500: #22c55e;
   --color-success-600: #16a34a;
   --color-success-700: #15803d;
 
   --color-danger-50: #fef2f2;
   --color-danger-100: #fee2e2;
+  --color-danger-300: #fca5a5;
+  --color-danger-400: #f87171;
   --color-danger-500: #ef4444;
   --color-danger-600: #dc2626;
   --color-danger-700: #b91c1c;
@@ -73,6 +79,21 @@
 
   --radius-card: 16px;
   --radius-control: 10px;
+
+  /* ── Admin light theme (per Qalnet_DESIGN_SPEC.md — member & admin console) */
+  --color-admin-bg: #f4f6fb;
+  --color-admin-sidebar: #ffffff;
+  --color-admin-header: #ffffff;
+  --color-admin-card: #ffffff;
+  --color-admin-card-hover: #f1f5f9;
+  --color-admin-elevated: #f1f5f9;
+  --color-admin-border: #e2e8f0;
+  --color-admin-border-subtle: #eef2f7;
+  --color-admin-border-strong: #cbd5e1;
+  --color-admin-text: #0f172a;
+  --color-admin-text-secondary: #334155;
+  --color-admin-muted: #64748b;
+  --color-admin-disabled: #94a3b8;
 }
 
 body {

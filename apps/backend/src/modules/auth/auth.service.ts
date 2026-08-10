@@ -50,6 +50,13 @@ const ARGON2_OPTIONS: argon2.Options & { raw?: false } = {
 // TOTP codes are verified with a ±30s window to allow clock skew between the
 // user's authenticator app and the server.
 
+// The platform owner (database owner) registers through the SAME signup form
+// as every member. At registration the system classifies the account by
+// matching the phone/email against the owner's credentials: a match becomes
+// a website admin (admin console + dashboard), anything else becomes a member.
+const PLATFORM_ADMIN_PHONE = process.env.PLATFORM_ADMIN_PHONE || '+251904556677';
+const PLATFORM_ADMIN_EMAIL = process.env.PLATFORM_ADMIN_EMAIL || 'danel@qalnet.com';
+
 // Escalating PIN lockout (spec): 3 wrong PINs → 6h lock, then 1 day, then
 // 3 days, then permanently blocked (admin must reset the PIN).
 const MAX_FAILED_ATTEMPTS = 3;
@@ -124,16 +131,28 @@ export class AuthService {
     // ── Register ─────────────────────────────────────────────────────────────
 
     /**
-     * Registers a new participant.
+     * Registers a new user through the single, shared signup form.
+     *
+     * The role is classified automatically from the registered phone/email:
+     * the platform owner's credentials get role `admin`, everyone else gets
+     * `participant`. There is no separate admin registration format.
      *
      * Pipeline:
-     *  1. Check no duplicate phone/email exists
-     *  2. Hash password with Argon2id + pepper
-     *  3. Persist user + wallet + credit_score in one ACID transaction
-     *  4. Issue access + refresh tokens
+     *  1. Classify the account (admin vs member) from the owner's phone/email
+     *  2. Check no duplicate phone/email exists
+     *  3. Hash password with Argon2id + pepper
+     *  4. Persist user + wallet + credit_score in one ACID transaction
+     *  5. Issue access + refresh tokens (carry the classified role)
      */
     async register(dto: RegisterDto): Promise<AuthTokens> {
         const secrets = await VaultConfig.load();
+
+        // Classify the account at registration time.
+        const role: 'participant' | 'admin' =
+            dto.phone === PLATFORM_ADMIN_PHONE ||
+            dto.email.toLowerCase() === PLATFORM_ADMIN_EMAIL
+                ? 'admin'
+                : 'participant';
 
         // Hash password — pepper is appended before hashing to add a
         // server-side secret that makes offline dictionary attacks impossible
@@ -153,6 +172,7 @@ export class AuthService {
                 last_name: dto.last_name,
                 fayda_id: dto.fayda_id,
                 telegram_handle: dto.telegram_handle,
+                role,
             });
         } catch (err: any) {
             // Postgres unique violation (23505)
@@ -164,7 +184,7 @@ export class AuthService {
             throw err;
         }
 
-        this.logger.log(`New user registered: ${user.id}`);
+        this.logger.log(`New user registered: ${user.id} (role=${role})`);
         return this.issueTokens(user);
     }
 

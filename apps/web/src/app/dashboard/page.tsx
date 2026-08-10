@@ -41,6 +41,11 @@ export default function DashboardPage() {
       router.replace('/');
       return;
     }
+    // Admins belong on the admin console, not the member dashboard.
+    if (user?.role === 'admin') {
+      router.replace('/admin/dashboard');
+      return;
+    }
 
     let cancelled = false;
 
@@ -69,7 +74,7 @@ export default function DashboardPage() {
     return () => {
       cancelled = true;
     };
-  }, [isLoading, isAuthenticated, router]);
+  }, [isLoading, isAuthenticated, user?.role, router]);
 
   if (isLoading) {
     return (
