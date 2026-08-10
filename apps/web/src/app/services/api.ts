@@ -462,7 +462,68 @@ export interface ListUsersParams {
   status?: 'active' | 'inactive';
 }
 
+export interface AdminStatsKpis {
+  total_users: number;
+  active_users: number;
+  hosts: number;
+  new_users_this_month: number;
+  total_equbs: number;
+  active_equbs: number;
+  total_memberships: number;
+  total_wallet_balance: number;
+  successful_payments: number;
+  pending_payments: number;
+  failed_transactions: number;
+  pending_withdrawals: number;
+  total_payout_volume: number;
+  operational_equbs: number;
+}
+
+export interface AdminTrendPoint {
+  date: string;
+  count: number;
+}
+
+export interface AdminRecentTransaction {
+  id: string;
+  amount: string;
+  status: string;
+  round_number: number;
+  paid_at: string | null;
+  created_at: string;
+  user_first_name: string;
+  user_last_name: string;
+  user_phone: string;
+  equb_name: string;
+}
+
+export interface AdminTopEqub {
+  id: string;
+  name: string;
+  total_amount: string;
+  contribution_amount: string;
+  current_round: number;
+  total_rounds: number;
+  status: string;
+  created_at: string;
+  member_count: number;
+}
+
+export interface AdminStats {
+  kpis: AdminStatsKpis;
+  trend: AdminTrendPoint[];
+  recent_transactions: AdminRecentTransaction[];
+  top_equbs: AdminTopEqub[];
+}
+
 export const adminAPI = {
+  /**
+   * GET /api/v1/admin/stats
+   * Dashboard aggregates — KPIs, 30-day registration trend, recent
+   * transactions and top equbs (admin only).
+   */
+  getStats: () => request<AdminStats>('/admin/stats', { method: 'GET' }),
+
   /**
    * GET /api/v1/admin/users
    * Lists registered customers (admin only). Requires a JWT whose role is 'admin'.

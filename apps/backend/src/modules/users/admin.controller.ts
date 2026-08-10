@@ -9,6 +9,7 @@ import { Controller, Get, Query, Body, Post, Param, UseGuards } from '@nestjs/co
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { UsersService } from './users.service';
+import { AdminStatsService } from './admin-stats.service';
 import { ResetPinDto } from './dto/reset-pin.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -20,7 +21,21 @@ import { JwtPayload } from '../auth/auth.service';
 @Controller('api/v1/admin')
 @UseGuards(JwtAuthGuard)
 export class AdminController {
-    constructor(private readonly usersService: UsersService) {}
+    constructor(
+        private readonly usersService: UsersService,
+        private readonly adminStatsService: AdminStatsService,
+    ) {}
+
+    @Get('stats')
+    @UseGuards(RolesGuard)
+    @Roles('admin')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Dashboard aggregates — KPIs, 30-day trend, recent transactions, top equbs' })
+    @ApiResponse({ status: 200, description: 'Dashboard statistics.' })
+    @ApiResponse({ status: 403, description: 'Forbidden — requires role admin.' })
+    async getDashboardStats(@CurrentUser() user: JwtPayload) {
+        return this.adminStatsService.getDashboardStats(user.sub);
+    }
 
     @Get('users')
     @UseGuards(RolesGuard)
