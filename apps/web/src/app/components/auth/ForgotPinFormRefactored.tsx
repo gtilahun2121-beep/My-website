@@ -40,14 +40,15 @@ export default function ForgotPinFormRefactored({
       return;
     }
     try {
-      const response = await authAPI.forgotPin(phoneNumber);
+      await authAPI.forgotPin(phoneNumber);
       console.log('SMS sent:', phoneNumber);
       onSuccess?.('SMS Sent', `Verification code sent to ${phoneNumber}`, 3000);
       setError('');
       setStep('otp');
-    } catch (err: any) {
-      setError(err.message);
-      onError?.('Error', err.message, 3000);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Something went wrong';
+      setError(message);
+      onError?.('Error', message, 3000);
     } finally {
       setLoading(false);
     }
@@ -71,9 +72,10 @@ export default function ForgotPinFormRefactored({
       onSuccess?.('OTP Verified', 'Code verified successfully', 3000);
       setError('');
       setStep('newpin');
-    } catch (err: any) {
-      setError(err.message);
-      onError?.('Error', err.message, 3000);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Something went wrong';
+      setError(message);
+      onError?.('Error', message, 3000);
     } finally {
       setLoading(false);
     }
@@ -92,14 +94,15 @@ export default function ForgotPinFormRefactored({
       return;
     }
     try {
-      const response = await authAPI.resetPin(phoneNumber, otp, newPin);
+      await authAPI.resetPin(phoneNumber, otp, newPin);
       console.log('PIN reset for:', phoneNumber);
       onSuccess?.('✅ PIN Reset', 'Your access code has been reset successfully', 4000);
       setError('');
       setStep('success');
-    } catch (err: any) {
-      setError(err.message);
-      onError?.('Error', err.message, 3000);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Something went wrong';
+      setError(message);
+      onError?.('Error', message, 3000);
     } finally {
       setLoading(false);
     }

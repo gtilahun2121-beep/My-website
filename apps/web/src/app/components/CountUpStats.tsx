@@ -69,7 +69,7 @@ export default function CountUpStats({ stats, title, description }: CountUpStats
 
   const itemVariants = {
     hidden: { opacity: 0, y: 30, scale: 0.9 },
-    visible: (idx: number) => ({
+    visible: () => ({
       opacity: 1,
       y: 0,
       scale: 1,

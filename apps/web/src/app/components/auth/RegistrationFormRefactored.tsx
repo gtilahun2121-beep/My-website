@@ -84,9 +84,10 @@ export default function RegistrationFormRefactored({
       onSuccess?.('SMS Sent', `Verification code sent to ${phoneNumber}`, 3000);
       setStep('otp');
       setError('');
-    } catch (err: any) {
-      setError(err.message);
-      onError?.('Error', err.message, 3000);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Something went wrong';
+      setError(message);
+      onError?.('Error', message, 3000);
     } finally {
       setLoading(false);
     }
@@ -103,9 +104,10 @@ export default function RegistrationFormRefactored({
       onSuccess?.('OTP Verified', 'Code verified successfully', 3000);
       setStep('details');
       setError('');
-    } catch (err: any) {
-      setError(err.message);
-      onError?.('Error', err.message, 3000);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Something went wrong';
+      setError(message);
+      onError?.('Error', message, 3000);
     } finally {
       setLoading(false);
     }
@@ -151,9 +153,10 @@ export default function RegistrationFormRefactored({
       );
       setStep('success');
       setError('');
-    } catch (err: any) {
-      setError(err.message);
-      onError?.('Registration Failed', err.message, 4000);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Registration failed';
+      setError(message);
+      onError?.('Registration Failed', message, 4000);
     } finally {
       setLoading(false);
     }

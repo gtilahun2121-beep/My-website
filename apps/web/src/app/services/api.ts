@@ -34,6 +34,11 @@ import type {
   EqubCreationRequest,
   Wallet,
   WalletTransaction,
+  Proposal,
+  VoteTally,
+  ReconciliationTicket,
+  Notification,
+  UserProfileData,
 } from '@qalnet/shared-types';
 
 const API_BASE_URL =
@@ -44,10 +49,16 @@ const API_VERSION = process.env.NEXT_PUBLIC_API_VERSION || 'v1';
 // Error class
 // ---------------------------------------------------------------------------
 
+export interface ApiErrorData {
+  message?: string;
+  error?: string;
+  statusCode?: number;
+}
+
 export class APIError extends Error {
   constructor(
     public status: number,
-    public data?: any,
+    public data?: ApiErrorData,
     message?: string,
   ) {
     super(message || `API Error: ${status}`);
@@ -60,10 +71,10 @@ export class APIError extends Error {
 // ---------------------------------------------------------------------------
 
 interface RequestOptions extends RequestInit {
-  params?: Record<string, any>;
+  params?: object;
 }
 
-async function request<T = any>(
+async function request<T = unknown>(
   endpoint: string,
   options: RequestOptions = {},
 ): Promise<T> {
@@ -91,7 +102,7 @@ async function request<T = any>(
     const response = await fetch(url, { ...init, headers, credentials: 'include' });
 
     const contentType = response.headers.get('content-type');
-    let data: any;
+    let data: unknown;
     if (contentType?.includes('application/json')) {
       data = await response.json();
     } else {
@@ -99,10 +110,12 @@ async function request<T = any>(
     }
 
     if (!response.ok) {
+      const errorData =
+        typeof data === 'object' && data !== null ? (data as ApiErrorData) : undefined;
       throw new APIError(
         response.status,
-        data,
-        data?.message || `HTTP ${response.status}`,
+        errorData,
+        errorData?.message || `HTTP ${response.status}`,
       );
     }
 
@@ -293,7 +306,7 @@ export const paymentsAPI = {
    * Requires: JWT access token (Bearer).
    */
   getPending: (params: GetPendingPaymentsParams) =>
-    request<any[]>('/payments/pending', {
+    request<unknown[]>('/payments/pending', {
       method: 'GET',
       params: { equb_id: params.equb_id, round: params.round },
     }),
@@ -307,7 +320,7 @@ export const paymentsAPI = {
    * The correct endpoint is /payments/checkout.
    */
   checkout: (data: CheckoutRequest) =>
-    request<any>('/payments/checkout', {
+    request<unknown>('/payments/checkout', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
@@ -321,7 +334,7 @@ export const paymentsAPI = {
    */
   submitBid: (equbId: string, bid_amount: number) => {
     const payload: Omit<BidRequest, 'equb_id'> = { bid_amount };
-    return request<any>(`/equbs/${equbId}/bid`, {
+    return request<unknown>(`/equbs/${equbId}/bid`, {
       method: 'POST',
       body: JSON.stringify(payload),
     });
@@ -343,7 +356,7 @@ export const socialAPI = {
    * Requires: JWT access token (Bearer).
    */
   createProposal: (equbId: string, data: CreateProposalRequest) =>
-    request<any>(`/equbs/${equbId}/proposals`, {
+    request<Proposal>(`/equbs/${equbId}/proposals`, {
       method: 'POST',
       body: JSON.stringify(data),
     }),
@@ -354,7 +367,7 @@ export const socialAPI = {
    * Requires: JWT access token (Bearer).
    */
   listProposals: (equbId: string, status?: string) =>
-    request<any[]>(`/equbs/${equbId}/proposals`, {
+    request<Proposal[]>(`/equbs/${equbId}/proposals`, {
       method: 'GET',
       params: status ? { status } : undefined,
     }),
@@ -365,7 +378,7 @@ export const socialAPI = {
    * Requires: JWT access token (Bearer).
    */
   castVote: (proposalId: string, data: CastVoteRequest) =>
-    request<any>(`/proposals/${proposalId}/vote`, {
+    request<VoteTally>(`/proposals/${proposalId}/vote`, {
       method: 'POST',
       body: JSON.stringify(data),
     }),
@@ -376,7 +389,7 @@ export const socialAPI = {
    * Requires: JWT access token (Bearer) with role 'admin'.
    */
   executeProposal: (proposalId: string) =>
-    request<any>(`/proposals/${proposalId}/execute`, { method: 'PATCH' }),
+    request<unknown>(`/proposals/${proposalId}/execute`, { method: 'PATCH' }),
 
   /**
    * POST /api/v1/tickets
@@ -384,7 +397,7 @@ export const socialAPI = {
    * Requires: JWT access token (Bearer).
    */
   fileTicket: (data: FileTicketRequest) =>
-    request<any>('/tickets', {
+    request<ReconciliationTicket>('/tickets', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
@@ -395,7 +408,7 @@ export const socialAPI = {
    * Requires: JWT access token (Bearer).
    */
   listMyTickets: () =>
-    request<any[]>('/tickets/mine', { method: 'GET' }),
+    request<ReconciliationTicket[]>('/tickets/mine', { method: 'GET' }),
 
   /**
    * POST /api/v1/admin/crb/flag
@@ -403,7 +416,7 @@ export const socialAPI = {
    * Requires: JWT access token (Bearer) with role 'admin'.
    */
   flagCrb: (data: FlagCrbRequest) =>
-    request<any>('/admin/crb/flag', {
+    request<unknown>('/admin/crb/flag', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
@@ -414,7 +427,7 @@ export const socialAPI = {
    * Requires: JWT access token (Bearer) with role 'admin'.
    */
   releaseCrb: (userId: string) =>
-    request<any>(`/admin/crb/${userId}/release`, { method: 'PATCH' }),
+    request<unknown>(`/admin/crb/${userId}/release`, { method: 'PATCH' }),
 };
 
 // ---------------------------------------------------------------------------
@@ -423,10 +436,10 @@ export const socialAPI = {
 
 export const userAPI = {
   getProfile: () =>
-    request<any>(`/users/me`, { method: 'GET' }),
+    request<UserProfileData>(`/users/me`, { method: 'GET' }),
 
-  updateProfile: (data: any) =>
-    request<any>(`/users/me`, {
+  updateProfile: (data: Partial<UserProfileData>) =>
+    request<UserProfileData>(`/users/me`, {
       method: 'PATCH',
       body: JSON.stringify(data),
     }),
@@ -526,6 +539,21 @@ export interface AdminStats {
   top_equbs: AdminTopEqub[];
 }
 
+export interface PendingMembership {
+  id: string;
+  user_id: string;
+  equb_id: string;
+  status: string;
+  joined_at: string;
+  user_first_name: string;
+  user_last_name: string;
+  user_phone: string;
+  user_email: string;
+  equb_name: string;
+  equb_contribution: number;
+  equb_total_rounds: number;
+}
+
 export const adminAPI = {
   /**
    * GET /api/v1/admin/stats
@@ -557,14 +585,14 @@ export const adminAPI = {
    * and auto-approves the requesting member. Admin only.
    */
   approveEqubRequest: (requestId: string) =>
-    request<any>(`/admin/equb-requests/${requestId}/approve`, { method: 'POST' }),
+    request<unknown>(`/admin/equb-requests/${requestId}/approve`, { method: 'POST' }),
 
   /**
    * POST /api/v1/admin/equb-requests/:id/reject
    * Rejects a member's creation request with an optional note. Admin only.
    */
   rejectEqubRequest: (requestId: string, admin_notes?: string) =>
-    request<any>(`/admin/equb-requests/${requestId}/reject`, {
+    request<unknown>(`/admin/equb-requests/${requestId}/reject`, {
       method: 'POST',
       body: JSON.stringify({ admin_notes: admin_notes ?? '' }),
     }),
@@ -574,21 +602,21 @@ export const adminAPI = {
    * Lists pending join requests from members awaiting approval. Admin only.
    */
   listPendingMemberships: () =>
-    request<any[]>('/admin/memberships/pending', { method: 'GET' }),
+    request<PendingMembership[]>('/admin/memberships/pending', { method: 'GET' }),
 
   /**
    * POST /api/v1/admin/memberships/:id/approve
    * Approves a member's join request. Admin only.
    */
   approveMembership: (membershipId: string) =>
-    request<any>(`/admin/memberships/${membershipId}/approve`, { method: 'POST' }),
+    request<unknown>(`/admin/memberships/${membershipId}/approve`, { method: 'POST' }),
 
   /**
    * POST /api/v1/admin/memberships/:id/reject
    * Rejects a member's join request. Admin only.
    */
   rejectMembership: (membershipId: string) =>
-    request<any>(`/admin/memberships/${membershipId}/reject`, { method: 'POST' }),
+    request<unknown>(`/admin/memberships/${membershipId}/reject`, { method: 'POST' }),
 
   /**
    * POST /api/v1/admin/users/:id/reset-pin
@@ -596,7 +624,7 @@ export const adminAPI = {
    * (including permanently blocked accounts). Admin only.
    */
   resetUserPin: (userId: string, newPin: string) =>
-    request<any>(`/admin/users/${userId}/reset-pin`, {
+    request<unknown>(`/admin/users/${userId}/reset-pin`, {
       method: 'POST',
       body: JSON.stringify({ new_pin: padPin(newPin) }),
     }),
@@ -608,7 +636,7 @@ export const adminAPI = {
    * demotes them. Admin only.
    */
   updateUserRole: (userId: string, role: 'participant' | 'host' | 'admin') =>
-    request<any>(`/admin/users/${userId}/role`, {
+    request<unknown>(`/admin/users/${userId}/role`, {
       method: 'PATCH',
       body: JSON.stringify({ role }),
     }),
@@ -630,8 +658,8 @@ export const equbAPI = {
    * POST /api/v1/equbs
    * Direct creation — ADMIN ONLY (enforced by RolesGuard on the backend).
    */
-  create: (data: any) =>
-    request<any>('/equbs', { method: 'POST', body: JSON.stringify(data) }),
+  create: (data: Partial<EqubCreationRequest>) =>
+    request<EqubGroup>('/equbs', { method: 'POST', body: JSON.stringify(data) }),
 
   /**
    * POST /api/v1/equbs/:id/join
@@ -639,7 +667,7 @@ export const equbAPI = {
    * 'pending' until an admin approves it.
    */
   join: (equbId: string) =>
-    request<any>(`/equbs/${equbId}/join`, { method: 'POST' }),
+    request<{ pending?: boolean }>(`/equbs/${equbId}/join`, { method: 'POST' }),
 
   /**
    * POST /api/v1/equbs/requests
@@ -674,12 +702,12 @@ export const walletAPI = {
   getTransactions: () =>
     request<WalletTransaction[]>('/wallets/me/transactions', { method: 'GET' }),
   deposit: (amount: number) =>
-    request<any>('/wallets/deposit', {
+    request<{ balance: number }>('/wallets/deposit', {
       method: 'POST',
       body: JSON.stringify({ amount }),
     }),
   withdraw: (amount: number, method?: string, phone?: string) =>
-    request<any>('/wallets/withdraw', {
+    request<{ balance: number }>('/wallets/withdraw', {
       method: 'POST',
       body: JSON.stringify({ amount, method, phone }),
     }),
@@ -690,9 +718,9 @@ export const walletAPI = {
 // ---------------------------------------------------------------------------
 
 export const notificationsAPI = {
-  getNotifications: () => request<any[]>('/notifications', { method: 'GET' }),
+  getNotifications: () => request<Notification[]>('/notifications', { method: 'GET' }),
   markAsRead: (id: string) =>
-    request<any>(`/notifications/${id}/read`, { method: 'PATCH' }),
+    request<Notification>(`/notifications/${id}/read`, { method: 'PATCH' }),
 };
 
 // ---------------------------------------------------------------------------
@@ -710,7 +738,7 @@ export const healthAPI = {
 // Default export (for backward compatibility)
 // ---------------------------------------------------------------------------
 
-export default {
+const apiClient = {
   authAPI,
   paymentsAPI,
   socialAPI,
@@ -724,3 +752,5 @@ export default {
   padPin,
   APIError,
 };
+
+export default apiClient;

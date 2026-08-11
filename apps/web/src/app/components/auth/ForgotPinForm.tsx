@@ -2,13 +2,6 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Language } from '@/i18n/config';
-import { translations } from '@/i18n/translations';
-import { equbCategories, EqubCategory } from '@/app/data/equbCategories';
-import FormInput from '@/app/components/forms/FormInput';
-import FormButton from '@/app/components/forms/FormButton';
-import FormError from '@/app/components/forms/FormError';
-import ValidationSchema from '@/app/utils/validation';
 import { authAPI } from '@/app/services/api';
 
 interface ForgotPinFormProps {
@@ -43,13 +36,13 @@ export default function ForgotPinForm({ onSuccess, onError }: ForgotPinFormProps
 
     setLoading(true);
     try {
-      const response = await authAPI.forgotPin(phoneNumber);
+      await authAPI.forgotPin(phoneNumber);
       console.log('SMS sent:', phoneNumber);
       onSuccess?.('SMS Sent', `Verification code sent to ${phoneNumber}`, 3000);
       setLoading(false);
       setStep('otp');
-    } catch (err: any) {
-      setError(err?.message || 'Failed to send verification code');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to send verification code');
       setLoading(false);
     }
   };
@@ -76,8 +69,8 @@ export default function ForgotPinForm({ onSuccess, onError }: ForgotPinFormProps
       onSuccess?.('OTP Verified', 'Code verified successfully', 3000);
       setLoading(false);
       setStep('newpin');
-    } catch (err: any) {
-      setError(err?.message || 'Failed to verify OTP');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to verify OTP');
       setLoading(false);
     }
   };
@@ -99,13 +92,13 @@ export default function ForgotPinForm({ onSuccess, onError }: ForgotPinFormProps
 
     setLoading(true);
     try {
-      const response = await authAPI.resetPin(phoneNumber, otp, newPin);
+      await authAPI.resetPin(phoneNumber, otp, newPin);
       console.log('PIN reset for:', phoneNumber);
       onSuccess?.('✅ PIN Reset', 'Your access code has been reset successfully', 4000);
       setLoading(false);
       setStep('success');
-    } catch (err: any) {
-      setError(err?.message || 'Failed to reset PIN');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to reset PIN');
       setLoading(false);
     }
   };
@@ -253,7 +246,7 @@ export default function ForgotPinForm({ onSuccess, onError }: ForgotPinFormProps
                 className="w-full px-4 py-3 border-2 border-[#d4af37] rounded-lg focus:outline-none focus:border-[#ce1126] font-bold text-2xl text-center tracking-widest"
               />
               <p className="text-xs text-[#5a5a5a] mt-1">
-                You'll use this to sign in
+                You&apos;ll use this to sign in
               </p>
             </div>
 
@@ -325,7 +318,7 @@ export default function ForgotPinForm({ onSuccess, onError }: ForgotPinFormProps
           </p>
 
           <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 mb-6 text-left">
-            <p className="text-sm font-bold text-green-900 mb-2">✓ What's Next:</p>
+            <p className="text-sm font-bold text-green-900 mb-2">✓ What&apos;s Next:</p>
             <ul className="space-y-1 text-xs text-green-800">
               <li>✓ Use your phone number to sign in</li>
               <li>✓ Enter your new 4-digit PIN</li>

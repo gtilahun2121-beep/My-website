@@ -647,11 +647,6 @@ function QuickActionsCard() {
       icon: 'M16 11a3 3 0 1 0-6 0m6 0a3 3 0 1 1-6 0m6 0h.01M10 11h-.01M12 14c-3.87 0-7 1.57-7 3.5V21h14v-3.5C19 15.57 15.87 14 12 14Z',
     },
     {
-      label: 'Approvals',
-      href: '/admin/approvals',
-      icon: 'M9 12l2 2 4-4m5.6 2A7.5 7.5 0 1 1 6.4 6.4 7.5 7.5 0 0 1 20.6 10Z',
-    },
-    {
       label: 'View Reports',
       icon: 'M5 20V10m7 10V4m7 16v-7',
       disabled: true,

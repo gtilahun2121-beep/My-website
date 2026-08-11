@@ -387,9 +387,9 @@ export class TelegramBotService {
     text: string,
     options?: {
       parseMode?: 'HTML' | 'Markdown';
-      replyMarkup?: any;
+      replyMarkup?: Record<string, unknown>;
     }
-  ): Promise<any> {
+  ): Promise<unknown> {
     if (!this.BOT_TOKEN) {
       console.warn('Telegram bot token not configured');
       return;
@@ -417,7 +417,7 @@ export class TelegramBotService {
    * Create a Telegram group for an Equb pool
    * Handled by backend worker
    */
-  static async createGroup(equbName: string): Promise<any> {
+  static async createGroup(equbName: string): Promise<void> {
     console.log('Telegram group creation queued for:', equbName);
     // This is handled by the backend Celery worker
   }
@@ -434,7 +434,7 @@ export class SmsService {
    * Send SMS via backend (never call directly from frontend)
    * SMS sending is rate-limited and handled by backend workers
    */
-  static async sendSms(phoneNumber: string, message: string): Promise<any> {
+  static async sendSms(phoneNumber: string, message: string): Promise<void> {
     console.log('SMS queued for delivery:', phoneNumber);
     // This is handled by the backend SMS gateway worker
   }

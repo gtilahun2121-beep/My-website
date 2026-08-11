@@ -1,11 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import type { ShellVariant } from './Sidebar';
 import ProfileMenu from '../layout/ProfileMenu';
-import { useAuth } from '@/app/context/AuthContext';
-import { initials } from '../dashboard/format';
 import { languages, type Language } from '@/i18n/config';
 
 interface TopHeaderProps {
@@ -28,8 +25,6 @@ const LANG_KEY = 'qalnet_lang';
 export default function TopHeader({ title, subtitle, onMenuClick, variant = 'admin' }: TopHeaderProps) {
   const [search, setSearch] = useState('');
   const [lang, setLang] = useState<Language>('en');
-  const { user, signout } = useAuth();
-  const router = useRouter();
 
   useEffect(() => {
     const stored = typeof window !== 'undefined' ? localStorage.getItem(LANG_KEY) : null;
@@ -45,11 +40,6 @@ export default function TopHeader({ title, subtitle, onMenuClick, variant = 'adm
   };
 
   const isAdmin = variant === 'admin';
-
-  const handleAdminSignOut = async () => {
-    await signout();
-    router.replace('/');
-  };
 
   const headerCls = isAdmin
     ? 'bg-admin-header/95 border-admin-border'
@@ -137,38 +127,7 @@ export default function TopHeader({ title, subtitle, onMenuClick, variant = 'adm
           </button>
 
           {/* Profile */}
-          {variant === 'member' ? (
-            <ProfileMenu />
-          ) : (
-            <div
-              className={`flex items-center gap-2 pl-2 border-l ${
-                isAdmin ? 'border-admin-border' : 'border-slate-200'
-              }`}
-            >
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-accent-500 to-accent-700 text-white flex items-center justify-center text-sm font-bold shadow-md shadow-accent-900/40">
-                {user ? initials(user.firstName, user.lastName) : 'AD'}
-              </div>
-              <div className="hidden sm:block">
-                <p className={`text-sm font-bold leading-none ${isAdmin ? 'text-admin-text' : 'text-slate-800'}`}>
-                  {user ? `${user.firstName} ${user.lastName}`.trim() || 'Administrator' : 'Admin'}
-                </p>
-                <p className={`text-xs mt-0.5 truncate max-w-[10rem] ${isAdmin ? 'text-admin-muted' : 'text-slate-400'}`}>
-                  {user?.email ?? 'Administrator'}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={handleAdminSignOut}
-                aria-label="Sign out"
-                title="Sign out"
-                className={`p-2 rounded-lg ${iconBtnCls} hover:text-danger-500`}
-              >
-                <svg viewBox="0 0 24 24" className="w-5 h-5" {...stroke}>
-                  <path d="M9 21H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3m4 13 5-5m0 0-5-5m5 5H9" />
-                </svg>
-              </button>
-            </div>
-          )}
+          <ProfileMenu />
         </div>
       </div>
 

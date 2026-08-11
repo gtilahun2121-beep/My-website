@@ -30,7 +30,7 @@ export default function PhoneVerificationStep({
       <div>
         <h3 className="text-2xl font-black text-[#0d7e4d] mb-2 text-center">📱 Your Phone</h3>
         <p className="text-center text-sm text-gray-600 mb-4">
-          We'll send a verification code to this number
+          We&apos;ll send a verification code to this number
         </p>
       </div>
 

@@ -1,9 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import Link from 'next/link';
 import { Language } from '@/i18n/config';
-import { translations } from '@/i18n/translations';
 import { equbCategories, getEqubByIncomeLevel, getTotalMembers, EqubCategory } from '@/app/data/equbCategories';
 import { useState } from 'react';
 
@@ -12,7 +10,6 @@ interface GuestOverviewProps {
 }
 
 export default function GuestOverview({ lang }: GuestOverviewProps) {
-  const t = translations[lang];
   const [selectedIncome, setSelectedIncome] = useState<'all' | 'low' | 'medium' | 'high'>('all');
   const [selectedEqub, setSelectedEqub] = useState<EqubCategory | null>(null);
   const [showModal, setShowModal] = useState(false);

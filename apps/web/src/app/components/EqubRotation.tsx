@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, useInView } from 'framer-motion';
-import { useRef } from 'react';
+import { useRef, type CSSProperties } from 'react';
 
 interface EqubRotationProps {
   title: string;
@@ -30,24 +30,6 @@ export default function EqubRotation({
     visible: {
       opacity: 1,
       transition: { duration: 0.6 },
-    },
-  };
-
-  const rotatingLine = {
-    rotate: isInView ? 360 : 0,
-    transition: {
-      duration: 6,
-      repeat: Infinity,
-      ease: 'linear',
-    },
-  };
-
-  const moneyRotation = {
-    rotate: isInView ? 360 : 0,
-    transition: {
-      duration: 6,
-      repeat: Infinity,
-      ease: 'linear',
     },
   };
 
@@ -144,7 +126,7 @@ export default function EqubRotation({
                 repeat: Infinity,
                 ease: 'linear',
               }}
-              style={{ transformOrigin: '150px 150px' } as any}
+              style={{ transformOrigin: '150px 150px' } as CSSProperties}
               opacity={0.7}
             />
 

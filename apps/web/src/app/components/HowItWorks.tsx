@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useInView } from 'framer-motion';
+import { motion, useInView, type Easing } from 'framer-motion';
 import { useRef } from 'react';
 
 interface Step {
@@ -27,7 +27,7 @@ export default function HowItWorks({ title, steps }: HowItWorksProps) {
       transition: {
         duration: 0.6,
         delay: idx * 0.2,
-        ease: [0.34, 1.56, 0.64, 1] as any,
+        ease: [0.34, 1.56, 0.64, 1] as Easing,
       },
     }),
   };
@@ -40,7 +40,7 @@ export default function HowItWorks({ title, steps }: HowItWorksProps) {
       transition: {
         duration: 0.8,
         delay: idx * 0.2 + 0.3,
-        ease: [0.25, 0.46, 0.45, 0.94] as any,
+        ease: [0.25, 0.46, 0.45, 0.94] as Easing,
       },
     }),
   };

@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Language } from '@/i18n/config';
 import { useAuth } from '@/app/context/AuthContext';
 import api from '@/app/services/api';
+import { roleLabel } from '../dashboard/format';
 import type { EqubGroup, Wallet } from '@qalnet/shared-types';
 
 interface ProfileDrawerProps {
@@ -128,6 +129,7 @@ export function ProfileDrawer({ isOpen, onClose, language }: ProfileDrawerProps)
 
   const t = {
     profile: isAmharic ? 'መገለጫዬ' : 'My Profile',
+    dashboard: isAmharic ? 'ወደ ዋና ዳሽቦርድ' : 'Back to main dashboard',
     walletBalance: isAmharic ? 'የቦርሳ ሚዛን' : 'Wallet Balance',
     payoutPot: isAmharic ? 'የክፍያ ማሰባሰብያ' : 'Payout Pot',
     activeEqubs: isAmharic ? 'ንቁ Equbs' : 'Active Equbs',
@@ -211,7 +213,12 @@ export function ProfileDrawer({ isOpen, onClose, language }: ProfileDrawerProps)
                   <p className="font-bold text-lg truncate">
                     {user ? `${user.firstName} ${user.lastName}` : '—'}
                   </p>
-                  <p className="text-sm text-white/80 truncate">{user?.phoneNumber}</p>
+                  <p className="text-xs uppercase tracking-wide text-[#d4af37] font-bold">
+                    {user ? roleLabel(user.role) : ''}
+                  </p>
+                  <p className="text-sm text-white/80 truncate">
+                    {user?.phoneNumber || user?.email || '—'}
+                  </p>
                 </div>
               </div>
             </div>
@@ -222,6 +229,18 @@ export function ProfileDrawer({ isOpen, onClose, language }: ProfileDrawerProps)
                 <p className="text-center text-gray-500 py-10">{t.loading}</p>
               ) : (
                 <>
+                  {/* Back to dashboard */}
+                  <button
+                    onClick={() => {
+                      onClose();
+                      router.push('/dashboard');
+                    }}
+                    className="w-full flex items-center justify-between gap-2 px-4 py-3 bg-[#0d7e4d]/5 border border-[#0d7e4d]/20 rounded-xl text-sm font-bold text-[#0d7e4d] hover:bg-[#0d7e4d]/10 transition-colors"
+                  >
+                    <span className="flex items-center gap-2">🏠 {t.dashboard}</span>
+                    <span>→</span>
+                  </button>
+
                   {/* Photo status / actions */}
                   {photoMessage && (
                     <p

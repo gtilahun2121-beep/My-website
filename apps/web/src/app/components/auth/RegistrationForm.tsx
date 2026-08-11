@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Language } from '@/i18n/config';
-import { translations } from '@/i18n/translations';
 import { equbCategories, EqubCategory } from '@/app/data/equbCategories';
 import { authAPI } from '@/app/services/api';
 
@@ -15,7 +14,7 @@ interface RegistrationFormProps {
 
 type RegistrationStep = 'equb' | 'phone' | 'details' | 'success';
 
-export default function RegistrationForm({ lang, onSuccess, onError }: RegistrationFormProps) {
+export default function RegistrationForm({ onSuccess, onError }: RegistrationFormProps) {
   const [step, setStep] = useState<RegistrationStep>('equb');
   const [selectedEqub, setSelectedEqub] = useState<EqubCategory | null>(null);
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -53,7 +52,7 @@ export default function RegistrationForm({ lang, onSuccess, onError }: Registrat
 
     setLoading(true);
     try {
-      const response = await authAPI.signup({
+      await authAPI.signup({
         firstName: fullName,
         lastName: '',
         email: '',
@@ -64,8 +63,8 @@ export default function RegistrationForm({ lang, onSuccess, onError }: Registrat
       setLoading(false);
       onSuccess?.('✅ Account Created!', `Welcome to QalNet, ${fullName}! Your account is ready.`, 5000);
       setStep('success');
-    } catch (err: any) {
-      setError(err?.message || 'Registration failed');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Registration failed');
       setLoading(false);
     }
   };
@@ -263,7 +262,7 @@ export default function RegistrationForm({ lang, onSuccess, onError }: Registrat
                 className="w-full px-4 py-3 border-2 border-[#d4af37] rounded-lg focus:outline-none focus:border-[#0d7e4d] font-bold text-2xl text-center tracking-widest"
               />
               <p className="text-xs text-[#5a5a5a] mt-1">
-                Remember this PIN - you'll use it to login
+                Remember this PIN - you&apos;ll use it to login
               </p>
             </div>
 

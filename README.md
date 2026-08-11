@@ -39,6 +39,11 @@ npm install
 npm run dev
 ```
 
+> If you hit `localhost refused to connect` / `ERR_CONNECTION_REFUSED`
+> or `EADDRINUSE`, an orphaned dev server is likely holding ports 3000/3001.
+> Run `npm run dev:restart` once — it kills any process on those ports and
+> starts everything fresh:
+
 ### Run a specific app
 ```bash
 # Backend only

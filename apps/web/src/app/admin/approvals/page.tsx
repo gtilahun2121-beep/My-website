@@ -1,28 +1,13 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { adminAPI, APIError } from '@/app/services/api';
+import { adminAPI, APIError, type PendingMembership } from '@/app/services/api';
 import AppShell from '@/app/components/admin/AppShell';
 import { StatusBadge } from '@/app/components/admin/StatusBadge';
 import { EmptyState, ErrorState } from '@/app/components/admin/States';
 import type { EqubCreationRequest } from '@qalnet/shared-types';
 import { useRequireAdmin } from '@/app/hooks/useRequireAdmin';
 import { AdminRouteLoading } from '@/app/components/admin/AdminGate';
-
-interface PendingMembership {
-  id: string;
-  user_id: string;
-  equb_id: string;
-  status: string;
-  joined_at: string;
-  user_first_name: string;
-  user_last_name: string;
-  user_phone: string;
-  user_email: string;
-  equb_name: string;
-  equb_contribution: number;
-  equb_total_rounds: number;
-}
 
 type Tab = 'equbs' | 'memberships';
 
