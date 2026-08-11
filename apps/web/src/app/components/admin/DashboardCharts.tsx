@@ -52,7 +52,7 @@ function smoothPath(points: { x: number; y: number }[]): string {
 export function AreaChart({
   data,
   height = 240,
-  color = '#2563eb',
+  color = '#0d9488',
   valueFormatter,
 }: AreaChartProps) {
   const H = height;
@@ -89,7 +89,7 @@ export function AreaChart({
 
   if (data.length === 0) {
     return (
-      <div className="h-52 flex items-center justify-center text-sm text-slate-400">
+      <div className="h-52 flex items-center justify-center text-sm text-admin-muted">
         No activity data yet.
       </div>
     );
@@ -122,7 +122,7 @@ export function AreaChart({
               y1={g.y}
               x2={W - PAD.right}
               y2={g.y}
-              className="stroke-slate-200"
+              className="stroke-admin-border-subtle"
               strokeDasharray="4 4"
               strokeWidth={1}
             />
@@ -130,7 +130,7 @@ export function AreaChart({
               x={PAD.left - 8}
               y={g.y + 4}
               textAnchor="end"
-              className="fill-slate-400 text-[10px]"
+              className="fill-admin-muted text-[10px]"
             >
               {valueFormatter ? valueFormatter(g.value) : Math.round(g.value)}
             </text>
@@ -144,10 +144,10 @@ export function AreaChart({
         {/* Markers */}
         {view.points.map((p, i) => (
           <g key={i}>
-            <circle cx={p.x} cy={p.y} r={hover === i ? 5 : 3} fill="#fff" stroke={color} strokeWidth={2.5} />
+            <circle cx={p.x} cy={p.y} r={hover === i ? 5 : 3} fill="#ffffff" stroke={color} strokeWidth={2.5} />
             {hover === i && (
               <g pointerEvents="none">
-                <line x1={p.x} y1={PAD.top} x2={p.x} y2={H - PAD.bottom} className="stroke-slate-300" strokeDasharray="3 3" />
+                <line x1={p.x} y1={PAD.top} x2={p.x} y2={H - PAD.bottom} className="stroke-admin-border-strong" strokeDasharray="3 3" />
                 <g>
                   <rect
                     x={Math.max(0, Math.min(W - 120, p.x - 60))}
@@ -155,13 +155,13 @@ export function AreaChart({
                     rx={6}
                     width={120}
                     height={32}
-                    className="fill-slate-900"
+                    className="fill-admin-elevated"
                   />
                   <text
                     x={Math.max(60, Math.min(W - 60, p.x))}
                     y={Math.max(24, p.y - 24)}
                     textAnchor="middle"
-                    className="fill-white text-[10px] font-bold"
+                    className="fill-admin-text text-[10px] font-bold"
                   >
                     {data[i].label}: {valueFormatter ? valueFormatter(data[i].value) : data[i].value}
                   </text>
@@ -179,7 +179,7 @@ export function AreaChart({
               x={view.points[i].x}
               y={H - 8}
               textAnchor="middle"
-              className="fill-slate-400 text-[10px]"
+              className="fill-admin-muted text-[10px]"
             >
               {d.label}
             </text>
@@ -233,7 +233,7 @@ export function DonutChart({ segments, size = 180, thickness = 18, centerTitle, 
       const acc = list.reduce((sum, x) => sum + x.value, 0);
       const fraction = total > 0 ? Math.max(0, s.value) / total : 0;
       const dash = fraction * c;
-      const offset = -(acc / total) * c;
+      const offset = total > 0 ? -(acc / total) * c : 0;
       list.push({ label: s.label, value: Math.max(0, s.value), color: s.color, dash, offset });
       return list;
     },
@@ -244,7 +244,7 @@ export function DonutChart({ segments, size = 180, thickness = 18, centerTitle, 
     <div className="flex items-center gap-6 flex-wrap justify-center">
       <div className="relative" style={{ width: size, height: size }}>
         <svg viewBox={`0 0 ${size} ${size}`} className="w-full h-full -rotate-90" role="img" aria-label="Payment health donut chart">
-          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#eef2f7" strokeWidth={thickness} />
+          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#e2e8f0" strokeWidth={thickness} />
           {arcs.map((arc) => (
             <circle
               key={arc.label}
@@ -261,16 +261,16 @@ export function DonutChart({ segments, size = 180, thickness = 18, centerTitle, 
           ))}
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          {centerTitle && <span className="text-2xl font-black text-slate-900">{centerTitle}</span>}
-          {centerSubtitle && <span className="text-xs font-semibold text-slate-400">{centerSubtitle}</span>}
+          {centerTitle && <span className="text-2xl font-black text-admin-text">{centerTitle}</span>}
+          {centerSubtitle && <span className="text-xs font-semibold text-admin-muted">{centerSubtitle}</span>}
         </div>
       </div>
       <ul className="space-y-2">
         {arcs.map((arc) => (
           <li key={arc.label} className="flex items-center gap-2 text-sm">
             <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: arc.color }} />
-            <span className="font-semibold text-slate-600">{arc.label}</span>
-            <span className="ml-auto pl-3 font-bold text-slate-900">{total > 0 ? Math.round((Math.max(0, arc.value) / total) * 100) : 0}%</span>
+            <span className="font-semibold text-admin-text-secondary">{arc.label}</span>
+            <span className="ml-auto pl-3 font-bold text-admin-text">{total > 0 ? Math.round((Math.max(0, arc.value) / total) * 100) : 0}%</span>
           </li>
         ))}
       </ul>
@@ -286,7 +286,7 @@ export function TrendingChip({ direction, children }: { direction: 'up' | 'down'
   return (
     <span
       className={`inline-flex items-center gap-1 text-xs font-bold ${
-        direction === 'up' ? 'text-success-700' : 'text-danger-600'
+        direction === 'up' ? 'text-success-600' : 'text-danger-600'
       }`}
     >
       <svg viewBox="0 0 24 24" className={`w-3 h-3 ${direction === 'up' ? '' : 'rotate-180'}`} {...stroke}>

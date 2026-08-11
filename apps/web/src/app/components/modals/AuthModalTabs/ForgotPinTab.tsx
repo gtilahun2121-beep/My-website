@@ -7,7 +7,7 @@ import FormInput from '@/app/components/forms/FormInput';
 import FormButton from '@/app/components/forms/FormButton';
 import FormError from '@/app/components/forms/FormError';
 import FormSuccess from '@/app/components/forms/FormSuccess';
-import { useAuth } from '@/app/context/AuthContext';
+import { authAPI } from '@/app/services/api';
 import { ValidationSchema } from '@/app/utils/validation';
 
 interface ForgotPinTabProps {
@@ -19,17 +19,19 @@ interface ForgotPinTabProps {
 type Step = 'phone' | 'otp' | 'newpin' | 'success';
 
 export default function ForgotPinTab({ lang = defaultLanguage, onSuccess, onError }: ForgotPinTabProps) {
-  const { resetPin, isLoading } = useAuth();
   const [step, setStep] = useState<Step>('phone');
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [newPin, setNewPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [sending, setSending] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const [resetting, setResetting] = useState(false);
 
   const clearErrors = () => setErrors({});
 
-  // Step 1: Phone Verification
+  // Step 1: Phone Verification — request the OTP from the real backend
   const handlePhoneSubmit = async () => {
     clearErrors();
 
@@ -44,16 +46,26 @@ export default function ForgotPinTab({ lang = defaultLanguage, onSuccess, onErro
       return;
     }
 
+    setSending(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await authAPI.forgotPin(phone);
+      if (!response.success) {
+        setErrors({ phone: response.message });
+        onError?.('Error', response.message);
+        return;
+      }
       setStep('otp');
-      onSuccess?.('OTP Sent', `An OTP has been sent to ${phone}`, 2000);
+      onSuccess?.('OTP Sent', `An OTP has been sent to ${phone}`, 3000);
     } catch (error) {
-      onError?.('Error', 'Failed to send OTP');
+      const message = error instanceof Error ? error.message : 'Failed to send OTP';
+      setErrors({ phone: message });
+      onError?.('Error', message);
+    } finally {
+      setSending(false);
     }
   };
 
-  // Step 2: OTP Verification
+  // Step 2: OTP Verification — check the code against the real backend
   const handleOtpSubmit = async () => {
     clearErrors();
 
@@ -67,16 +79,26 @@ export default function ForgotPinTab({ lang = defaultLanguage, onSuccess, onErro
       return;
     }
 
+    setVerifying(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await authAPI.verifyOTP(phone, otp);
+      if (!response.verified) {
+        setErrors({ otp: 'Invalid or expired OTP. Please request a new code.' });
+        onError?.('Error', 'Invalid or expired OTP');
+        return;
+      }
       setStep('newpin');
-      onSuccess?.('OTP Verified', 'Please create a new PIN', 2000);
+      onSuccess?.('OTP Verified', 'Please create a new PIN', 3000);
     } catch (error) {
-      onError?.('Error', 'Invalid OTP');
+      const message = error instanceof Error ? error.message : 'Invalid OTP';
+      setErrors({ otp: message });
+      onError?.('Error', message);
+    } finally {
+      setVerifying(false);
     }
   };
 
-  // Step 3: New PIN Creation
+  // Step 3: New PIN Creation — reset the PIN on the real backend
   const handleNewPinSubmit = async () => {
     clearErrors();
 
@@ -99,13 +121,22 @@ export default function ForgotPinTab({ lang = defaultLanguage, onSuccess, onErro
       return;
     }
 
+    setResetting(true);
     try {
-      await resetPin(phone, newPin);
+      const response = await authAPI.resetPin(phone, otp, newPin);
+      if (!response.success) {
+        setErrors({ newPin: 'Failed to reset PIN. Please try again.' });
+        onError?.('Error', 'Failed to reset PIN');
+        return;
+      }
       setStep('success');
-      onSuccess?.('PIN Reset Successful', 'Your PIN has been updated. Please sign in again.', 2000);
+      onSuccess?.('PIN Reset Successful', 'Your PIN has been updated. Please sign in again.', 3000);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to reset PIN';
+      setErrors({ newPin: errorMessage });
       onError?.('Error', errorMessage);
+    } finally {
+      setResetting(false);
     }
   };
 
@@ -152,8 +183,8 @@ export default function ForgotPinTab({ lang = defaultLanguage, onSuccess, onErro
           />
           <FormButton
             onClick={handlePhoneSubmit}
-            loading={isLoading}
-            disabled={isLoading}
+            loading={sending}
+            disabled={sending}
             variant="primary"
           >
             Send OTP
@@ -186,8 +217,8 @@ export default function ForgotPinTab({ lang = defaultLanguage, onSuccess, onErro
           />
           <FormButton
             onClick={handleOtpSubmit}
-            loading={isLoading}
-            disabled={isLoading}
+            loading={verifying}
+            disabled={verifying}
             variant="primary"
           >
             Verify OTP
@@ -241,8 +272,8 @@ export default function ForgotPinTab({ lang = defaultLanguage, onSuccess, onErro
 
           <FormButton
             onClick={handleNewPinSubmit}
-            loading={isLoading}
-            disabled={isLoading}
+            loading={resetting}
+            disabled={resetting}
             variant="primary"
           >
             Reset PIN

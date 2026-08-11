@@ -70,10 +70,10 @@ export default function MyEqubsPage() {
               </p>
               <div className="flex gap-3 justify-center">
                 <Link
-                  href="/discover"
+                  href="/join-equb"
                   className="px-6 py-3 bg-[#0d7e4d] text-white font-bold rounded-lg hover:bg-[#0a5c38] transition-all"
                 >
-                  {lang === 'en' ? 'Discover Equbs' : 'እቁቦችን ያግኙ'}
+                  {lang === 'en' ? 'Join an Equb' : 'እቁብ ይቀላቀሉ'}
                 </Link>
                 <Link
                   href="/create-equb"

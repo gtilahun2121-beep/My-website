@@ -46,7 +46,7 @@ export default function OtpResetStep({
         onChange={(val) => onOtpChange(val.replace(/\D/g, ''))}
         maxLength={6}
         icon="🔐"
-        hint="Demo: Enter any 6-digit code"
+        hint="The code expires in 10 minutes"
       />
 
       {error && <FormError message={error} onDismiss={onErrorDismiss} />}

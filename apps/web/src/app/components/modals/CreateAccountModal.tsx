@@ -10,6 +10,8 @@ import FormButton from '@/app/components/forms/FormButton';
 import FormError from '@/app/components/forms/FormError';
 import FormSuccess from '@/app/components/forms/FormSuccess';
 import { ValidationSchema } from '@/app/utils/validation';
+import { homePathForStoredUser } from '@/app/lib/roleHome';
+import { authAPI, padPin } from '@/app/services/api';
 
 interface CreateAccountModalProps {
   isOpen: boolean;
@@ -91,13 +93,20 @@ export default function CreateAccountModal({
 
     setIsLoading(true);
     try {
-      // Simulate sending OTP
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      setStep('otp');
-    } catch (error) {
-      onError?.('Error', 'Failed to send OTP');
-    } finally {
+      const response = await authAPI.signup({
+        firstName: formData.email.split('@')[0],
+        lastName: '',
+        email: formData.email,
+        phoneNumber: formData.phoneNumber,
+        password: padPin(formData.fayda),
+        fayda: formData.fayda,
+      });
       setIsLoading(false);
+      setStep('otp');
+      onSuccess?.('Success', 'OTP sent to your phone');
+    } catch (error: any) {
+      setIsLoading(false);
+      onError?.('Error', error.message);
     }
   };
 
@@ -109,23 +118,15 @@ export default function CreateAccountModal({
 
     setIsLoading(true);
     try {
-      // Simulate OTP verification
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      
-      // After OTP verification:
-      // 1. Check if user is existing or new (in real system, from backend)
-      // 2. If existing: redirect to dashboard
-      // 3. If new: redirect to complete-profile page
-      // 4. Create secure session/token (handled by auth provider)
-      
-      const isExistingUser = Math.random() > 0.5; // Mock check - in real system check from backend
-      
-      if (isExistingUser) {
+      const response = await authAPI.verifyOTP(formData.phoneNumber, otp);
+      setIsLoading(false);
+
+      if (response.verified) {
         setSuccessMessage('✓ OTP verified! Redirecting to dashboard...');
         onSuccess?.('Success', 'Welcome back! Redirecting to your dashboard...');
         setTimeout(() => {
           handleClose();
-          router.push('/dashboard');
+          router.push(homePathForStoredUser());
         }, 2000);
       } else {
         setSuccessMessage('✓ OTP verified! Complete your profile...');
@@ -135,10 +136,9 @@ export default function CreateAccountModal({
           router.push('/complete-profile');
         }, 2000);
       }
-    } catch (error) {
-      onError?.('Error', 'OTP verification failed');
-    } finally {
+    } catch (error: any) {
       setIsLoading(false);
+      onError?.('Error', 'OTP verification failed');
     }
   };
 
@@ -166,7 +166,7 @@ export default function CreateAccountModal({
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6"
+              className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6"
               onClick={(e) => e.stopPropagation()}
             >
               <FormSuccess title="✓ Success" message={successMessage} />
@@ -201,7 +201,9 @@ export default function CreateAccountModal({
                   {step === 'account' ? '🏦 Create Account' : '✅ Verify OTP'}
                 </h2>
                 <p className="text-sm text-white/80 font-semibold mt-1">
-                  {lang === 'en' ? 'Complete your Equb profile' : 'በእርስዎ Equb ተጠናቀቁ'}
+                  {lang === 'en'
+                    ? 'Complete your Equb profile'
+                    : 'በእርስዎ Equb ተጠናቀቁ'}
                 </p>
               </div>
               <button
@@ -222,7 +224,6 @@ export default function CreateAccountModal({
                       : 'መግለጫዎን ይሙሉ'}
                   </p>
 
-                  {/* Email */}
                   <FormInput
                     label={lang === 'en' ? 'Email' : lang === 'am' ? 'ኢሜል' : 'Email'}
                     type="email"
@@ -232,7 +233,6 @@ export default function CreateAccountModal({
                     error={errors.email}
                   />
 
-                  {/* Phone Number */}
                   <FormInput
                     label={lang === 'en' ? 'Phone Number' : lang === 'am' ? 'ስልክ ቁጥር' : 'Bilbila'}
                     type="tel"
@@ -242,7 +242,6 @@ export default function CreateAccountModal({
                     error={errors.phoneNumber}
                   />
 
-                  {/* Fayda ID */}
                   <FormInput
                     label={lang === 'en' ? 'Fayda ID' : 'Fayda ID'}
                     type="text"
@@ -252,7 +251,6 @@ export default function CreateAccountModal({
                     error={errors.fayda}
                   />
 
-                  {/* Submit Button */}
                   <FormButton
                     onClick={handleAccountSubmit}
                     loading={isLoading}
@@ -274,7 +272,6 @@ export default function CreateAccountModal({
                       : 'OTP ገብአ'}
                   </p>
 
-                  {/* OTP Input */}
                   <FormInput
                     label={lang === 'en' ? 'OTP Code' : lang === 'am' ? 'OTP ኮድ' : 'OTP'}
                     type="text"
@@ -285,7 +282,6 @@ export default function CreateAccountModal({
                     error={errors.otp}
                   />
 
-                  {/* Verify Button */}
                   <FormButton
                     onClick={handleOtpSubmit}
                     loading={isLoading}
@@ -299,7 +295,6 @@ export default function CreateAccountModal({
                       : 'OTP ሂድ'}
                   </FormButton>
 
-                  {/* Back Button */}
                   <button
                     onClick={() => setStep('account')}
                     className="w-full text-center text-sm text-gray-600 hover:text-[#0d7e4d] font-semibold"

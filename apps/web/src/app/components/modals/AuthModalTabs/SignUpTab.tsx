@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Language, defaultLanguage } from '@/i18n/config';
 import FormInput from '@/app/components/forms/FormInput';
-import FormButton from '@/app/components/forms/FormButton';
 import FormSuccess from '@/app/components/forms/FormSuccess';
 import { useAuth } from '@/app/context/AuthContext';
 import { authAPI } from '@/app/services/api';
@@ -24,14 +23,17 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
     phoneNumber: '+2519',
     email: '',
     fayda: '',
-    pin: '',
     otp: '',
+    pin: '',
   });
   const [fayda, setFayda] = useState({
     verified: false,
     loading: false,
-    showOtpVerification: false,
-    faydaOtp: '',
+  });
+  const [otp, setOtp] = useState({
+    sent: false,
+    sending: false,
+    verifying: false,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [successMessage, setSuccessMessage] = useState('');
@@ -110,12 +112,7 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
       }
 
       value = value.slice(0, 16);
-
-      if (value.length === 16 && !fayda.verified && !fayda.showOtpVerification) {
-        setFayda({ ...fayda, showOtpVerification: true, faydaOtp: '' });
-      } else if (value.length < 16) {
-        setFayda({ ...fayda, showOtpVerification: false, faydaOtp: '' });
-      }
+      setFayda((prev) => ({ ...prev, verified: false }));
     } else if (field === 'otp') {
       const hasInvalidChars = /[^0-9]/.test(value);
 
@@ -220,7 +217,9 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
     if (!formData.otp.trim()) {
       newErrors.otp = 'OTP required';
     } else if (formData.otp.length !== 6) {
-      newErrors.otp = 'OTP must be 6 digits';
+      newErrors.otp = 'OTP must be exactly 6 digits';
+    } else if (!/^\d+$/.test(formData.otp)) {
+      newErrors.otp = 'OTP must contain only digits';
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -238,23 +237,69 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
   };
 
   const handleVerifyFayda = async () => {
-    if (!formData.otp.trim()) {
-      setErrors({ ...errors, otp: 'OTP required' });
-      return;
-    }
-    if (formData.otp.length !== 6) {
-      setErrors({ ...errors, otp: 'OTP must be 6 digits' });
-      return;
-    }
+    if (!validateStep3()) return;
 
-    setFayda({ ...fayda, loading: true });
+    setFayda((prev) => ({ ...prev, loading: true }));
     try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      setFayda({ verified: true, loading: false, showOtpVerification: false, faydaOtp: '' });
+      // Real verification against POST /api/v1/auth/verify-fayda
+      const res = await authAPI.verifyFayda(formData.fayda);
+      if (!res.verified) {
+        setErrors({ fayda: 'This Fayda ID is already registered to another account.' });
+        setFayda((prev) => ({ ...prev, loading: false }));
+        return;
+      }
+      setFayda((prev) => ({ ...prev, verified: true, loading: false }));
+
+      // Send an OTP to the phone so the next step can verify it.
+      setOtp((prev) => ({ ...prev, sending: true }));
+      try {
+        await authAPI.sendOtp(formData.phoneNumber);
+        setOtp({ sent: true, sending: false, verifying: false });
+        setErrors({});
+        setStep(4);
+      } catch (sendError) {
+        const message = sendError instanceof Error ? sendError.message : 'Failed to send OTP';
+        setErrors({ fayda: message });
+        setOtp((prev) => ({ ...prev, sending: false }));
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Fayda verification failed';
+      setErrors({ fayda: message });
+      setFayda((prev) => ({ ...prev, loading: false }));
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!validateStep4()) return;
+
+    setOtp((prev) => ({ ...prev, verifying: true }));
+    try {
+      const res = await authAPI.verifyOTP(formData.phoneNumber, formData.otp);
+      if (!res.verified) {
+        setErrors({ otp: 'Invalid or expired OTP. Please check the code and try again.' });
+        setOtp((prev) => ({ ...prev, verifying: false }));
+        return;
+      }
+      setOtp((prev) => ({ ...prev, verifying: false }));
+      setErrors({});
+      setStep(5);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'OTP verification failed';
+      setErrors({ otp: message });
+      setOtp((prev) => ({ ...prev, verifying: false }));
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setOtp((prev) => ({ ...prev, sending: true }));
+    try {
+      await authAPI.sendOtp(formData.phoneNumber);
+      setOtp((prev) => ({ ...prev, sent: true, sending: false }));
       setErrors({});
     } catch (error) {
-      setErrors({ ...errors, otp: 'OTP verification failed' });
-      setFayda({ ...fayda, loading: false });
+      const message = error instanceof Error ? error.message : 'Failed to resend OTP';
+      setErrors({ otp: message });
+      setOtp((prev) => ({ ...prev, sending: false }));
     }
   };
 
@@ -277,16 +322,10 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
   };
 
   const handleSubmit = async () => {
-    console.log('📢 handleSubmit called');
-    console.log('formData.pin:', formData.pin);
-
     if (!validateStep5()) {
-      console.log('❌ PIN validation failed');
       onError?.('Validation Error', 'Please enter a valid PIN');
       return;
     }
-
-    console.log('✅ PIN validation passed');
 
     try {
       // Pre-check: is this email/phone already registered? Show a clear message
@@ -316,14 +355,6 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
         // backend's 409 Conflict surface the "already exists" error.
       }
 
-      console.log('📤 Calling signup() with data:', {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        phoneNumber: formData.phoneNumber,
-        fayda: formData.fayda,
-      });
-
       await signup({
         firstName: formData.firstName,
         lastName: formData.lastName,
@@ -333,13 +364,10 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
         fayda: formData.fayda,
       });
 
-      console.log('✅ Signup successful!');
       setSuccessMessage('✓ Registration complete!');
-      console.log('📢 Calling onSuccess callback...');
       onSuccess?.('🎉 Welcome to QalNet!', 'Your secure account is ready.', 3000);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Registration failed';
-      console.error('❌ Signup error:', message);
       onError?.('Error', message);
     }
   };
@@ -394,8 +422,8 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
                   : 'Fayda ቁጥር'
                 : step === 4
                   ? lang === 'en'
-                    ? 'OTP Verification'
-                    : 'OTP ማጣራት'
+                    ? 'Verify Your Phone'
+                    : 'ስልክዎን ያረጋግጡ'
                   : lang === 'en'
                     ? 'Create Your PIN'
                     : 'PIN ይሰሩ'}
@@ -503,6 +531,12 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
             hint={lang === 'en' ? '16 digits only' : '16 ዲጂት ብቻ'}
           />
 
+          {fayda.verified && (
+            <p className="text-xs text-green-600 bg-green-50 border border-green-200 rounded-md px-3 py-2">
+              ✓ Fayda ID verified
+            </p>
+          )}
+
           <div className="flex gap-3 mt-8">
             <button
               onClick={handleBack}
@@ -511,16 +545,31 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
               {lang === 'en' ? '← Back' : '← ተመለስ'}
             </button>
             <button
-              onClick={handleNext}
-              className="flex-1 py-3 bg-[#0d7e4d] text-white font-bold rounded-lg hover:bg-[#0a5c38] transition-all"
+              onClick={handleVerifyFayda}
+              disabled={fayda.loading || otp.sending}
+              className="flex-1 py-3 bg-[#0d7e4d] text-white font-bold rounded-lg hover:bg-[#0a5c38] transition-all disabled:opacity-50"
             >
-              {lang === 'en' ? 'Next →' : 'ቀጥል →'}
+              {fayda.loading || otp.sending
+                ? lang === 'en'
+                  ? '⏳ Verifying...'
+                  : '⏳ በመመስረት ላይ...'
+                : lang === 'en'
+                  ? 'Verify & Send Code →'
+                  : 'ያረጋግጡ እና ኮድ ይላኩ →'}
             </button>
           </div>
+
+          {otp.sent && (
+            <p className="text-xs text-blue-600 bg-blue-50 border border-blue-200 rounded-md px-3 py-2">
+              {lang === 'en'
+                ? `A 6-digit code was sent to ${formData.phoneNumber}.`
+                : `6-አሃዝ ኮድ ወደ ${formData.phoneNumber} ተልኳል።`}
+            </p>
+          )}
         </motion.div>
       )}
 
-      {/* Step 4: OTP Verification */}
+      {/* Step 4: Phone OTP Verification */}
       {step === 4 && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -531,21 +580,35 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
           <div className="bg-blue-50 border border-blue-300 rounded-lg p-4">
             <p className="text-sm text-blue-900">
               {lang === 'en'
-                ? 'We sent a 6-digit OTP to your phone number'
-                : 'ወደ ስልክ ቁጥርዎ 6-ዲጂት OTP ልኬላልክ'}
+                ? `Enter the 6-digit code sent to ${formData.phoneNumber}.`
+                : `ወደ ${formData.phoneNumber} የተላከውን 6-አሃዝ ኮድ ያስገቡ።`}
             </p>
           </div>
 
           <FormInput
-            label={lang === 'en' ? '🔐 Enter OTP' : '🔐 OTP ገብአ'}
+            label={lang === 'en' ? '🔢 Verification Code' : '🔢 ማረጋገጫ ኮድ'}
             type="text"
             value={formData.otp}
             onChange={(value) => handleFieldChange('otp', value)}
-            placeholder="000000"
+            placeholder="123456"
             maxLength={6}
             error={errors.otp}
-            hint={lang === 'en' ? '6 digits' : '6 ዲጂት'}
+            hint={lang === 'en' ? '6 digits' : '6 አሃዝ'}
           />
+
+          <button
+            onClick={handleResendOtp}
+            disabled={otp.sending}
+            className="w-full text-sm text-[#0d7e4d] font-semibold underline hover:text-[#0a5c38] transition-all disabled:opacity-50"
+          >
+            {otp.sending
+              ? lang === 'en'
+                ? '⏳ Resending...'
+                : '⏳ እየተላከ ነው...'
+              : lang === 'en'
+                ? 'Resend code'
+                : 'ኮድ እንደገና ይላኩ'}
+          </button>
 
           <div className="flex gap-3 mt-8">
             <button
@@ -555,15 +618,17 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
               {lang === 'en' ? '← Back' : '← ተመለስ'}
             </button>
             <button
-              onClick={() => {
-                if (validateStep4()) {
-                  handleVerifyFayda();
-                  setStep(step + 1);
-                }
-              }}
-              className="flex-1 py-3 bg-[#0d7e4d] text-white font-bold rounded-lg hover:bg-[#0a5c38] transition-all"
+              onClick={handleVerifyOtp}
+              disabled={otp.verifying}
+              className="flex-1 py-3 bg-[#0d7e4d] text-white font-bold rounded-lg hover:bg-[#0a5c38] transition-all disabled:opacity-50"
             >
-              {lang === 'en' ? 'Confirm →' : 'ያረጋግጡ →'}
+              {otp.verifying
+                ? lang === 'en'
+                  ? '⏳ Verifying...'
+                  : '⏳ በመመስረት ላይ...'
+                : lang === 'en'
+                  ? 'Verify Code →'
+                  : 'ኮድ ያረጋግጡ →'}
             </button>
           </div>
         </motion.div>
@@ -604,12 +669,7 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
               {lang === 'en' ? '← Back' : '← ተመለስ'}
             </button>
             <button
-              onClick={() => {
-                console.log('🔵 Create Account button clicked');
-                console.log('PIN value:', formData.pin);
-                console.log('PIN length:', formData.pin.length);
-                handleSubmit();
-              }}
+              onClick={handleSubmit}
               disabled={isLoading}
               className="flex-1 py-3 bg-[#0d7e4d] text-white font-bold rounded-lg hover:bg-[#0a5c38] transition-all disabled:opacity-50"
             >

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import * as argon2 from 'argon2';
 import { UsersRepository, ListCustomersOptions } from './users.repository';
 import { VaultConfig } from '../../config/vault.config';
@@ -42,6 +42,25 @@ export class UsersService {
         );
 
         const user = await this.repo.resetPinAndUnlock(adminId, userId, passwordHash);
+        if (!user) {
+            throw new NotFoundException('User not found.');
+        }
+        return { success: true, user };
+    }
+
+    /**
+     * Admin grants or revokes a user's role (participant / host / admin).
+     * The database owner uses this to promote a registered member to
+     * website admin — which gives them the admin dashboard and console.
+     * An admin can never change their own role, so the system keeps
+     * at least one administrator.
+     */
+    async setUserRole(adminId: string, userId: string, role: 'participant' | 'host' | 'admin') {
+        if (adminId === userId) {
+            throw new BadRequestException('You cannot change your own role.');
+        }
+
+        const user = await this.repo.setUserRole(adminId, userId, role);
         if (!user) {
             throw new NotFoundException('User not found.');
         }

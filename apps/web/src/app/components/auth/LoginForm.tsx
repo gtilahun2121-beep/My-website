@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Language } from '@/i18n/config';
 import { translations } from '@/i18n/translations';
+import { useAuth } from '@/app/context/AuthContext';
 
 interface LoginFormProps {
   lang: Language;
@@ -15,15 +16,15 @@ type LoginStep = 'phone' | 'pin' | 'success';
 
 export default function LoginForm({ lang, onSuccess, onError }: LoginFormProps) {
   const t = translations[lang];
+  const { signin, user } = useAuth();
   const [step, setStep] = useState<LoginStep>('phone');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [pin, setPin] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [userData, setUserData] = useState<any>(null);
 
   // Step 1: Enter phone number
-  const handlePhoneSubmit = async () => {
+  const handlePhoneSubmit = () => {
     setError('');
     if (!phoneNumber.match(/^\+?[1-9]\d{1,14}$/)) {
       setError('Invalid phone number format');
@@ -31,25 +32,11 @@ export default function LoginForm({ lang, onSuccess, onError }: LoginFormProps) 
       return;
     }
 
-    setLoading(true);
-    // Check if user exists in localStorage
-    setTimeout(() => {
-      const storedUser = localStorage.getItem(`qalnet_user_${phoneNumber}`);
-      if (!storedUser) {
-        setError('User not found. Please register first.');
-        onError?.('User Not Found', 'Phone number not registered. Please sign up first.', 4000);
-        setLoading(false);
-        return;
-      }
-
-      console.log('User found, requesting PIN');
-      onSuccess?.('Phone Found', 'Enter your PIN to continue', 3000);
-      setLoading(false);
-      setStep('pin');
-    }, 1000);
+    onSuccess?.('Phone Found', 'Enter your PIN to continue', 3000);
+    setStep('pin');
   };
 
-  // Step 2: Verify PIN
+  // Step 2: Verify PIN against the real backend
   const handlePinSubmit = async () => {
     setError('');
     if (pin.length !== 4 || !/^\d+$/.test(pin)) {
@@ -59,33 +46,14 @@ export default function LoginForm({ lang, onSuccess, onError }: LoginFormProps) 
     }
 
     setLoading(true);
-    // Verify PIN from localStorage
-    setTimeout(() => {
-      const storedUser = localStorage.getItem(`qalnet_user_${phoneNumber}`);
-      if (!storedUser) {
-        setError('User not found');
-        onError?.('User Not Found', 'User account not found', 3000);
-        setLoading(false);
-        return;
-      }
-
-      const user = JSON.parse(storedUser);
-      if (user.pin !== pin) {
-        setError('Invalid PIN. Please try again.');
-        onError?.('Wrong PIN', 'The PIN you entered is incorrect', 3000);
-        setLoading(false);
-        return;
-      }
-
-      console.log('Login successful for user:', user);
-      setUserData(user);
-      setLoading(false);
-      onSuccess?.('🎉 Welcome Back!', `Hello ${user.fullName}, you're now logged in!`, 5000);
+    try {
+      await signin(phoneNumber, pin);
+      onSuccess?.('🎉 Welcome Back!', `Hello ${user?.firstName ?? ''}, you're now logged in!`, 5000);
       setStep('success');
-      
-      // Store login token in localStorage
-      localStorage.setItem('qalnet_auth_token', phoneNumber);
-    }, 1500);
+    } catch (err: any) {
+      setError(err?.message || 'Login failed');
+      setLoading(false);
+    }
   };
 
   const containerVariants = {
@@ -221,7 +189,7 @@ export default function LoginForm({ lang, onSuccess, onError }: LoginFormProps) 
             </button>
           </div>
 
-            {/* Forgot PIN Section */}
+          {/* Forgot PIN Section */}
           <div className="mt-6 pt-6 border-t border-[#d4af37]">
             <p className="text-center text-sm text-[#5a5a5a] mb-3">
               Forgot your PIN?
@@ -242,7 +210,7 @@ export default function LoginForm({ lang, onSuccess, onError }: LoginFormProps) 
       )}
 
       {/* Step 3: Login Success */}
-      {step === 'success' && userData && (
+      {step === 'success' && user && (
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -260,16 +228,16 @@ export default function LoginForm({ lang, onSuccess, onError }: LoginFormProps) 
             Welcome Back!
           </h3>
           <p className="text-gray-600 mb-6">
-            Hello, {userData.fullName}! 👋
+            Hello, {`${user.firstName} ${user.lastName}`.trim() || 'QalNet Member'}! 👋
           </p>
 
           <div className="bg-[#0d7e4d]/10 border-2 border-[#0d7e4d] rounded-lg p-4 mb-6 text-left">
             <p className="text-sm font-bold text-[#0d7e4d] mb-3">✓ Account Details:</p>
             <div className="space-y-2 text-xs text-gray-600">
-              <p>📱 Phone: {userData.phoneNumber}</p>
-              <p>👤 Name: {userData.fullName}</p>
-              <p>🎫 Fayda: {userData.faydaNumber}</p>
-              <p>⏰ Member Since: {new Date(userData.registeredAt).toLocaleDateString()}</p>
+              <p>📱 Phone: {user.phoneNumber}</p>
+              <p>👤 Name: {`${user.firstName} ${user.lastName}`.trim()}</p>
+              <p>📧 Email: {user.email || '—'}</p>
+              <p>⏰ Member Since: {new Date(user.createdAt).toLocaleDateString()}</p>
             </div>
           </div>
 

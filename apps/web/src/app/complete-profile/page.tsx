@@ -9,6 +9,8 @@ import Footer from '@/app/components/Footer';
 import FormInput from '@/app/components/forms/FormInput';
 import FormButton from '@/app/components/forms/FormButton';
 import FormError from '@/app/components/forms/FormError';
+import { userAPI, APIError } from '@/app/services/api';
+import { homePathForStoredUser } from '@/app/lib/roleHome';
 
 export default function CompleteProfilePage() {
   const router = useRouter();
@@ -23,6 +25,7 @@ export default function CompleteProfilePage() {
     guarantor: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitError, setSubmitError] = useState('');
   const t = translations[lang];
 
   const professions = [
@@ -60,14 +63,26 @@ export default function CompleteProfilePage() {
     if (!validateForm()) return;
 
     setIsLoading(true);
+    setSubmitError('');
     try {
-      // Simulate API call to save profile
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      
-      // Redirect to dashboard after profile completion
-      router.push('/dashboard');
+      // Persist via PATCH /api/v1/users/me — the backend whitelists
+      // first_name, last_name, phone (email/telegram_handle also supported).
+      await userAPI.updateProfile({
+        first_name: formData.firstName.trim(),
+        last_name: formData.lastName.trim(),
+        phone: formData.phoneNumber.trim(),
+      });
+
+      // Redirect to the role-appropriate dashboard after profile completion
+      router.push(homePathForStoredUser());
     } catch (error) {
-      console.error('Profile completion failed:', error);
+      const message =
+        error instanceof APIError
+          ? error.data?.message || error.message
+          : error instanceof Error
+            ? error.message
+            : 'Failed to save your profile';
+      setSubmitError(message);
     } finally {
       setIsLoading(false);
     }
@@ -172,6 +187,12 @@ export default function CompleteProfilePage() {
             />
 
             {/* Submit Button */}
+            {submitError && (
+              <FormError
+                message={submitError}
+                onDismiss={() => setSubmitError('')}
+              />
+            )}
             <FormButton
               onClick={handleSubmit}
               loading={isLoading}

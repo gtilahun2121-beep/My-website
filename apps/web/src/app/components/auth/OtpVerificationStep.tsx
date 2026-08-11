@@ -44,7 +44,7 @@ export default function OtpVerificationStep({
         onChange={(val) => onOtpChange(val.replace(/\D/g, ''))}
         maxLength={6}
         icon="🔐"
-        hint="Demo: Enter any 6-digit code"
+        hint="Enter the 6-digit code sent to your phone"
       />
 
       {error && <FormError message={error} onDismiss={onErrorDismiss} />}

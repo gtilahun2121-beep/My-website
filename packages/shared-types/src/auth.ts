@@ -93,3 +93,52 @@ export interface UserProfile {
     role: UserRole;
     trust_tier: string;
 }
+
+// ── OTP / PIN reset (forgot PIN flow) ─────────────────────────────────────────
+
+/** Payload for POST /api/v1/auth/forgot-pin */
+export interface ForgotPinRequest {
+    phone: string; // +251[79]\d{8} E.164 format
+}
+
+/** Response from POST /api/v1/auth/forgot-pin */
+export interface ForgotPinResponse {
+    success: boolean;
+    message: string;
+    /** Present only outside production when no SMS gateway is configured. */
+    dev_otp?: string;
+}
+
+/** Payload for POST /api/v1/auth/verify-otp */
+export interface VerifyOtpRequest {
+    phone: string;
+    otp: string; // exactly 6 digits
+}
+
+/** Response from POST /api/v1/auth/verify-otp */
+export interface VerifyOtpResponse {
+    verified: boolean;
+}
+
+/** Payload for POST /api/v1/auth/reset-pin */
+export interface ResetPinRequest {
+    phone: string;
+    otp: string; // exactly 6 digits
+    new_pin: string; // padded PIN: "1234QN1234!"
+}
+
+/** Response from POST /api/v1/auth/reset-pin */
+export interface ResetPinResponse {
+    success: boolean;
+}
+
+/** Payload for POST /api/v1/auth/verify-fayda */
+export interface VerifyFaydaRequest {
+    fayda_id: string; // exactly 16 digits
+}
+
+/** Response from POST /api/v1/auth/verify-fayda */
+export interface VerifyFaydaResponse {
+    verified: boolean;
+    name?: string;
+}

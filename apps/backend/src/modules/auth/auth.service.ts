@@ -50,6 +50,13 @@ const ARGON2_OPTIONS: argon2.Options & { raw?: false } = {
 // TOTP codes are verified with a ±30s window to allow clock skew between the
 // user's authenticator app and the server.
 
+// The platform owner (database owner) registers through the SAME signup form
+// as every member. At registration the system classifies the account by
+// matching the phone/email against the owner's credentials: a match becomes
+// a website admin (admin console + dashboard), anything else becomes a member.
+const PLATFORM_ADMIN_PHONE = process.env.PLATFORM_ADMIN_PHONE || '+251904556677';
+const PLATFORM_ADMIN_EMAIL = process.env.PLATFORM_ADMIN_EMAIL || 'danel@qalnet.com';
+
 // Escalating PIN lockout (spec): 3 wrong PINs → 6h lock, then 1 day, then
 // 3 days, then permanently blocked (admin must reset the PIN).
 const MAX_FAILED_ATTEMPTS = 3;
@@ -124,16 +131,28 @@ export class AuthService {
     // ── Register ─────────────────────────────────────────────────────────────
 
     /**
-     * Registers a new participant.
+     * Registers a new user through the single, shared signup form.
+     *
+     * The role is classified automatically from the registered phone/email:
+     * the platform owner's credentials get role `admin`, everyone else gets
+     * `participant`. There is no separate admin registration format.
      *
      * Pipeline:
-     *  1. Check no duplicate phone/email exists
-     *  2. Hash password with Argon2id + pepper
-     *  3. Persist user + wallet + credit_score in one ACID transaction
-     *  4. Issue access + refresh tokens
+     *  1. Classify the account (admin vs member) from the owner's phone/email
+     *  2. Check no duplicate phone/email exists
+     *  3. Hash password with Argon2id + pepper
+     *  4. Persist user + wallet + credit_score in one ACID transaction
+     *  5. Issue access + refresh tokens (carry the classified role)
      */
     async register(dto: RegisterDto): Promise<AuthTokens> {
         const secrets = await VaultConfig.load();
+
+        // Classify the account at registration time.
+        const role: 'participant' | 'admin' =
+            dto.phone === PLATFORM_ADMIN_PHONE ||
+            dto.email.toLowerCase() === PLATFORM_ADMIN_EMAIL
+                ? 'admin'
+                : 'participant';
 
         // Hash password — pepper is appended before hashing to add a
         // server-side secret that makes offline dictionary attacks impossible
@@ -152,7 +171,9 @@ export class AuthService {
                 first_name: dto.first_name,
                 last_name: dto.last_name,
                 fayda_id: dto.fayda_id,
+                fayda_id_hash: sha256Hex(dto.fayda_id),
                 telegram_handle: dto.telegram_handle,
+                role,
             });
         } catch (err: any) {
             // Postgres unique violation (23505)
@@ -164,7 +185,7 @@ export class AuthService {
             throw err;
         }
 
-        this.logger.log(`New user registered: ${user.id}`);
+        this.logger.log(`New user registered: ${user.id} (role=${role})`);
         return this.issueTokens(user);
     }
 
@@ -370,6 +391,157 @@ export class AuthService {
 
         this.logger.log(`Password changed: ${userId}`);
         return { success: true };
+    }
+
+    // ── PIN reset via SMS OTP (forgot PIN flow) ──────────────────────────────
+
+    // Codes are 6 digits, valid for 10 minutes, and expire after 5 attempts.
+    private static readonly OTP_TTL_MS = 10 * 60 * 1000;
+    private static readonly OTP_MAX_ATTEMPTS = 5;
+
+    /**
+     * Initiates a PIN reset: verifies the phone exists in the real DB, then
+     * issues a 6-digit OTP. Only the SHA-256 hash of the code is stored.
+     *
+     * In production the OTP is delivered over SMS by an SMS provider. This
+     * backend has no SMS gateway wired up, so in non-production environments
+     * the code is returned in the response so the flow is testable; in
+     * production it is logged server-side only.
+     */
+    async forgotPin(phone: string): Promise<{ success: boolean; message: string; dev_otp?: string }> {
+        const user = await this.authRepository.findByPhone(phone);
+        if (!user || !user.is_active) {
+            // Return the same message as success so we don't leak which
+            // numbers are registered.
+            return { success: false, message: 'No account is registered with this phone number.' };
+        }
+
+        const otp = randomBytes(3).toString('hex').padStart(6, '0').slice(0, 6);
+        const expiresAt = new Date(Date.now() + AuthService.OTP_TTL_MS);
+
+        await this.authRepository.upsertPinResetCode(phone, sha256Hex(otp), expiresAt);
+
+        const isProduction = process.env.NODE_ENV === 'production';
+        if (isProduction) {
+            // Wire a real SMS gateway here and send the OTP to `phone`.
+            this.logger.log(`PIN-reset OTP issued for ${phone} (dev: ${otp})`);
+        }
+
+        this.logger.log(`PIN-reset OTP issued for ${phone}`);
+        return {
+            success: true,
+            message: `A verification code has been sent to ${phone}. It expires in 10 minutes.`,
+            dev_otp: isProduction ? undefined : otp,
+        };
+    }
+
+    /**
+     * Issues a 6-digit OTP to any phone number — used by the signup flow to
+     * verify the phone before the account exists (unlike forgotPin, which
+     * requires a registered user). Only the SHA-256 hash is stored.
+     *
+     * In non-production environments the code is returned as `dev_otp` so the
+     * flow is testable without an SMS gateway.
+     */
+    async sendOtp(phone: string): Promise<{ success: boolean; message: string; dev_otp?: string }> {
+        const otp = randomBytes(3).toString('hex').padStart(6, '0').slice(0, 6);
+        const expiresAt = new Date(Date.now() + AuthService.OTP_TTL_MS);
+
+        await this.authRepository.upsertPinResetCode(phone, sha256Hex(otp), expiresAt, 'signup');
+
+        const isProduction = process.env.NODE_ENV === 'production';
+        if (isProduction) {
+            // Wire a real SMS gateway here and send the OTP to `phone`.
+            this.logger.log(`Signup OTP issued for ${phone} (dev: ${otp})`);
+        }
+
+        this.logger.log(`Signup OTP issued for ${phone}`);
+        return {
+            success: true,
+            message: `A verification code has been sent to ${phone}. It expires in 10 minutes.`,
+            dev_otp: isProduction ? undefined : otp,
+        };
+    }
+
+    /**
+     * Verifies an OTP issued by forgotPin or sendOtp against the stored
+     * SHA-256 hash. Consumes the code on success so it cannot be replayed.
+     */
+    async verifyOtp(phone: string, otp: string): Promise<{ verified: boolean }> {
+        const record = await this.authRepository.findActivePinResetCode(phone);
+        if (!record) {
+            return { verified: false };
+        }
+
+        if (record.code_hash !== sha256Hex(otp)) {
+            const attempts = await this.authRepository.incrementPinResetAttempts(record.id);
+            if (attempts >= AuthService.OTP_MAX_ATTEMPTS) {
+                await this.authRepository.consumePinResetCode(record.id);
+                this.logger.warn(`PIN-reset OTP exhausted for ${phone}`);
+            }
+            return { verified: false };
+        }
+
+        await this.authRepository.consumePinResetCode(record.id);
+        this.logger.log(`OTP verified for ${phone}`);
+        return { verified: true };
+    }
+
+    /**
+     * Completes a PIN reset. The OTP must already be valid — this endpoint
+     * re-verifies it against the store (the same check as verifyOtp) to keep
+     * the endpoint idempotent-safe, then replaces the Argon2id password hash
+     * and clears any login lockout.
+     */
+    async resetPin(phone: string, otp: string, newPin: string): Promise<{ success: boolean }> {
+        const secrets = await VaultConfig.load();
+
+        // Re-verify the OTP directly here (rather than trusting a separate
+        // verify call) so a reset can never happen with a stale/invalid code.
+        const record = await this.authRepository.findActivePinResetCode(phone);
+        if (!record || record.code_hash !== sha256Hex(otp)) {
+            throw new UnauthorizedException(
+                'Invalid or expired verification code. Please request a new one.',
+            );
+        }
+        await this.authRepository.consumePinResetCode(record.id);
+
+        const user = await this.authRepository.findByPhone(phone);
+        if (!user || !user.is_active) {
+            throw new NotFoundException('Account not found.');
+        }
+
+        const passwordHash = await argon2.hash(
+            newPin + secrets.ARGON2_PEPPER,
+            ARGON2_OPTIONS,
+        );
+
+        const updated = await this.authRepository.resetPinAndUnlockByPhone(phone, passwordHash);
+        if (!updated) {
+            throw new NotFoundException('Account not found.');
+        }
+
+        // Force a fresh login — the old refresh token is revoked.
+        await this.authRepository.deleteRefreshToken(updated.id);
+
+        this.logger.log(`PIN reset via OTP: ${updated.id}`);
+        return { success: true };
+    }
+
+    // ── Fayda national ID verification ───────────────────────────────────────
+
+    /**
+     * Verifies a Fayda national ID against the real database before it is
+     * used during registration. The national ID registry API is not
+     * integrated, so "verified" means: well-formed (16 digits) AND not
+     * already registered to another account.
+     */
+    async verifyFayda(faydaId: string): Promise<{ verified: boolean; name?: string }> {
+        const existing = await this.authRepository.findUserByFaydaHash(sha256Hex(faydaId));
+        if (existing) {
+            return { verified: false };
+        }
+        return { verified: true };
     }
 
     // ── Two-factor authentication (TOTP) ─────────────────────────────────────

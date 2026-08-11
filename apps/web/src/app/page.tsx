@@ -8,6 +8,7 @@ import { useAuth } from './context/AuthContext';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import AuthModal from './components/modals/AuthModal';
+import { homePathForStoredUser } from './lib/roleHome';
 
 export default function Home() {
   const router = useRouter();
@@ -19,12 +20,12 @@ export default function Home() {
   };
 
   const handleAuthSuccess = (title: string, message: string, duration?: number) => {
-    console.log('✅ handleAuthSuccess called - closing modal and redirecting to /dashboard');
     setShowAuthModal(false);
     // Add a small delay to ensure modal closes before redirect
     setTimeout(() => {
-      console.log('🚀 Redirecting to /dashboard...');
-      router.push('/dashboard');
+      // Role-based redirect: admins land on the admin console,
+      // members land on the member dashboard.
+      router.push(homePathForStoredUser());
     }, 500);
   };
 
