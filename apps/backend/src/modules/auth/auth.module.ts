@@ -17,9 +17,11 @@ import { AuthService } from './auth.service';
 import { AuthRepository } from './auth.repository';
 import { JwtStrategy } from '../../common/guards/jwt.strategy';
 import { VaultConfig } from '../../config/vault.config';
+import { SmsModule } from '../sms/sms.module';
 
 @Module({
     imports: [
+        SmsModule,
         PassportModule.register({ defaultStrategy: 'jwt' }),
 
         // Async registration so we can resolve the RS256 public key from Vault

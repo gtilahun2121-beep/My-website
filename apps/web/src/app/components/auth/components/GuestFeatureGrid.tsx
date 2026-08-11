@@ -40,7 +40,7 @@ export default function GuestFeatureGrid() {
           <div className="flex items-start gap-4">
             <span className="text-3xl">{feature.icon}</span>
             <div>
-              <h3 className="font-black text-[#0d7e4d]">{feature.title}</h3>
+              <h3 className="font-black text-[#314fa0]">{feature.title}</h3>
               <p className="text-sm text-gray-600">{feature.description}</p>
             </div>
           </div>

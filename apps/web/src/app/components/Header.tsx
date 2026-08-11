@@ -41,7 +41,7 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
   };
 
   return (
-    <header className="bg-gradient-to-r from-[#0d7e4d] to-[#ce1126] shadow-2xl sticky top-0 z-50 border-b-4 border-[#d4af37]">
+    <header className="bg-gradient-to-r from-[#314fa0] to-[#ce1126] shadow-2xl sticky top-0 z-50 border-b-4 border-[#d4af37]">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex justify-between items-center">
           {/* Left corner: profile + logo */}
@@ -50,7 +50,7 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
             {authenticated && (
               <button
                 onClick={() => setProfileOpen(true)}
-                className="relative w-10 h-10 rounded-full overflow-hidden bg-white flex items-center justify-center text-[#0d7e4d] font-black text-sm uppercase shadow-md hover:scale-105 transition-transform border-2 border-[#d4af37]"
+                className="relative w-10 h-10 rounded-full overflow-hidden bg-white flex items-center justify-center text-[#314fa0] font-black text-sm uppercase shadow-md hover:scale-105 transition-transform border-2 border-[#d4af37]"
                 aria-label="Open profile"
               >
                 {user?.profilePhoto ? (
@@ -67,7 +67,7 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
             )}
             <Link href="/" className="flex items-center gap-3 group">
             <div className="w-10 h-10 bg-gradient-to-br from-[#d4af37] to-[#ce1126] rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-              <span className="text-[#0d7e4d] font-black text-lg">🇪🇹</span>
+              <span className="text-[#314fa0] font-black text-lg">🇪🇹</span>
             </div>
             <div>
               <span className="font-black text-2xl text-white drop-shadow-lg">QalNet</span>
@@ -117,7 +117,7 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
             <select
               value={lang}
               onChange={(e) => onLanguageChange(e.target.value as Language)}
-              className="px-4 py-2 border-2 border-[#d4af37] rounded-full text-sm bg-white text-[#0d7e4d] font-bold cursor-pointer"
+              className="px-4 py-2 border-2 border-[#d4af37] rounded-full text-sm bg-white text-[#314fa0] font-bold cursor-pointer"
             >
               {(Object.keys(languages) as Language[]).map((l) => (
                 <option key={l} value={l}>
@@ -130,7 +130,7 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
             {!authenticated && (
               <button
                 onClick={onSignUpClick}
-                className="hidden sm:inline-block px-6 py-2 bg-white text-[#0d7e4d] font-bold rounded-full hover:shadow-lg transition-all text-sm"
+                className="hidden sm:inline-block px-6 py-2 bg-white text-[#314fa0] font-bold rounded-full hover:shadow-lg transition-all text-sm"
               >
                 ✍️ Sign Up
               </button>
@@ -167,7 +167,7 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
                   onSignUpClick?.();
                   setMobileMenuOpen(false);
                 }}
-                className="w-full px-4 py-3 bg-white text-[#0d7e4d] font-bold rounded-lg"
+                className="w-full px-4 py-3 bg-white text-[#314fa0] font-bold rounded-lg"
               >
                 ✍️ Sign Up
               </button>

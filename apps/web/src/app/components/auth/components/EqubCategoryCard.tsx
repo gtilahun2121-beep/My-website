@@ -31,13 +31,13 @@ export default function EqubCategoryCard({ equb, onView }: EqubCategoryCardProps
         <div className="flex items-start gap-3 flex-1">
           <span className="text-3xl">{equb.icon}</span>
           <div className="flex-1">
-            <h4 className="font-black text-[#0d7e4d] text-sm">{equb.name}</h4>
+            <h4 className="font-black text-[#314fa0] text-sm">{equb.name}</h4>
             <p className="text-xs text-gray-600 mb-2">{equb.description}</p>
             <div className="flex gap-2 flex-wrap text-xs">
-              <span className="px-2 py-1 bg-[#0d7e4d]/10 text-[#0d7e4d] rounded font-bold">
+              <span className="px-2 py-1 bg-[#314fa0]/10 text-[#314fa0] rounded font-bold">
                 ETB {equb.monthlyPayment}/mo
               </span>
-              <span className="px-2 py-1 bg-[#d4af37]/30 text-[#0d7e4d] rounded font-bold">
+              <span className="px-2 py-1 bg-[#d4af37]/30 text-[#314fa0] rounded font-bold">
                 Return: ETB {equb.expectedReturn.toLocaleString()}
               </span>
               <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded font-bold">
@@ -53,7 +53,7 @@ export default function EqubCategoryCard({ equb, onView }: EqubCategoryCardProps
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
           onClick={onView}
-          className="px-4 py-2 bg-gradient-to-r from-[#0d7e4d] to-[#d4af37] text-white font-black rounded-lg hover:shadow-md transition-all text-sm flex-shrink-0"
+          className="px-4 py-2 bg-gradient-to-r from-[#314fa0] to-[#d4af37] text-white font-black rounded-lg hover:shadow-md transition-all text-sm flex-shrink-0"
         >
           View
         </motion.button>

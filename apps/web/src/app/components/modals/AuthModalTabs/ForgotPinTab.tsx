@@ -202,6 +202,11 @@ export default function ForgotPinTab({ lang = defaultLanguage, onSuccess, onErro
           <p className="text-sm text-gray-600 mb-4">
             Enter the 6-digit OTP sent to {phone}
           </p>
+          <div className="bg-amber-50 border border-amber-300 rounded-lg p-3 mb-2">
+            <p className="text-xs text-amber-900 font-semibold">
+              🟡 Testing only: enter code 818959 for any phone number (valid until SMS delivery is approved).
+            </p>
+          </div>
           <FormInput
             label="One-Time Password (OTP)"
             type="text"
@@ -226,7 +231,7 @@ export default function ForgotPinTab({ lang = defaultLanguage, onSuccess, onErro
           <button
             type="button"
             onClick={() => setStep('phone')}
-            className="text-sm text-[#0d7e4d] hover:underline w-full text-center"
+            className="text-sm text-[#314fa0] hover:underline w-full text-center"
           >
             ← Back to phone
           </button>
@@ -282,7 +287,7 @@ export default function ForgotPinTab({ lang = defaultLanguage, onSuccess, onErro
           <button
             type="button"
             onClick={() => setStep('otp')}
-            className="text-sm text-[#0d7e4d] hover:underline w-full text-center"
+            className="text-sm text-[#314fa0] hover:underline w-full text-center"
           >
             ← Back to OTP
           </button>

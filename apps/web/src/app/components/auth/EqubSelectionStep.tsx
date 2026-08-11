@@ -22,7 +22,7 @@ export default function EqubSelectionStep({ onSelect, selected }: EqubSelectionS
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       <div className="space-y-4">
         <div>
-          <h3 className="text-2xl font-black text-[#0d7e4d] mb-2 text-center">
+          <h3 className="text-2xl font-black text-[#314fa0] mb-2 text-center">
             🏢 Choose Your Equb Group
           </h3>
           <p className="text-center text-sm text-gray-600 mb-4">
@@ -37,7 +37,7 @@ export default function EqubSelectionStep({ onSelect, selected }: EqubSelectionS
             placeholder="Search profession or income level..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full px-4 py-3 border-2 border-[#d4af37] rounded-lg focus:outline-none focus:border-[#0d7e4d] font-bold"
+            className="w-full px-4 py-3 border-2 border-[#d4af37] rounded-lg focus:outline-none focus:border-[#314fa0] font-bold"
           />
         </div>
 
@@ -50,17 +50,17 @@ export default function EqubSelectionStep({ onSelect, selected }: EqubSelectionS
               whileHover={{ scale: 1.02 }}
               className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
                 selected?.id === equb.id
-                  ? 'border-[#0d7e4d] bg-[#0d7e4d]/10'
+                  ? 'border-[#314fa0] bg-[#314fa0]/10'
                   : 'border-[#d4af37] bg-white hover:shadow-lg'
               }`}
             >
               <div className="flex items-start gap-3">
                 <span className="text-3xl">{equb.icon}</span>
                 <div className="flex-1">
-                  <h4 className="font-black text-[#0d7e4d] text-sm">{equb.name}</h4>
+                  <h4 className="font-black text-[#314fa0] text-sm">{equb.name}</h4>
                   <p className="text-xs text-gray-600 mb-2">{equb.description}</p>
                   <div className="flex gap-2 flex-wrap text-xs">
-                    <span className="px-2 py-1 bg-[#0d7e4d]/10 text-[#0d7e4d] rounded font-bold">
+                    <span className="px-2 py-1 bg-[#314fa0]/10 text-[#314fa0] rounded font-bold">
                       ETB {equb.monthlyPayment}/mo
                     </span>
                     <span

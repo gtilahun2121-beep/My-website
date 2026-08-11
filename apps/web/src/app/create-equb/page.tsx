@@ -144,7 +144,7 @@ export default function CreateEqubPage() {
                     value={form.name}
                     onChange={(e) => set('name', e.target.value)}
                     placeholder={lang === 'en' ? 'e.g. Family Savings Circle' : 'ለምሳሌ የቤተሰብ ቁጠባ'}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#0d7e4d]"
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#314fa0]"
                   />
                 </div>
 
@@ -157,7 +157,7 @@ export default function CreateEqubPage() {
                     onChange={(e) => set('description', e.target.value)}
                     rows={3}
                     placeholder={lang === 'en' ? 'What is this Equb about?' : 'ይህ እቁብ ስለምንድን ነው?'}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#0d7e4d]"
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#314fa0]"
                   />
                 </div>
 
@@ -170,7 +170,7 @@ export default function CreateEqubPage() {
                       type="number"
                       value={form.contribution_amount}
                       onChange={(e) => set('contribution_amount', e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#0d7e4d]"
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#314fa0]"
                     />
                   </div>
                   <div>
@@ -181,7 +181,7 @@ export default function CreateEqubPage() {
                       type="number"
                       value={form.total_rounds}
                       onChange={(e) => set('total_rounds', e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#0d7e4d]"
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#314fa0]"
                     />
                   </div>
                   <div>
@@ -192,7 +192,7 @@ export default function CreateEqubPage() {
                       type="number"
                       value={form.cycle_days}
                       onChange={(e) => set('cycle_days', e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#0d7e4d]"
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#314fa0]"
                     />
                   </div>
                 </div>
@@ -206,7 +206,7 @@ export default function CreateEqubPage() {
                 <button
                   onClick={handleSubmit}
                   disabled={loading}
-                  className="w-full py-3 bg-gradient-to-r from-[#0d7e4d] to-[#0a5c38] text-white font-black rounded-lg hover:shadow-lg transition-all disabled:opacity-50"
+                  className="w-full py-3 bg-gradient-to-r from-[#314fa0] to-[#2a4183] text-white font-black rounded-lg hover:shadow-lg transition-all disabled:opacity-50"
                 >
                   {loading
                     ? (lang === 'en' ? 'Submitting...' : 'በመላክ ላይ...')

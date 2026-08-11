@@ -28,7 +28,7 @@ export default function EqubDetailModal({ equb, onClose, onJoin }: EqubDetailMod
           <div className="flex items-start gap-4">
             <span className="text-5xl">{equb.icon}</span>
             <div>
-              <h2 className="text-2xl font-black text-[#0d7e4d]">{equb.name}</h2>
+              <h2 className="text-2xl font-black text-[#314fa0]">{equb.name}</h2>
               <p className="text-sm text-gray-600">{equb.profession}</p>
             </div>
           </div>
@@ -39,9 +39,9 @@ export default function EqubDetailModal({ equb, onClose, onJoin }: EqubDetailMod
 
         {/* Key Info Grid */}
         <div className="grid grid-cols-2 gap-4 mb-6">
-          <div className="bg-[#0d7e4d]/10 rounded-lg p-4">
+          <div className="bg-[#314fa0]/10 rounded-lg p-4">
             <p className="text-xs text-gray-600 mb-1">Monthly Payment</p>
-            <p className="text-2xl font-black text-[#0d7e4d]">ETB {equb.monthlyPayment.toLocaleString()}</p>
+            <p className="text-2xl font-black text-[#314fa0]">ETB {equb.monthlyPayment.toLocaleString()}</p>
           </div>
           <div className="bg-[#d4af37]/20 rounded-lg p-4">
             <p className="text-xs text-gray-600 mb-1">Expected Return</p>
@@ -69,26 +69,26 @@ export default function EqubDetailModal({ equb, onClose, onJoin }: EqubDetailMod
 
         {/* About */}
         <div className="mb-6">
-          <h3 className="font-black text-[#0d7e4d] mb-2">📝 About This Group</h3>
+          <h3 className="font-black text-[#314fa0] mb-2">📝 About This Group</h3>
           <p className="text-sm text-gray-600">{equb.description}</p>
         </div>
 
         {/* Payment Cycle */}
         <div className="bg-[#f5f3f0] border-2 border-[#d4af37] rounded-lg p-4 mb-6">
-          <h3 className="font-black text-[#0d7e4d] mb-2">📅 Payment Cycle</h3>
+          <h3 className="font-black text-[#314fa0] mb-2">📅 Payment Cycle</h3>
           <p className="text-lg font-black text-[#ce1126] mb-1">{equb.paymentCycle.duration} Months</p>
           <p className="text-sm text-gray-600">{equb.paymentCycle.description}</p>
         </div>
 
         {/* Payment Methods */}
         <div className="mb-6">
-          <h3 className="font-black text-[#0d7e4d] mb-3">💳 Accepted Payment Methods</h3>
+          <h3 className="font-black text-[#314fa0] mb-3">💳 Accepted Payment Methods</h3>
           <div className="space-y-2">
             {equb.paymentMethods.map((method, idx) => (
               <div key={idx} className="bg-white border-2 border-[#d4af37] rounded-lg p-3 flex items-start gap-3">
                 <span className="text-2xl">{method.icon}</span>
                 <div>
-                  <p className="font-black text-[#0d7e4d] text-sm">{method.name}</p>
+                  <p className="font-black text-[#314fa0] text-sm">{method.name}</p>
                   <p className="text-xs text-gray-600">{method.description}</p>
                 </div>
               </div>
@@ -98,22 +98,22 @@ export default function EqubDetailModal({ equb, onClose, onJoin }: EqubDetailMod
 
         {/* Benefits */}
         <div className="mb-6">
-          <h3 className="font-black text-[#0d7e4d] mb-3">✨ Benefits</h3>
+          <h3 className="font-black text-[#314fa0] mb-3">✨ Benefits</h3>
           <ul className="space-y-2 text-sm">
             <li className="flex gap-2">
-              <span className="text-[#0d7e4d] font-black">✓</span>
+              <span className="text-[#314fa0] font-black">✓</span>
               <span>Safe and secure savings with peers in your profession</span>
             </li>
             <li className="flex gap-2">
-              <span className="text-[#0d7e4d] font-black">✓</span>
+              <span className="text-[#314fa0] font-black">✓</span>
               <span>Fair payment amounts matched to your income level</span>
             </li>
             <li className="flex gap-2">
-              <span className="text-[#0d7e4d] font-black">✓</span>
+              <span className="text-[#314fa0] font-black">✓</span>
               <span>Support from colleagues who understand your work</span>
             </li>
             <li className="flex gap-2">
-              <span className="text-[#0d7e4d] font-black">✓</span>
+              <span className="text-[#314fa0] font-black">✓</span>
               <span>Guaranteed payout when your turn comes</span>
             </li>
           </ul>
@@ -125,7 +125,7 @@ export default function EqubDetailModal({ equb, onClose, onJoin }: EqubDetailMod
             onClick={onJoin}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="w-full py-3 bg-gradient-to-r from-[#0d7e4d] to-[#d4af37] text-white font-black rounded-full hover:shadow-lg transition-all"
+            className="w-full py-3 bg-gradient-to-r from-[#314fa0] to-[#d4af37] text-white font-black rounded-full hover:shadow-lg transition-all"
           >
             ✍️ Join This Equb
           </motion.button>
@@ -133,7 +133,7 @@ export default function EqubDetailModal({ equb, onClose, onJoin }: EqubDetailMod
             onClick={onClose}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="w-full py-2 border-2 border-[#0d7e4d] text-[#0d7e4d] font-black rounded-full hover:bg-[#0d7e4d]/10 transition-all"
+            className="w-full py-2 border-2 border-[#314fa0] text-[#314fa0] font-black rounded-full hover:bg-[#314fa0]/10 transition-all"
           >
             Close
           </motion.button>

@@ -122,7 +122,7 @@ export default function ForgotPinForm({ onSuccess, onError }: ForgotPinFormProps
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-bold text-[#0d7e4d] mb-2">
+              <label className="block text-sm font-bold text-[#314fa0] mb-2">
                 Phone Number
               </label>
               <input
@@ -172,7 +172,7 @@ export default function ForgotPinForm({ onSuccess, onError }: ForgotPinFormProps
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-bold text-[#0d7e4d] mb-2">
+              <label className="block text-sm font-bold text-[#314fa0] mb-2">
                 Verification Code
               </label>
               <input
@@ -214,7 +214,7 @@ export default function ForgotPinForm({ onSuccess, onError }: ForgotPinFormProps
                 setError('');
                 setOtp('');
               }}
-              className="w-full py-2 text-[#0d7e4d] font-bold hover:underline"
+              className="w-full py-2 text-[#314fa0] font-bold hover:underline"
             >
               ← Back
             </button>
@@ -234,7 +234,7 @@ export default function ForgotPinForm({ onSuccess, onError }: ForgotPinFormProps
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-bold text-[#0d7e4d] mb-2">
+              <label className="block text-sm font-bold text-[#314fa0] mb-2">
                 New 4-Digit PIN
               </label>
               <input
@@ -251,7 +251,7 @@ export default function ForgotPinForm({ onSuccess, onError }: ForgotPinFormProps
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-[#0d7e4d] mb-2">
+              <label className="block text-sm font-bold text-[#314fa0] mb-2">
                 Confirm PIN
               </label>
               <input
@@ -294,7 +294,7 @@ export default function ForgotPinForm({ onSuccess, onError }: ForgotPinFormProps
                 setNewPin('');
                 setConfirmPin('');
               }}
-              className="w-full py-2 text-[#0d7e4d] font-bold hover:underline"
+              className="w-full py-2 text-[#314fa0] font-bold hover:underline"
             >
               ← Back
             </button>
@@ -310,7 +310,7 @@ export default function ForgotPinForm({ onSuccess, onError }: ForgotPinFormProps
           className="text-center"
         >
           <div className="text-6xl mb-4 animate-bounce">✅</div>
-          <h3 className="text-2xl font-black text-[#0d7e4d] mb-4">
+          <h3 className="text-2xl font-black text-[#314fa0] mb-4">
             PIN Reset Successful!
           </h3>
           <p className="text-gray-600 mb-6">
@@ -330,7 +330,7 @@ export default function ForgotPinForm({ onSuccess, onError }: ForgotPinFormProps
             onClick={() => window.location.href = '/auth'}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="w-full py-3 bg-gradient-to-r from-[#0d7e4d] to-[#d4af37] text-white font-black rounded-full hover:shadow-lg transition-all duration-300"
+            className="w-full py-3 bg-gradient-to-r from-[#314fa0] to-[#d4af37] text-white font-black rounded-full hover:shadow-lg transition-all duration-300"
           >
             🔐 Go to Sign In
           </motion.button>

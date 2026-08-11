@@ -88,7 +88,7 @@ export default function CountUpStats({ stats, title, description }: CountUpStats
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-4xl md:text-5xl font-black text-[#0d7e4d] mb-4">
+          <h2 className="text-4xl md:text-5xl font-black text-[#314fa0] mb-4">
             📊 {title}
           </h2>
           <p className="text-xl text-[#5a5a5a]">{description}</p>
@@ -111,7 +111,7 @@ export default function CountUpStats({ stats, title, description }: CountUpStats
               transition={{ duration: 0.3 }}
             >
               {/* Background glow effect */}
-              <div className="absolute inset-0 bg-gradient-to-br from-[#0d7e4d]/10 to-[#ce1126]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-[#314fa0]/10 to-[#ce1126]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
               {/* Content */}
               <div className="relative z-10">
@@ -121,7 +121,7 @@ export default function CountUpStats({ stats, title, description }: CountUpStats
                 <div className="mb-6">
                   <AnimatedCounter value={stat.value} suffix={stat.suffix} />
                 </div>
-                <p className="text-lg font-bold text-[#0d7e4d] group-hover:text-[#ce1126] transition-colors">
+                <p className="text-lg font-bold text-[#314fa0] group-hover:text-[#ce1126] transition-colors">
                   {stat.label}
                 </p>
               </div>
