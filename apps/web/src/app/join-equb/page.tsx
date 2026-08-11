@@ -8,11 +8,12 @@ import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
 import api from '@/app/services/api';
 import { useEffect } from 'react';
+import type { EqubGroup } from '@qalnet/shared-types';
 
 export default function JoinEqubPage() {
   const { isAuthenticated } = useAuth();
   const [lang, setLang] = useState<Language>(defaultLanguage);
-  const [equbs, setEqubs] = useState<any[]>([]);
+  const [equbs, setEqubs] = useState<EqubGroup[]>([]);
 
   useEffect(() => {
     if (isAuthenticated) {

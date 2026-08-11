@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Language, defaultLanguage } from '@/i18n/config';
-import { translations } from '@/i18n/translations';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
 import FormInput from '@/app/components/forms/FormInput';
@@ -26,7 +25,6 @@ export default function CompleteProfilePage() {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState('');
-  const t = translations[lang];
 
   const professions = [
     'Diaspora & Overseas Community',

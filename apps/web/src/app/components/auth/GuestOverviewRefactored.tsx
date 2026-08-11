@@ -2,8 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { Language } from '@/i18n/config';
-import { translations } from '@/i18n/translations';
-import { equbCategories, getEqubByIncomeLevel, getTotalMembers, EqubCategory } from '@/app/data/equbCategories';
+import { equbCategories, getEqubByIncomeLevel, EqubCategory } from '@/app/data/equbCategories';
 import { useState } from 'react';
 import EqubCategoryCard from './components/EqubCategoryCard';
 import EqubDetailModal from './components/EqubDetailModal';
@@ -23,8 +22,7 @@ type IncomeLevel = 'all' | 'low' | 'medium' | 'high';
  * Refactored Guest Overview Component
  * Professional information architecture with proper component composition
  */
-export default function GuestOverviewRefactored({ lang = 'en', onJoinClick, onSignInClick }: GuestOverviewRefactoredProps) {
-  const t = translations[lang];
+export default function GuestOverviewRefactored({ onJoinClick }: GuestOverviewRefactoredProps) {
   const [selectedIncome, setSelectedIncome] = useState<IncomeLevel>('all');
   const [selectedEqub, setSelectedEqub] = useState<EqubCategory | null>(null);
   const [showModal, setShowModal] = useState(false);

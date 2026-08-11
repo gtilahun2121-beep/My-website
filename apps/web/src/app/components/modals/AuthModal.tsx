@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Language, defaultLanguage } from '@/i18n/config';
 import { translations } from '@/i18n/translations';
@@ -40,12 +40,16 @@ export default function AuthModal({
   const [activeTab, setActiveTab] = useState<AuthTab>(initialTab);
   const t = translations[lang];
 
-  // Update active tab when initialTab or isOpen changes
-  useEffect(() => {
-    if (isOpen) {
-      setActiveTab(initialTab);
-    }
-  }, [isOpen, initialTab]);
+  // Reset to the requested tab whenever the modal (re)opens or the requested
+  // tab changes. Done during render (not in an effect) so the modal always
+  // reopens on the initial tab without cascading re-renders.
+  const [prevOpen, setPrevOpen] = useState(isOpen);
+  const [prevInitialTab, setPrevInitialTab] = useState(initialTab);
+  if (isOpen && (prevOpen !== isOpen || initialTab !== prevInitialTab)) {
+    setPrevOpen(isOpen);
+    setPrevInitialTab(initialTab);
+    setActiveTab(initialTab);
+  }
 
   const tabs: { id: AuthTab; label: string; icon: string }[] = [
     { id: 'signup', label: lang === 'en' ? 'Sign Up' : lang === 'am' ? 'ምዝገባ' : lang === 'om' ? 'Galmaa' : 'ምዝገባ', icon: '✍️' },

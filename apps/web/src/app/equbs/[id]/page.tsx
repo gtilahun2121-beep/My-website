@@ -26,14 +26,26 @@ export default function EqubDetailPage() {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      setLoading(false);
       return;
     }
+    let cancelled = false;
     api.equbAPI
       .getById(params.id)
-      .then(setEqub)
-      .catch((err) => setError(err?.message || 'Failed to load Equb'))
-      .finally(() => setLoading(false));
+      .then((data) => {
+        if (!cancelled) {
+          setEqub(data);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : 'Failed to load Equb');
+          setLoading(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [params.id, isAuthenticated]);
 
   const handleJoin = async () => {
@@ -48,8 +60,8 @@ export default function EqubDetailPage() {
       }
       const fresh = await api.equbAPI.getById(params.id);
       setEqub(fresh);
-    } catch (err: any) {
-      setNotice(err?.message || 'Failed to join Equb.');
+    } catch (err) {
+      setNotice(err instanceof Error ? err.message : 'Failed to join Equb.');
     } finally {
       setJoining(false);
     }
@@ -184,7 +196,7 @@ export default function EqubDetailPage() {
                   const isHost = equb.is_host;
 
                   let label = lang === 'en' ? 'Request to Join' : 'መቀላቀል ጠይቅ';
-                  let disabled = isFull || isPending || isMember || joining;
+                  const disabled = isFull || isPending || isMember || joining;
                   if (isHost) label = lang === 'en' ? 'You host this Equb' : 'ይህን እቁብ ያስተናግዳሉ';
                   else if (isMember) label = lang === 'en' ? '✅ You are a member' : '✅ አባል ነዎት';
                   else if (isPending) label = lang === 'en' ? '⏳ Awaiting admin approval' : '⏳ የአስተዳዳሪ ማጽደቅ በመጠበቅ ላይ';

@@ -62,8 +62,8 @@ export default function CreateEqubPage() {
         setSuccess(true);
         setTimeout(() => router.push('/my-equbs'), 1500);
       }
-    } catch (err: any) {
-      setError(err?.message || 'Failed to submit request');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to submit request');
     } finally {
       setLoading(false);
     }

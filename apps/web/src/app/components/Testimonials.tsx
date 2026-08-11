@@ -78,7 +78,7 @@ export default function Testimonials({ testimonials }: TestimonialsProps) {
 
               {/* Quote */}
               <p className="text-gray-700 mb-6 italic font-semibold">
-                "{testimonial.quote}"
+                &ldquo;{testimonial.quote}&rdquo;
               </p>
 
               {/* Author */}

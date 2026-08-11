@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, type Easing } from 'framer-motion';
 import Link from 'next/link';
 
 interface HeroAnimationProps {
@@ -34,7 +34,7 @@ export default function HeroAnimation({
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.8, ease: [0.34, 1.56, 0.64, 1] as any },
+      transition: { duration: 0.8, ease: [0.34, 1.56, 0.64, 1] as Easing },
     },
   };
 
@@ -43,7 +43,7 @@ export default function HeroAnimation({
     visible: {
       opacity: 1,
       scale: 1,
-      transition: { duration: 0.6, ease: [0.34, 1.56, 0.64, 1] as any },
+      transition: { duration: 0.6, ease: [0.34, 1.56, 0.64, 1] as Easing },
     },
     hover: {
       scale: 1.08,
@@ -58,7 +58,7 @@ export default function HeroAnimation({
       transition: {
         duration: 2,
         repeat: Infinity,
-        ease: [0.25, 0.46, 0.45, 0.94] as any,
+        ease: [0.25, 0.46, 0.45, 0.94] as Easing,
       },
     },
   };

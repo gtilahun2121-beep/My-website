@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/app/context/AuthContext';
-import { Language, defaultLanguage } from '@/i18n/config';
+import { Language } from '@/i18n/config';
 
 interface DiagramRegistrationFormProps {
   lang?: Language;
@@ -11,7 +11,6 @@ interface DiagramRegistrationFormProps {
 }
 
 export default function DiagramRegistrationForm({
-  lang = defaultLanguage,
   onSuccess,
   onError,
 }: DiagramRegistrationFormProps) {

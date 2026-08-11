@@ -104,9 +104,9 @@ export default function CreateAccountModal({
       setIsLoading(false);
       setStep('otp');
       onSuccess?.('Success', 'OTP sent to your phone');
-    } catch (error: any) {
+    } catch (error) {
       setIsLoading(false);
-      onError?.('Error', error.message);
+      onError?.('Error', error instanceof Error ? error.message : 'Account creation failed');
     }
   };
 
@@ -136,7 +136,7 @@ export default function CreateAccountModal({
           router.push('/complete-profile');
         }, 2000);
       }
-    } catch (error: any) {
+    } catch (error) {
       setIsLoading(false);
       onError?.('Error', 'OTP verification failed');
     }

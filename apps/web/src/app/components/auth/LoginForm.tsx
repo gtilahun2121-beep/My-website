@@ -14,8 +14,7 @@ interface LoginFormProps {
 
 type LoginStep = 'phone' | 'pin' | 'success';
 
-export default function LoginForm({ lang, onSuccess, onError }: LoginFormProps) {
-  const t = translations[lang];
+export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
   const { signin, user } = useAuth();
   const [step, setStep] = useState<LoginStep>('phone');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -50,8 +49,8 @@ export default function LoginForm({ lang, onSuccess, onError }: LoginFormProps) 
       await signin(phoneNumber, pin);
       onSuccess?.('🎉 Welcome Back!', `Hello ${user?.firstName ?? ''}, you're now logged in!`, 5000);
       setStep('success');
-    } catch (err: any) {
-      setError(err?.message || 'Login failed');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed');
       setLoading(false);
     }
   };
@@ -120,7 +119,7 @@ export default function LoginForm({ lang, onSuccess, onError }: LoginFormProps) 
             </motion.button>
 
             <p className="text-center text-sm text-[#5a5a5a] mb-6">
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <a href="/auth?mode=register" className="text-[#0d7e4d] font-black hover:underline">
                 Sign up here
               </a>
