@@ -7,9 +7,9 @@
 --                          a successful login or when a lock is applied).
 --
 --   lockout_stage          0 = no lock ever / cleared
---                          1 = 6-hour lock  (after 3rd wrong PIN)
---                          2 = 1-day lock    (after 3 more wrong PINs)
---                          3 = 3-day lock    (after 3 more wrong PINs)
+--                          1 = 3-hour lock  (after 3rd wrong PIN)
+--                          2 = 6-hour lock  (after 3 more wrong PINs)
+--                          3 = 3-day lock   (after 3 more wrong PINs)
 --                          4 = permanent     (blocked; admin must reset PIN)
 --
 --   locked_until           NULL when not locked, otherwise the timestamp the

@@ -59,12 +59,15 @@ const ARGON2_OPTIONS: argon2.Options & { raw?: false } = {
 const PLATFORM_ADMIN_PHONE = process.env.PLATFORM_ADMIN_PHONE || '+251904556677';
 const PLATFORM_ADMIN_EMAIL = process.env.PLATFORM_ADMIN_EMAIL || 'danel@qalnet.com';
 
-// Escalating PIN lockout (spec): 3 wrong PINs → 6h lock, then 1 day, then
-// 3 days, then permanently blocked (admin must reset the PIN).
+// Escalating PIN lockout: after 3 wrong PINs the account is locked. Every
+// repeat offence triggers a LONGER lock: 1st = 3 hours, 2nd = 6 hours,
+// 3rd = 3 days, then permanently blocked (admin must reset the PIN). The
+// attempt counter resets when a lock expires, but the stage is kept so the
+// next missed trio escalates to the next duration.
 const MAX_FAILED_ATTEMPTS = 3;
 const LOCK_DURATIONS_MS = [
-    6 * 60 * 60 * 1000,        // stage 1: 6 hours
-    24 * 60 * 60 * 1000,       // stage 2: 1 day
+    3 * 60 * 60 * 1000,        // stage 1: 3 hours
+    6 * 60 * 60 * 1000,        // stage 2: 6 hours
     3 * 24 * 60 * 60 * 1000,   // stage 3: 3 days
 ];
 const LOCK_STAGE_PERMANENT = 4;
@@ -229,11 +232,13 @@ export class AuthService {
      * Authenticates a user by phone or email + password.
      *
      * Enforces an escalating PIN lockout:
-     *   - 3 wrong PINs     → locked 6 hours
-     *   - 3 more wrong     → locked 1 day
+     *   - 3 wrong PINs     → locked 3 hours
+     *   - 3 more wrong     → locked 6 hours
      *   - 3 more wrong     → locked 3 days
      *   - 3 more wrong     → permanently blocked (admin must reset the PIN)
-     * A successful login clears the entire lockout state.
+     * A successful login clears the entire lockout state. The user is shown
+     * how many attempts remain and the full escalation rule after every
+     * incorrect PIN so the policy is never a surprise.
      */
     async login(dto: LoginDto): Promise<AuthTokens | TwoFactorRequired> {
         const secrets = await VaultConfig.load();
@@ -255,8 +260,13 @@ export class AuthService {
 
         if (user.locked_until) {
             if (user.locked_until.getTime() > Date.now()) {
+                const stage = user.lockout_stage;
+                const escalation =
+                    stage < LOCK_DURATIONS_MS.length
+                        ? `This is your lock ${this.ordinal(stage)} — another ${MAX_FAILED_ATTEMPTS} incorrect attempts will lock you for ${this.humanDuration(LOCK_DURATIONS_MS[stage])}.`
+                        : 'This is your final temporary lock — further incorrect attempts will permanently block your account.';
                 throw new UnauthorizedException(
-                    `Too many incorrect PIN attempts. Your account is locked. Try again after ${this.formatLockEnd(user.locked_until)}.`,
+                    `Too many incorrect PIN attempts. Your account is locked for ${this.describeLock(stage)}. ${escalation} Try again after ${this.formatLockEnd(user.locked_until)}.`,
                 );
             }
             // Lock expired — clear it, keep the stage so the next 3 failures
@@ -288,12 +298,12 @@ export class AuthService {
                 const lockedUntil = new Date(Date.now() + LOCK_DURATIONS_MS[nextStage - 1]);
                 await this.authRepository.applyLockout(user.id, nextStage, lockedUntil);
                 throw new UnauthorizedException(
-                    `Too many incorrect PIN attempts (${MAX_FAILED_ATTEMPTS}). Your account is locked for ${this.describeLock(nextStage)}.`,
+                    `Too many incorrect PIN attempts (${MAX_FAILED_ATTEMPTS}). Your account is locked for ${this.describeLock(nextStage)}. ${this.describeLockPolicy()}`,
                 );
             }
 
             throw new UnauthorizedException(
-                `Invalid PIN. ${MAX_FAILED_ATTEMPTS - attempts} attempt${MAX_FAILED_ATTEMPTS - attempts === 1 ? '' : 's'} remaining.`,
+                `Invalid PIN. ${MAX_FAILED_ATTEMPTS - attempts} attempt${MAX_FAILED_ATTEMPTS - attempts === 1 ? '' : 's'} remaining. ${this.describeLockPolicy()}`,
             );
         }
 
@@ -814,14 +824,37 @@ export class AuthService {
 
     // ── Lockout message helpers ──────────────────────────────────────────────
 
-    /** "6 hours", "1 day", "3 days" — for a given lockout stage (1-based). */
+    /** "3 hours", "6 hours", "3 days" — human label for a lock duration. */
+    private humanDuration(ms: number): string {
+        const hours = ms / 3_600_000;
+        if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'}`;
+        const days = hours / 24;
+        return `${days} day${days === 1 ? '' : 's'}`;
+    }
+
+    /** "3 hours", "6 hours", "3 days" — for a given lockout stage (1-based). */
     private describeLock(stage: number): string {
-        switch (stage) {
-            case 1: return '6 hours';
-            case 2: return '1 day';
-            case 3: return '3 days';
-            default: return 'a while';
-        }
+        const ms = LOCK_DURATIONS_MS[stage - 1];
+        return ms ? this.humanDuration(ms) : 'a while';
+    }
+
+    /** "1st", "2nd", "3rd", … */
+    private ordinal(n: number): string {
+        if (n === 1) return '1st';
+        if (n === 2) return '2nd';
+        if (n === 3) return '3rd';
+        return `${n}th`;
+    }
+
+    /**
+     * The insight shown after every incorrect PIN: how many attempts are
+     * allowed and how the lock escalates, so the user is never surprised.
+     */
+    private describeLockPolicy(): string {
+        const sequence = LOCK_DURATIONS_MS
+            .map((ms, i) => `${this.ordinal(i + 1)} time ${this.humanDuration(ms)}`)
+            .join(', ');
+        return `After ${MAX_FAILED_ATTEMPTS} incorrect attempts your account is locked: ${sequence}.`;
     }
 
     /** Human-readable "until <time>" for a lock expiry timestamp. */

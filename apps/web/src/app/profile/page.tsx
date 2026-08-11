@@ -26,7 +26,7 @@ function Field({ label, value }: { label: string; value: string }) {
 }
 
 export default function ProfilePage() {
-  const { user, isLoading, isAuthenticated, updateProfilePhoto } = useAuth();
+  const { user, isLoading, isAuthenticated, updateProfilePhoto, updateUser } = useAuth();
 
   const [photoOpen, setPhotoOpen] = useState(false);
   const [form, setForm] = useState({ firstName: '', lastName: '', phone: '', email: '' });
@@ -104,6 +104,14 @@ export default function ProfilePage() {
         phone: form.phone.trim(),
         email: form.email.trim(),
         telegram_handle: telegramHandle.trim() || null,
+      });
+      // Reflect the change everywhere immediately (member dashboard, admin
+      // sidebar, header) — not just after the JWT is refreshed.
+      updateUser({
+        firstName: form.firstName.trim(),
+        lastName: form.lastName.trim(),
+        phoneNumber: form.phone.trim(),
+        email: form.email.trim(),
       });
       setSaved(true);
     } catch (err) {

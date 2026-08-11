@@ -72,6 +72,11 @@ interface AuthContextType {
    */
   updateProfilePhoto: (photo: string | null) => void;
   /**
+   * Merges profile edits (name/phone/email) into the in-memory + persisted
+   * user so dashboards re-render with the latest details immediately.
+   */
+  updateUser: (patch: Partial<User>) => void;
+  /**
    * Resets the user's PIN via the backend's SMS-OTP flow.
    * Calls POST /api/v1/auth/reset-pin — the OTP must already be issued
    * (via /auth/forgot-pin) and verified for the reset to succeed.
@@ -145,7 +150,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!profile) return;
       setUser((prev) => {
         if (!prev) return prev;
-        const next = { ...prev, profilePhoto: profile.profile_photo ?? null };
+        const next = {
+          ...prev,
+          profilePhoto: profile.profile_photo ?? null,
+          // Sync the freshest identity fields from the backend (handles the
+          // case where the profile was edited while the JWT is still stale).
+          firstName: profile.first_name || prev.firstName,
+          lastName: profile.last_name || prev.lastName,
+          phoneNumber: profile.phone || prev.phoneNumber,
+          email: profile.email || prev.email,
+        };
         localStorage.setItem(STORAGE.USER, JSON.stringify(next));
         return next;
       });
@@ -228,14 +242,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  // Merges profile edits (e.g. name/phone/email from the profile page) into
+  // the current user and persisted storage so every consumer (member
+  // dashboard, admin sidebar, header) reflects the change immediately.
+  const updateUser = useCallback((patch: Partial<User>) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const next = { ...prev, ...patch };
+      localStorage.setItem(STORAGE.USER, JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
   const refreshProfile = useCallback(async () => {
     try {
       const profile = await userAPI.getProfile();
-      updateProfilePhoto(profile?.profile_photo ?? null);
+      if (!profile) return;
+      setUser((prev) => {
+        if (!prev) return prev;
+        const next = {
+          ...prev,
+          profilePhoto: profile.profile_photo ?? null,
+          // The backend is the source of truth for identity after a profile
+          // edit — keep in-memory state in sync even though the JWT is stale.
+          firstName: profile.first_name || prev.firstName,
+          lastName: profile.last_name || prev.lastName,
+          phoneNumber: profile.phone || prev.phoneNumber,
+          email: profile.email || prev.email,
+        };
+        localStorage.setItem(STORAGE.USER, JSON.stringify(next));
+        return next;
+      });
     } catch {
       // profile fetch is best-effort
     }
-  }, [updateProfilePhoto]);
+  }, [setUser]);
 
   // ── signin ──────────────────────────────────────────────────────────────────
 
@@ -360,6 +401,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     resetPin,
     refreshProfile,
     updateProfilePhoto,
+    updateUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/context/AuthContext';
+import { authAPI } from '@/app/services/api';
 
 const stroke = {
   fill: 'none',
@@ -21,6 +22,17 @@ export default function AdminLoginPage() {
   const [pin, setPin] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  // Forgot-PIN reset flow (phone → OTP → new PIN)
+  const [resetMode, setResetMode] = useState(false);
+  const [resetStep, setResetStep] = useState<'phone' | 'otp'>('phone');
+  const [resetPhone, setResetPhone] = useState('');
+  const [resetOtp, setResetOtp] = useState('');
+  const [newPin, setNewPin] = useState('');
+  const [confirmPin, setConfirmPin] = useState('');
+  const [resetBusy, setResetBusy] = useState(false);
+  const [resetError, setResetError] = useState('');
+  const [resetInfo, setResetInfo] = useState('');
 
   const isAdmin = user?.role === 'admin';
 
@@ -62,6 +74,59 @@ export default function AdminLoginPage() {
     'w-full px-4 py-3 rounded-lg bg-admin-elevated border border-admin-border ' +
     'text-admin-text placeholder:text-admin-disabled text-sm font-semibold ' +
     'focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 transition-colors';
+
+  // ── Forgot-PIN flow ────────────────────────────────────────────────────
+
+  const handleForgotPhone = async () => {
+    setResetError('');
+    setResetInfo('');
+    const phone = resetPhone.trim();
+    if (!/^\+?[1-9]\d{1,14}$/.test(phone)) {
+      setResetError('Enter the QalNet phone number registered to your account.');
+      return;
+    }
+    setResetBusy(true);
+    try {
+      const result = await authAPI.forgotPin(phone);
+      // Backend returns the code as dev_otp outside production (no SMS gateway yet).
+      if (result.dev_otp) {
+        setResetInfo(`Development OTP: ${result.dev_otp}`);
+      }
+      setResetStep('otp');
+    } catch (e) {
+      setResetError(e instanceof Error ? e.message : 'Could not send a verification code.');
+    } finally {
+      setResetBusy(false);
+    }
+  };
+
+  const handleResetPin = async () => {
+    setResetError('');
+    if (!/^\d{6}$/.test(resetOtp)) {
+      setResetError('OTP must be exactly 6 digits.');
+      return;
+    }
+    if (!/^\d{4}$/.test(newPin)) {
+      setResetError('New PIN must be exactly 4 digits.');
+      return;
+    }
+    if (newPin !== confirmPin) {
+      setResetError('PINs do not match.');
+      return;
+    }
+    setResetBusy(true);
+    try {
+      await authAPI.resetPin(resetPhone.trim(), resetOtp, newPin);
+      setResetError('');
+      setResetInfo('Your PIN has been reset. Sign in with your new PIN.');
+      setResetMode(false);
+      setPin('');
+    } catch (e) {
+      setResetError(e instanceof Error ? e.message : 'PIN reset failed.');
+    } finally {
+      setResetBusy(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-admin-bg">
@@ -105,6 +170,153 @@ export default function AdminLoginPage() {
               Sign out and try again
             </button>
           </div>
+        ) : resetMode ? (
+          <>
+            <h1 className="text-xl font-black text-admin-text text-center">Reset your PIN</h1>
+            <p className="text-sm text-admin-muted mt-1 text-center">
+              Recover your admin access with a verification code.
+            </p>
+
+            {resetStep === 'phone' ? (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  void handleForgotPhone();
+                }}
+                className="mt-6 space-y-4"
+              >
+                <div>
+                  <label htmlFor="reset-phone" className="block text-xs font-bold text-admin-muted mb-1.5">
+                    Registered phone number
+                  </label>
+                  <input
+                    id="reset-phone"
+                    type="tel"
+                    autoComplete="tel"
+                    value={resetPhone}
+                    onChange={(e) => setResetPhone(e.target.value)}
+                    placeholder="e.g. +251 91 000 0000"
+                    className={inputCls}
+                  />
+                </div>
+
+                {resetError && (
+                  <div className="rounded-lg border border-danger-500/30 bg-danger-500/10 px-4 py-3 text-sm font-semibold text-danger-600">
+                    {resetError}
+                  </div>
+                )}
+                {resetInfo && (
+                  <div className="rounded-lg border border-brand-500/30 bg-brand-500/10 px-4 py-3 text-sm font-semibold text-brand-600">
+                    {resetInfo}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={resetBusy}
+                  className="w-full py-3 rounded-lg bg-gradient-to-r from-brand-600 to-brand-500 text-white text-sm font-bold hover:from-brand-500 hover:to-brand-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  {resetBusy ? 'Sending code…' : 'Send verification code'}
+                </button>
+              </form>
+            ) : (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  void handleResetPin();
+                }}
+                className="mt-6 space-y-4"
+              >
+                <div>
+                  <label htmlFor="reset-otp" className="block text-xs font-bold text-admin-muted mb-1.5">
+                    Verification code
+                  </label>
+                  <input
+                    id="reset-otp"
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={6}
+                    value={resetOtp}
+                    onChange={(e) => setResetOtp(e.target.value.replace(/\D/g, ''))}
+                    placeholder="6-digit code"
+                    className={inputCls}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="new-pin" className="block text-xs font-bold text-admin-muted mb-1.5">
+                    New 4-digit PIN
+                  </label>
+                  <input
+                    id="new-pin"
+                    type="password"
+                    inputMode="numeric"
+                    maxLength={4}
+                    value={newPin}
+                    onChange={(e) => setNewPin(e.target.value.replace(/\D/g, ''))}
+                    placeholder="••••"
+                    className={inputCls}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="confirm-pin" className="block text-xs font-bold text-admin-muted mb-1.5">
+                    Confirm new PIN
+                  </label>
+                  <input
+                    id="confirm-pin"
+                    type="password"
+                    inputMode="numeric"
+                    maxLength={4}
+                    value={confirmPin}
+                    onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, ''))}
+                    placeholder="••••"
+                    className={inputCls}
+                  />
+                </div>
+
+                {resetError && (
+                  <div className="rounded-lg border border-danger-500/30 bg-danger-500/10 px-4 py-3 text-sm font-semibold text-danger-600">
+                    {resetError}
+                  </div>
+                )}
+                {resetInfo && (
+                  <div className="rounded-lg border border-brand-500/30 bg-brand-500/10 px-4 py-3 text-sm font-semibold text-brand-600">
+                    {resetInfo}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={resetBusy}
+                  className="w-full py-3 rounded-lg bg-gradient-to-r from-brand-600 to-brand-500 text-white text-sm font-bold hover:from-brand-500 hover:to-brand-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  {resetBusy ? 'Resetting…' : 'Reset PIN'}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setResetStep('phone')}
+                  className="w-full py-2 text-xs font-bold text-admin-muted hover:text-admin-text transition-colors"
+                >
+                  ← Use a different phone
+                </button>
+              </form>
+            )}
+
+            <button
+              type="button"
+              onClick={() => {
+                setResetMode(false);
+                setResetStep('phone');
+                setResetError('');
+                setResetInfo('');
+              }}
+              className="mt-6 pt-5 border-t border-admin-border-subtle w-full text-center text-xs font-bold text-admin-muted hover:text-admin-text transition-colors"
+            >
+              ← Back to admin sign in
+            </button>
+          </>
         ) : (
           <>
             <h1 className="text-xl font-black text-admin-text text-center">Admin sign in</h1>
@@ -159,10 +371,22 @@ export default function AdminLoginPage() {
               </button>
             </form>
 
-            <div className="mt-6 pt-5 border-t border-admin-border-subtle text-center">
+            <div className="mt-6 pt-5 border-t border-admin-border-subtle space-y-2 text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setResetMode(true);
+                  setError('');
+                  setResetError('');
+                  setResetInfo('');
+                }}
+                className="w-full text-xs font-bold text-admin-muted hover:text-admin-text transition-colors"
+              >
+                Forgot your PIN? Reset it here
+              </button>
               <Link
                 href="/"
-                className="text-xs font-bold text-admin-muted hover:text-admin-text transition-colors"
+                className="block text-xs font-bold text-admin-muted hover:text-admin-text transition-colors"
               >
                 ← Back to QalNet home
               </Link>

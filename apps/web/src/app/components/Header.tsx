@@ -26,14 +26,14 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
   const authenticated = isAuthenticated || authAuthenticated;
   const { unreadCount, refresh } = useNotifications(authenticated);
 
+  const initials =
+    (user?.firstName?.[0] || '') + (user?.lastName?.[0] || '') || '👤';
+
   const navItems = [
     { label: t.home, href: '/' },
     { label: t.features, href: '/features' },
     { label: t.docs, href: '/docs' },
   ];
-
-  const initials =
-    (user?.firstName?.[0] || '') + (user?.lastName?.[0] || '') || '👤';
 
   const openNotifications = () => {
     refresh();
