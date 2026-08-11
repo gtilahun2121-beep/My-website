@@ -39,7 +39,10 @@ export class AdminStatsRepository {
                     (SELECT COUNT(*)::int                FROM payments WHERE payment_status = 'failed')   AS failed_transactions,
                     (SELECT COUNT(*)::int                FROM payouts   WHERE status = 'pending')        AS pending_withdrawals,
                     (SELECT COALESCE(SUM(total_pot_amount),0)::numeric FROM payouts WHERE status IN ('approved','batched','completed')) AS total_payout_volume,
-                    (SELECT COUNT(*)::int                FROM equb_groups WHERE status IN ('open','active')) AS operational_equbs
+                    (SELECT COUNT(*)::int                FROM equb_groups WHERE status IN ('open','active')) AS operational_equbs,
+                    (SELECT COUNT(*)::int                FROM payments WHERE created_at >= CURRENT_DATE - INTERVAL '30 days') AS transactions_30d,
+                    (SELECT COUNT(*)::int                FROM payments WHERE created_at >= CURRENT_DATE - INTERVAL '60 days' AND created_at < CURRENT_DATE - INTERVAL '30 days') AS transactions_prev_30d,
+                    (SELECT pg_database_size(current_database())) AS db_size_bytes
             `;
 
             const trend = await sql`

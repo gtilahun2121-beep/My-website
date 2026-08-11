@@ -1,15 +1,18 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { adminAPI, APIError, AdminStats, AdminRecentTransaction, AdminTopEqub } from '@/app/services/api';
-import AppShell from '@/app/components/admin/AppShell';
+import type { PendingMembership } from '@/app/services/api';
+import type { EqubCreationRequest } from '@qalnet/shared-types';
 import KpiCard from '@/app/components/admin/KpiCard';
 import { StatusBadge, BadgeTone } from '@/app/components/admin/StatusBadge';
 import { AreaChart, DonutChart } from '@/app/components/admin/DashboardCharts';
 import { ErrorState } from '@/app/components/admin/States';
 import { useRequireAdmin } from '@/app/hooks/useRequireAdmin';
 import { AdminRouteLoading } from '@/app/components/admin/AdminGate';
+import { useAuth } from '@/app/context/AuthContext';
+import { initials } from '@/app/components/dashboard/format';
 
 const stroke = {
   fill: 'none',
@@ -29,17 +32,31 @@ function money(n: number | string) {
   return Number(n).toLocaleString('en-US', { maximumFractionDigits: 2 });
 }
 
-function formatDateTime(iso: string) {
+function formatShortDate(iso: string) {
   try {
-    return new Date(iso).toLocaleString('en-GB', {
+    return new Date(iso).toLocaleDateString('en-GB', {
       day: '2-digit',
       month: 'short',
-      hour: '2-digit',
-      minute: '2-digit',
+      year: 'numeric',
     });
   } catch {
     return '—';
   }
+}
+
+function formatTime(iso: string) {
+  try {
+    return new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  } catch {
+    return '—';
+  }
+}
+
+function timeAgo(d: Date) {
+  const s = Math.floor((Date.now() - d.getTime()) / 1000);
+  if (s < 60) return 'just now';
+  if (s < 3600) return `${Math.floor(s / 60)} min ago`;
+  return `${Math.floor(s / 3600)} hr ago`;
 }
 
 function greeting() {
@@ -75,7 +92,7 @@ const STATUS_TONE: Record<string, BadgeTone> = {
 };
 
 const EQUB_TONE: Record<string, BadgeTone> = {
-  open: 'info',
+  open: 'success',
   active: 'success',
   completed: 'neutral',
   cancelled: 'danger',
@@ -85,6 +102,15 @@ function statusLabel(status: string) {
   return status.replace('_', ' ').toUpperCase();
 }
 
+interface PendingApprovalRow {
+  type: string;
+  name: string;
+  category: string;
+  date: string;
+  icon: string;
+  iconClass: string;
+}
+
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -92,10 +118,18 @@ export default function AdminDashboardPage() {
   const [range, setRange] = useState<'7d' | '30d' | '90d' | 'custom'>('30d');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [apiLatency, setApiLatency] = useState<number | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [approvals, setApprovals] = useState<PendingApprovalRow[]>([]);
+  const [approvalsLoading, setApprovalsLoading] = useState(true);
+  const [exportOpen, setExportOpen] = useState(false);
+  const exportRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuth();
 
   const load = useCallback(async (showSpinner = false) => {
     if (showSpinner) setLoading(true);
     setError(null);
+    const t0 = performance.now();
     try {
       const params =
         range === 'custom' && startDate && endDate
@@ -104,7 +138,9 @@ export default function AdminDashboardPage() {
             ? undefined
             : { range };
       const res = await adminAPI.getStats(params);
+      setApiLatency(Math.round(performance.now() - t0));
       setStats(res);
+      setLastUpdated(new Date());
     } catch (err) {
       const message =
         err instanceof APIError
@@ -123,6 +159,61 @@ export default function AdminDashboardPage() {
     return () => clearTimeout(t);
   }, [load]);
 
+  const loadApprovals = useCallback(async () => {
+    setApprovalsLoading(true);
+    try {
+      const [reqs, mems] = await Promise.all([
+        adminAPI.listEqubRequests(),
+        adminAPI.listPendingMemberships(),
+      ]);
+      const rows: PendingApprovalRow[] = [
+        ...reqs.map((r: EqubCreationRequest) => ({
+          type: 'Equb Registration',
+          name: r.name,
+          category: 'Equb',
+          date: r.created_at,
+          icon: 'M4 21v-9m5 9v-7m5 7V4m5 17V10',
+          iconClass: 'bg-accent-100 text-accent-600',
+        })),
+        ...mems.map((m: PendingMembership) => ({
+          type: 'New Member',
+          name: `${m.user_first_name} ${m.user_last_name}`.trim(),
+          category: 'Member',
+          date: m.joined_at,
+          icon: 'M16 11a3 3 0 1 0-6 0m6 0a3 3 0 1 1-6 0m6 0h.01M10 11h-.01M12 14c-3.87 0-7 1.57-7 3.5V21h14v-3.5C19 15.57 15.87 14 12 14Z',
+          iconClass: 'bg-blue-100 text-blue-500',
+        })),
+      ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      setApprovals(rows);
+    } catch {
+      setApprovals([]);
+    } finally {
+      setApprovalsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const t = setTimeout(() => void loadApprovals(), 0);
+    return () => clearTimeout(t);
+  }, [loadApprovals]);
+
+  /* Close export menu on outside click / Escape */
+  useEffect(() => {
+    if (!exportOpen) return;
+    const onPointerDown = (e: PointerEvent) => {
+      if (exportRef.current && !exportRef.current.contains(e.target as Node)) setExportOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setExportOpen(false);
+    };
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [exportOpen]);
+
   const trend = useMemo(
     () =>
       (stats?.trend ?? []).map((p) => ({
@@ -138,18 +229,65 @@ export default function AdminDashboardPage() {
     [stats],
   );
 
+  const k = stats?.kpis;
+
   const paymentSegments = useMemo(() => {
-    const k = stats?.kpis;
     return [
-      { label: 'Successful', value: k?.successful_payments ?? 0, color: '#16a34a' },
-      { label: 'Pending', value: k?.pending_payments ?? 0, color: '#f59e0b' },
-      { label: 'Failed', value: k?.failed_transactions ?? 0, color: '#ef4444' },
+      { label: 'Successful', value: k?.successful_payments ?? 0, color: '#16A86B' },
+      { label: 'Pending', value: k?.pending_payments ?? 0, color: '#F59E0B' },
+      { label: 'Failed', value: k?.failed_transactions ?? 0, color: '#EF4444' },
     ];
-  }, [stats]);
+  }, [k]);
 
   const donutTotal = paymentSegments.reduce((s, seg) => s + seg.value, 0);
   const successPct =
     donutTotal > 0 ? Math.round((paymentSegments[0].value / donutTotal) * 100) : 0;
+
+  const memberSegments = useMemo(() => {
+    const verified = k?.active_users ?? 0;
+    const total = Math.max(verified, k?.total_users ?? 0);
+    return [
+      { label: 'Active', value: verified, color: '#16A86B' },
+      { label: 'Inactive', value: Math.max(0, total - verified), color: '#E2E8F0' },
+    ];
+  }, [k]);
+
+  const memberPct = memberSegments[0].value + memberSegments[1].value > 0
+    ? Math.round((memberSegments[0].value / (memberSegments[0].value + memberSegments[1].value)) * 100)
+    : 0;
+
+  const activitySummary = useMemo(() => {
+    const now = new Date();
+    const iso = (d: Date) =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const todayStr = iso(now);
+    const weekAgo = new Date(now);
+    weekAgo.setDate(now.getDate() - 6);
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const pts = stats?.trend ?? [];
+    const total = pts.reduce((s, p) => s + p.count, 0);
+    return {
+      today: pts.find((p) => p.date === todayStr)?.count ?? 0,
+      week: pts.filter((p) => new Date(p.date + 'T00:00:00') >= weekAgo).reduce((s, p) => s + p.count, 0),
+      month: pts.filter((p) => new Date(p.date + 'T00:00:00') >= monthStart).reduce((s, p) => s + p.count, 0),
+      allTime: k?.total_users ?? total,
+    };
+  }, [stats, k]);
+
+  const txGrowth = useMemo(() => {
+    const cur = k?.transactions_30d ?? 0;
+    const prev = k?.transactions_prev_30d ?? 0;
+    if (prev <= 0) return cur > 0 ? 100 : 0;
+    return Math.round(((cur - prev) / prev) * 100);
+  }, [k]);
+
+  const storagePct = useMemo(() => {
+    const bytes = k?.db_size_bytes ?? 0;
+    const quota = 1024 ** 4; // 1 TB
+    return { pct: quota > 0 ? Math.min(100, (bytes / quota) * 100) : 0, gb: bytes / 1024 ** 3 };
+  }, [k]);
+
+  const adminInitials = user ? initials(user.firstName, user.lastName) : 'A';
 
   const exportCsv = () => {
     if (!stats?.recent_transactions?.length) return;
@@ -175,8 +313,6 @@ export default function AdminDashboardPage() {
     URL.revokeObjectURL(url);
   };
 
-  const k = stats?.kpis;
-
   const cardCls = 'bg-admin-card rounded-card border border-admin-border';
   const cardTitleCls = 'text-base font-black text-admin-text';
   const cardSubtitleCls = 'text-xs text-admin-muted';
@@ -196,97 +332,125 @@ export default function AdminDashboardPage() {
     return `last ${range === '7d' ? '7 days' : range === '90d' ? '90 days' : '30 days'}`;
   }, [range, startDate, endDate]);
 
-  const pendingActions = useMemo(() => {
-    const items: { icon: string; iconClass: string; title: string; description: string; href?: string; button: string }[] = [];
-    if (k) {
-      if (k.pending_withdrawals > 0)
-        items.push({
-          icon: 'M3 10h18M7 15h2m4 0h2M5 6h14a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1Z',
-          iconClass: 'bg-warning-100 text-warning-700',
-          title: `${k.pending_withdrawals} withdrawal${k.pending_withdrawals > 1 ? 's' : ''} pending`,
-          description: 'Awaiting admin review before payout.',
-          href: '/admin/approvals',
-          button: 'Review',
-        });
-      if (k.pending_payments > 0)
-        items.push({
-          icon: 'M9 12l2 2 4-4m5.6 2A7.5 7.5 0 1 1 6.4 6.4 7.5 7.5 0 0 1 20.6 10Z',
-          iconClass: 'bg-success-100 text-success-700',
-          title: `${k.pending_payments} payment${k.pending_payments > 1 ? 's' : ''} awaiting settlement`,
-          description: 'Scheduled contributions not yet collected.',
-          button: 'Monitor',
-        });
-      if (k.failed_transactions > 0)
-        items.push({
-          icon: 'M12 8v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z',
-          iconClass: 'bg-danger-100 text-danger-700',
-          title: `${k.failed_transactions} failed transaction${k.failed_transactions > 1 ? 's' : ''}`,
-          description: 'Flagged for investigation and reconciliation.',
-          button: 'Investigate',
-        });
-    }
-    return items;
-  }, [k]);
-
   const { authorized } = useRequireAdmin();
   if (!authorized) return <AdminRouteLoading />;
 
   return (
-    <AppShell title="Dashboard" subtitle="Platform overview and operational health">
-      {/* ── Welcome section ─────────────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+    <>
+      {/* ── Greeting + date + export ─────────────────────────────────────── */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-black text-admin-text">
-            {greeting()}, Admin
+            {greeting()}, Admin 👋
           </h2>
           <p className="mt-1 text-sm text-admin-muted">
-            Here&apos;s the current status of the QalNet platform.
+            Here&apos;s what&apos;s happening with your QalNet platform today.
           </p>
-          <div className="mt-3">
-            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-admin-card border border-admin-border text-xs font-bold text-admin-text-secondary">
-              <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 text-brand-600" {...stroke}>
-                <circle cx="12" cy="12" r="9" />
-                <path d="M12 7v5l3 3" />
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-lg bg-admin-card border border-admin-border text-sm font-semibold text-admin-text-secondary">
+            <svg viewBox="0 0 24 24" className="w-4 h-4 text-brand-600" {...stroke}>
+              <rect x="3" y="5" width="18" height="16" rx="2" />
+              <path d="M8 3v4m8-4v4M3 10h18" />
+            </svg>
+            {new Date().toLocaleDateString('en-GB', {
+              weekday: 'long',
+              day: '2-digit',
+              month: 'long',
+              year: 'numeric',
+            })}
+          </div>
+
+          <div className="relative" ref={exportRef}>
+            <button
+              type="button"
+              onClick={() => setExportOpen((v) => !v)}
+              aria-haspopup="menu"
+              aria-expanded={exportOpen}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-brand-600 text-white text-sm font-bold hover:bg-brand-700 transition-colors shadow-sm"
+            >
+              <svg viewBox="0 0 24 24" className="w-4 h-4" {...stroke}>
+                <path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
               </svg>
-              {new Date().toLocaleDateString('en-GB', {
-                weekday: 'long',
-                day: '2-digit',
-                month: 'long',
-                year: 'numeric',
-              })}
-            </span>
+              Export Report
+              <svg viewBox="0 0 24 24" className={`w-3.5 h-3.5 transition-transform ${exportOpen ? 'rotate-180' : ''}`} {...stroke}>
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </button>
+            {exportOpen && (
+              <div
+                role="menu"
+                className="absolute right-0 top-full mt-2 w-44 rounded-lg bg-admin-card border border-admin-border shadow-xl z-50 overflow-hidden py-1"
+              >
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    exportCsv();
+                    setExportOpen(false);
+                  }}
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-sm font-semibold text-admin-text-secondary hover:bg-admin-elevated"
+                >
+                  <svg viewBox="0 0 24 24" className="w-4 h-4 text-success-600" {...stroke}>
+                    <path d="M12 3v12m0 0 4-4m-4 4-4-4" />
+                  </svg>
+                  CSV
+                </button>
+                <span
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-sm font-semibold text-admin-disabled cursor-not-allowed"
+                  title="Coming soon"
+                >
+                  <svg viewBox="0 0 24 24" className="w-4 h-4" {...stroke}>
+                    <path d="M6 3h12v4H6V3Zm0 6h12M6 13h12m0 8V17H6v4M6 13v4h12v-4" />
+                  </svg>
+                  PDF
+                </span>
+                <span
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-sm font-semibold text-admin-disabled cursor-not-allowed"
+                  title="Coming soon"
+                >
+                  <svg viewBox="0 0 24 24" className="w-4 h-4" {...stroke}>
+                    <path d="M4 6h16v12H4V6Z" />
+                  </svg>
+                  Excel
+                </span>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    window.print();
+                    setExportOpen(false);
+                  }}
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-sm font-semibold text-admin-text-secondary hover:bg-admin-elevated"
+                >
+                  <svg viewBox="0 0 24 24" className="w-4 h-4 text-brand-600" {...stroke}>
+                    <path d="M7 9V3h10v6M7 18h10v3H7v-3Zm-3-5h16v-2H4v2Z" />
+                  </svg>
+                  Print
+                </button>
+              </div>
+            )}
           </div>
         </div>
-        <button
-          type="button"
-          onClick={exportCsv}
-          disabled={!stats?.recent_transactions?.length}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-brand-600 to-brand-500 text-white text-sm font-bold hover:from-brand-500 hover:to-brand-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-lg shadow-brand-900/40"
-        >
-          <svg viewBox="0 0 24 24" className="w-4 h-4" {...stroke}>
-            <path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
-          </svg>
-          Export report
-        </button>
       </div>
 
-      {/* ── Primary KPIs ─────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      {/* ── Five KPI cards ────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
         <KpiCard
           label="Total Users"
           value={loading && !k ? '—' : (k?.total_users ?? 0)}
           hint={k ? `+${k.new_users_this_month} this month` : 'All registered accounts'}
-          accent="brand"
+          accent="success"
           variant="dark"
           icon={kpiIcon('M16 11a3 3 0 1 0-6 0m6 0a3 3 0 1 1-6 0m6 0h.01M10 11h-.01M12 14c-3.87 0-7 1.57-7 3.5V21h14v-3.5C19 15.57 15.87 14 12 14Z')}
         />
         <KpiCard
           label="Active Users"
           value={loading && !k ? '—' : (k?.active_users ?? 0)}
-          hint={`${k ? money(k.hosts) : '—'} of them hosts`}
-          accent="success"
+          hint={k && k.total_users > 0 ? `${Math.round((k.active_users / k.total_users) * 100)}% of total users` : 'Active accounts'}
+          accent="brand"
           variant="dark"
-          icon={kpiIcon('M9 12l2 2 4-4m5.6 2A7.5 7.5 0 1 1 6.4 6.4 7.5 7.5 0 0 1 20.6 10Z')}
+          icon={kpiIcon('M17 21v-1a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v1m8-9a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm7 3a3 3 0 1 0 0-6m1 7a4 4 0 0 1 3 4')}
         />
         <KpiCard
           label="Total Equbs"
@@ -297,141 +461,156 @@ export default function AdminDashboardPage() {
           icon={kpiIcon('M4 21v-9m5 9v-7m5 7V4m5 17V10')}
         />
         <KpiCard
+          label="Total Transactions (30D)"
+          value={loading && !k ? '—' : (k?.transactions_30d ?? 0)}
+          hint={k ? `${txGrowth >= 0 ? '+' : ''}${txGrowth}% vs last 30 days` : 'Payments in last 30 days'}
+          accent="warning"
+          variant="dark"
+          icon={kpiIcon('M8 7h12m0 0-4-4m4 4-4 4m4 6H8m0 0 4 4m-4-4 4-4')}
+        />
+        <KpiCard
           label="Wallet Balance"
           value={loading && !k ? '—' : `ETB ${money(k?.total_wallet_balance ?? 0)}`}
-          hint="Held across member wallets"
-          accent="warning"
+          hint="Across all member wallets"
+          accent="success"
           variant="dark"
           icon={kpiIcon('M3 10h18M7 15h2m4 0h2M5 6h14a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1Z')}
         />
       </div>
 
-      {/* ── Main content + right panel ──────────────────────────────────────── */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
-        <div className="xl:col-span-2 space-y-6">
-          {/* ── Platform activity chart ─────────────────────────────────── */}
-          <section className={`${cardCls} p-5`}>
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-              <div>
-                <h3 className={cardTitleCls}>Platform Activity</h3>
-                <p className={cardSubtitleCls}>
-                  Registrations, payments, equbs &amp; joins · {rangeLabel}
-                </p>
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="inline-flex items-center rounded-lg border border-admin-border bg-admin-elevated p-0.5">
-                  {ranges.map((r) => (
-                    <button
-                      key={r.key}
-                      type="button"
-                      onClick={() => setRange(r.key)}
-                      className={`px-3 py-1 rounded-md text-xs font-bold transition-colors ${
-                        range === r.key
-                          ? 'bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow'
-                          : 'text-admin-muted hover:text-admin-text'
-                      }`}
-                    >
-                      {r.label}
-                    </button>
-                  ))}
-                </div>
-                {range === 'custom' && (
-                  <div className="inline-flex items-center gap-1.5 rounded-lg border border-admin-border bg-admin-elevated p-1">
-                    <input
-                      type="date"
-                      aria-label="Start date"
-                      value={startDate}
-                      max={endDate || todayIso()}
-                      onChange={(e) => setStartDate(e.target.value)}
-                      className="rounded-md border border-admin-border bg-admin-card px-2 py-1 text-xs font-medium text-admin-text focus:outline-none focus:border-brand-500"
-                    />
-                    <span className="text-xs text-admin-muted">→</span>
-                    <input
-                      type="date"
-                      aria-label="End date"
-                      value={endDate}
-                      min={startDate || undefined}
-                      max={todayIso()}
-                      onChange={(e) => setEndDate(e.target.value)}
-                      className="rounded-md border border-admin-border bg-admin-card px-2 py-1 text-xs font-medium text-admin-text focus:outline-none focus:border-brand-500"
-                    />
-                  </div>
-                )}
-              </div>
+      {/* ── Analytics grid: activity | payment health | verification ─────── */}
+      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)] gap-6 items-start">
+        {/* Platform Activity */}
+        <section className={`${cardCls} p-5`}>
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div>
+              <h3 className={cardTitleCls}>Platform Activity</h3>
+              <p className={cardSubtitleCls}>Registrations, payments, equbs &amp; joins · {rangeLabel}</p>
             </div>
-            {loading && !stats ? (
-              <div className="h-52 animate-pulse rounded-lg bg-admin-elevated" />
-            ) : (
-              <AreaChart
-                data={trend}
-                color="#0d9488"
-                valueFormatter={(v) => String(v)}
-              />
-            )}
-          </section>
-
-          {/* ── Secondary KPIs ──────────────────────────────────────────── */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-            <KpiCard
-              label="Successful Payments"
-              value={loading && !k ? '—' : (k?.successful_payments ?? 0)}
-              hint="Paid or auto-debited"
-              accent="success"
-              variant="dark"
-              icon={kpiIcon('M9 12l2 2 4-4m5.6 2A7.5 7.5 0 1 1 6.4 6.4 7.5 7.5 0 0 1 20.6 10Z')}
-            />
-            <KpiCard
-              label="Pending Withdrawals"
-              value={loading && !k ? '—' : (k?.pending_withdrawals ?? 0)}
-              hint="Awaiting payout review"
-              accent="warning"
-              variant="dark"
-              icon={kpiIcon('M17 8l4 4m0 0-4 4m4-4H3')}
-            />
-            <KpiCard
-              label="Failed Transactions"
-              value={loading && !k ? '—' : (k?.failed_transactions ?? 0)}
-              hint="Flagged for investigation"
-              accent="danger"
-              variant="dark"
-              icon={kpiIcon('M12 8v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z')}
-            />
-            <KpiCard
-              label="Payout Volume"
-              value={loading && !k ? '—' : `ETB ${money(k?.total_payout_volume ?? 0)}`}
-              hint="Approved & completed payouts"
-              accent="brand"
-              variant="dark"
-              icon={kpiIcon('M12 3v18m0 0 4-4m-4 4-4-4')}
-            />
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="inline-flex items-center rounded-lg border border-admin-border bg-admin-elevated p-0.5">
+                {ranges.map((r) => (
+                  <button
+                    key={r.key}
+                    type="button"
+                    onClick={() => setRange(r.key)}
+                    className={`px-3 py-1 rounded-md text-xs font-bold transition-colors ${
+                      range === r.key
+                        ? 'bg-brand-600 text-white shadow'
+                        : 'text-admin-muted hover:text-admin-text'
+                    }`}
+                  >
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+              {range === 'custom' && (
+                <div className="inline-flex items-center gap-1.5 rounded-lg border border-admin-border bg-admin-elevated p-1">
+                  <input
+                    type="date"
+                    aria-label="Start date"
+                    value={startDate}
+                    max={endDate || todayIso()}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="rounded-md border border-admin-border bg-admin-card px-2 py-1 text-xs font-medium text-admin-text focus:outline-none focus:border-brand-500"
+                  />
+                  <span className="text-xs text-admin-muted">→</span>
+                  <input
+                    type="date"
+                    aria-label="End date"
+                    value={endDate}
+                    min={startDate || undefined}
+                    max={todayIso()}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="rounded-md border border-admin-border bg-admin-card px-2 py-1 text-xs font-medium text-admin-text focus:outline-none focus:border-brand-500"
+                  />
+                </div>
+              )}
+            </div>
           </div>
+          {loading && !stats ? (
+            <div className="h-52 animate-pulse rounded-lg bg-admin-elevated" />
+          ) : (
+            <AreaChart
+              data={trend}
+              color="#0AAE9A"
+              valueFormatter={(v) => String(v)}
+            />
+          )}
+          <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3 border-t border-admin-border pt-4">
+            {[
+              { label: 'Today', value: activitySummary.today },
+              { label: 'This Week', value: activitySummary.week },
+              { label: 'This Month', value: activitySummary.month },
+              { label: 'All Time', value: activitySummary.allTime },
+            ].map((m) => (
+              <div key={m.label} className="text-center">
+                <p className="text-xl font-black text-admin-text">{m.value}</p>
+                <p className="text-xs font-semibold text-admin-muted mt-0.5">{m.label}</p>
+              </div>
+            ))}
+          </div>
+        </section>
 
-          {/* ── Recent transactions table ──────────────────────────────── */}
-          <RecentTransactionsTable
-            loading={loading}
-            transactions={stats?.recent_transactions ?? []}
-          />
-        </div>
-
-        {/* ── Right operational panel ────────────────────────────────────── */}
-        <div className="space-y-6">
-          <section className={`${cardCls} p-5`}>
-            <h3 className={cardTitleCls}>Payment Health</h3>
-            <p className={`${cardSubtitleCls} mb-4`}>Distribution of payment outcomes</p>
+        {/* Payment Health */}
+        <section className={`${cardCls} p-5`}>
+          <h3 className={cardTitleCls}>Payment Health</h3>
+          <p className={`${cardSubtitleCls} mb-4`}>Distribution of payment outcomes</p>
+          {loading && !stats ? (
+            <div className="h-44 animate-pulse rounded-lg bg-admin-elevated" />
+          ) : (
             <DonutChart
               segments={paymentSegments}
               centerTitle={donutTotal > 0 ? `${successPct}%` : '—'}
               centerSubtitle="success rate"
             />
-          </section>
+          )}
+          <Link
+            href="/admin/finance"
+            className="mt-4 block text-center text-xs font-bold text-brand-600 hover:text-brand-700"
+          >
+            View all payments →
+          </Link>
+        </section>
 
-          <MemberVerificationCard loading={loading} stats={stats} />
+        {/* Member Verification */}
+        <section className={`${cardCls} p-5`}>
+          <h3 className={cardTitleCls}>Member Verification</h3>
+          <p className={`${cardSubtitleCls} mb-4`}>Active vs registered accounts</p>
+          {loading && !stats ? (
+            <div className="h-44 animate-pulse rounded-lg bg-admin-elevated" />
+          ) : (
+            <DonutChart
+              segments={memberSegments}
+              centerTitle={`${memberPct}%`}
+              centerSubtitle="active"
+            />
+          )}
+          <Link
+            href="/admin/kyc"
+            className="mt-4 block text-center text-xs font-bold text-brand-600 hover:text-brand-700"
+          >
+            Review KYC requests →
+          </Link>
+        </section>
+      </div>
 
+      {/* ── Recent pending approvals ─────────────────────────────────────── */}
+      <RecentPendingApprovals loading={approvalsLoading} rows={approvals} adminInitials={adminInitials} />
+
+      {/* ── System overview | transactions ───────────────────────────────── */}
+      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] gap-6 items-start">
+        <SystemOverviewCard
+          loading={loading}
+          healthy={!!stats}
+          apiLatency={apiLatency}
+          storage={storagePct}
+          lastUpdated={lastUpdated}
+        />
+
+        <div className="space-y-6">
+          <RecentTransactionsFeed loading={loading} transactions={stats?.recent_transactions ?? []} />
           <TopEqubsCard loading={loading} equbs={stats?.top_equbs ?? []} />
-
-          <PendingActionsCard loading={loading} items={pendingActions} />
-
-          <QuickActionsCard />
         </div>
       </div>
 
@@ -443,144 +622,259 @@ export default function AdminDashboardPage() {
           variant="dark"
         />
       )}
-    </AppShell>
+    </>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Member verification
+// Recent pending approvals
 // ---------------------------------------------------------------------------
 
-function MemberVerificationCard({
+function RecentPendingApprovals({
   loading,
-  stats,
+  rows,
+  adminInitials,
 }: {
   loading: boolean;
-  stats: AdminStats | null;
+  rows: PendingApprovalRow[];
+  adminInitials: string;
 }) {
-  const k = stats?.kpis;
-  const verified = k?.active_users ?? 0;
-  const total = Math.max(verified, k?.total_users ?? 0);
-  const pct = total > 0 ? Math.round((verified / total) * 100) : 0;
+  const cardCls = 'bg-admin-card rounded-card border border-admin-border';
+  const cardTitleCls = 'text-base font-black text-admin-text';
+  const cardSubtitleCls = 'text-xs text-admin-muted';
 
   return (
-    <section className="bg-admin-card rounded-card border border-admin-border p-5">
-      <div className="flex items-center justify-between">
-        <h3 className="text-base font-black text-admin-text">Member Verification</h3>
-        <span className="text-xs font-bold text-brand-600">{loading && !k ? '—' : `${pct}%`}</span>
-      </div>
-      <p className="text-xs text-admin-muted mb-4">Active vs registered accounts</p>
-
-      {loading && !k ? (
-        <div className="space-y-3">
-          <div className="h-4 rounded-lg bg-admin-elevated animate-pulse" />
-          <div className="h-4 w-2/3 rounded-lg bg-admin-elevated animate-pulse" />
+    <section className={`${cardCls} overflow-hidden`}>
+      <div className="flex items-center justify-between px-5 py-4 border-b border-admin-border">
+        <div>
+          <h3 className={cardTitleCls}>Recent Pending Approvals</h3>
+          <p className={cardSubtitleCls}>Requests awaiting administrative review</p>
         </div>
+        <Link href="/admin/approvals" className="text-xs font-bold text-brand-600 hover:text-brand-700">
+          View all →
+        </Link>
+      </div>
+
+      {loading ? (
+        <div className="divide-y divide-admin-border-subtle">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-4 px-5 py-4">
+              <div className="w-10 h-10 rounded-full bg-admin-elevated animate-pulse" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 w-48 rounded bg-admin-elevated animate-pulse" />
+                <div className="h-3 w-64 rounded bg-admin-elevated animate-pulse" />
+              </div>
+              <div className="h-6 w-16 rounded bg-admin-elevated animate-pulse" />
+            </div>
+          ))}
+        </div>
+      ) : rows.length === 0 ? (
+        <p className="px-5 py-12 text-center text-sm text-admin-muted">No pending approvals — all caught up.</p>
       ) : (
-        <>
-          <div className="h-3 rounded-full bg-admin-elevated overflow-hidden">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-brand-600 to-success-500 transition-all duration-500"
-              style={{ width: `${pct}%` }}
-            />
-          </div>
-          <div className="mt-4 flex items-center justify-between text-xs font-semibold">
-            <span className="text-admin-text-secondary">{verified} verified</span>
-            <span className="text-admin-muted">{total} registered</span>
-          </div>
-        </>
+        <ul className="divide-y divide-admin-border-subtle">
+          {rows.slice(0, 6).map((row, i) => (
+            <li key={`${row.type}-${row.name}-${i}`} className="flex items-center gap-4 px-5 py-3.5 hover:bg-admin-card-hover transition-colors">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${row.iconClass}`}>
+                <svg viewBox="0 0 24 24" className="w-5 h-5" {...stroke}>
+                  <path d={row.icon} />
+                </svg>
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold text-admin-text">{row.type}</p>
+                <p className="text-xs text-admin-muted mt-0.5 truncate">{row.name}</p>
+              </div>
+              <span className="hidden sm:inline-flex px-2.5 py-1 rounded-full bg-admin-elevated text-[11px] font-bold text-admin-muted shrink-0">
+                {row.category}
+              </span>
+              <div className="hidden md:block text-right shrink-0">
+                <p className="text-xs font-semibold text-admin-text-secondary">{formatShortDate(row.date)}</p>
+                <p className="text-[11px] text-admin-muted">{formatTime(row.date)}</p>
+              </div>
+              <div className="w-8 h-8 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center text-[11px] font-black shrink-0">
+                {adminInitials}
+              </div>
+            </li>
+          ))}
+        </ul>
       )}
     </section>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Recent transactions
+// System overview
 // ---------------------------------------------------------------------------
 
-function RecentTransactionsTable({ loading, transactions }: { loading: boolean; transactions: AdminRecentTransaction[] }) {
+function SystemOverviewCard({
+  loading,
+  healthy,
+  apiLatency,
+  storage,
+  lastUpdated,
+}: {
+  loading: boolean;
+  healthy: boolean;
+  apiLatency: number | null;
+  storage: { pct: number; gb: number };
+  lastUpdated: Date | null;
+}) {
+  const cardCls = 'bg-admin-card rounded-card border border-admin-border';
+  const cardTitleCls = 'text-base font-black text-admin-text';
+  const cardSubtitleCls = 'text-xs text-admin-muted';
+
+  const latencyLabel = apiLatency == null ? '—' : apiLatency < 200 ? 'Excellent' : apiLatency < 500 ? 'Good' : 'Slow';
+  const latencyTone =
+    apiLatency == null || apiLatency < 200 ? 'text-success-600' : apiLatency < 500 ? 'text-warning-600' : 'text-danger-600';
+
+  const metrics = [
+    {
+      label: 'System Uptime',
+      value: healthy ? 'Operational' : 'Checking',
+      sub: healthy ? 'All services running' : 'Awaiting response',
+      icon: 'M12 3v3m6.4 2.6-2.1 2.1M21 12h-3m-6 6v3m-6.4-2.6 2.1-2.1M3 12h3',
+      iconClass: 'bg-success-100 text-success-600',
+      valueTone: healthy ? 'text-success-600' : 'text-admin-muted',
+    },
+    {
+      label: 'API Response',
+      value: apiLatency == null ? '—' : `${apiLatency}ms`,
+      sub: latencyLabel,
+      icon: 'M13 2 3 14h9l-1 8 10-12h-9l1-8Z',
+      iconClass: 'bg-warning-100 text-warning-600',
+      valueTone: latencyTone,
+    },
+    {
+      label: 'Database',
+      value: healthy ? 'Healthy' : 'Checking',
+      sub: healthy ? 'All systems normal' : 'Awaiting response',
+      icon: 'M12 8c-4 0-7 1.3-7 3s3 3 7 3 7-1.3 7-3-3-3-7-3Zm-7 3v5c0 1.7 3 3 7 3s7-1.3 7-3v-5',
+      iconClass: 'bg-brand-100 text-brand-600',
+      valueTone: healthy ? 'text-success-600' : 'text-admin-muted',
+    },
+    {
+      label: 'Storage Used',
+      value: `${storage.pct.toFixed(1)}%`,
+      sub: `${storage.gb < 1 ? storage.gb.toFixed(2) : storage.gb.toFixed(0)}GB / 1TB`,
+      icon: 'M4 7c0 1.7 3.6 3 8 3s8-1.3 8-3-3.6-3-8-3-8 1.3-8 3Zm0 0v10c0 1.7 3.6 3 8 3s8-1.3 8-3V7',
+      iconClass: 'bg-accent-100 text-accent-600',
+      valueTone: 'text-admin-text',
+    },
+  ];
+
   return (
-    <section className="bg-admin-card rounded-card border border-admin-border overflow-hidden">
+    <section className={`${cardCls} p-5`}>
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className={cardTitleCls}>System Overview</h3>
+          <p className={cardSubtitleCls}>Key system metrics at a glance</p>
+        </div>
+        {lastUpdated && (
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-admin-muted">
+            <svg viewBox="0 0 24 24" className="w-3 h-3" {...stroke}>
+              <path d="M21 12a9 9 0 1 1-2.6-6.4M21 3v6h-6" />
+            </svg>
+            Updated {timeAgo(lastUpdated)}
+          </span>
+        )}
+      </div>
+
+      {loading ? (
+        <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-20 rounded-xl bg-admin-elevated animate-pulse" />
+          ))}
+        </div>
+      ) : (
+        <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {metrics.map((m) => (
+            <div key={m.label} className="rounded-xl border border-admin-border p-4">
+              <div className="flex items-center gap-2">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${m.iconClass}`}>
+                  <svg viewBox="0 0 24 24" className="w-4 h-4" {...stroke}>
+                    <path d={m.icon} />
+                  </svg>
+                </div>
+                <p className="text-xs font-semibold text-admin-muted">{m.label}</p>
+              </div>
+              <p className={`mt-3 text-xl font-black ${m.valueTone}`}>{m.value}</p>
+              <p className="text-[11px] font-semibold text-admin-muted mt-0.5">{m.sub}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Recent transactions feed
+// ---------------------------------------------------------------------------
+
+function RecentTransactionsFeed({
+  loading,
+  transactions,
+}: {
+  loading: boolean;
+  transactions: AdminRecentTransaction[];
+}) {
+  const cardCls = 'bg-admin-card rounded-card border border-admin-border';
+  const cardTitleCls = 'text-base font-black text-admin-text';
+  const cardSubtitleCls = 'text-xs text-admin-muted';
+
+  return (
+    <section className={`${cardCls} overflow-hidden`}>
       <div className="flex items-center justify-between px-5 py-4 border-b border-admin-border">
         <div>
-          <h3 className="text-base font-black text-admin-text">Recent Transactions</h3>
-          <p className="text-xs text-admin-muted">Latest payments across all equbs</p>
+          <h3 className={cardTitleCls}>Recent Transactions</h3>
+          <p className={cardSubtitleCls}>Latest payments across all equbs</p>
         </div>
-        <Link
-          href="/admin/customers"
-          className="text-xs font-bold text-brand-600 hover:text-brand-700"
-        >
-          View members →
+        <Link href="/admin/finance" className="text-xs font-bold text-brand-600 hover:text-brand-700">
+          View all →
         </Link>
       </div>
 
       {loading && !transactions.length ? (
         <div className="divide-y divide-admin-border-subtle">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-6 px-5 py-4">
-              <div className="h-4 w-40 rounded bg-admin-elevated animate-pulse" />
-              <div className="h-4 flex-1 rounded bg-admin-elevated animate-pulse" />
-              <div className="h-4 w-20 rounded bg-admin-elevated animate-pulse" />
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-4 px-5 py-4">
+              <div className="w-10 h-10 rounded-full bg-admin-elevated animate-pulse" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 w-40 rounded bg-admin-elevated animate-pulse" />
+                <div className="h-3 w-56 rounded bg-admin-elevated animate-pulse" />
+              </div>
+              <div className="h-4 w-16 rounded bg-admin-elevated animate-pulse" />
             </div>
           ))}
         </div>
       ) : transactions.length === 0 ? (
         <p className="px-5 py-12 text-center text-sm text-admin-muted">No transactions yet.</p>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-admin-elevated text-left text-xs uppercase tracking-wider text-admin-muted">
-                <th className="px-5 py-3 font-bold">Member</th>
-                <th className="px-5 py-3 font-bold">Equb</th>
-                <th className="px-5 py-3 font-bold">Round</th>
-                <th className="px-5 py-3 font-bold text-right">Amount</th>
-                <th className="px-5 py-3 font-bold">Status</th>
-                <th className="px-5 py-3 font-bold text-right">Date</th>
-                <th className="px-5 py-3 font-bold text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-admin-border-subtle">
-              {transactions.map((t) => (
-                <tr key={t.id} className="hover:bg-admin-card-hover transition-colors">
-                  <td className="px-5 py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold shrink-0">
-                        {`${t.user_first_name?.[0] ?? ''}${t.user_last_name?.[0] ?? ''}`.toUpperCase() || '?'}
-                      </div>
-                      <div>
-                        <p className="font-bold text-admin-text">
-                          {t.user_first_name} {t.user_last_name}
-                        </p>
-                        <p className="text-xs text-admin-muted">{t.user_phone}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-5 py-3 text-admin-text-secondary">{t.equb_name}</td>
-                  <td className="px-5 py-3 text-admin-muted">#{t.round_number}</td>
-                  <td className="px-5 py-3 text-right font-bold text-admin-text">ETB {money(t.amount)}</td>
-                  <td className="px-5 py-3">
-                    <StatusBadge tone={STATUS_TONE[t.status] ?? 'neutral'} variant="dark">{statusLabel(t.status)}</StatusBadge>
-                  </td>
-                  <td className="px-5 py-3 text-right text-admin-muted whitespace-nowrap">
-                    {formatDateTime(t.created_at)}
-                  </td>
-                  <td className="px-5 py-3 text-right whitespace-nowrap">
-                    <Link
-                      href="/admin/customers"
-                      className="inline-flex items-center gap-1 text-xs font-bold text-brand-600 hover:text-brand-700"
-                    >
-                      View
-                      <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" {...stroke}>
-                        <path d="M5 12h14m0 0-5-5m5 5-5 5" />
-                      </svg>
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <ul className="divide-y divide-admin-border-subtle">
+          {transactions.slice(0, 6).map((t) => (
+            <li key={t.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-admin-card-hover transition-colors">
+              <div className="w-10 h-10 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center shrink-0">
+                <svg viewBox="0 0 24 24" className="w-5 h-5" {...stroke}>
+                  <path d="M3 10h18m0 0-4-4m4 4-4 4" />
+                </svg>
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold text-admin-text">Payment Received</p>
+                <p className="text-xs text-admin-muted mt-0.5 truncate">
+                  From: {t.user_first_name} {t.user_last_name} · {t.equb_name} · round {t.round_number}
+                </p>
+                <p className="text-[11px] text-admin-muted mt-0.5">
+                  {formatShortDate(t.created_at)} · {formatTime(t.created_at)}
+                </p>
+              </div>
+              <div className="text-right shrink-0">
+                <p className="text-sm font-black text-success-600">+ETB {money(t.amount)}</p>
+                <StatusBadge tone={STATUS_TONE[t.status] ?? 'neutral'} variant="dark">
+                  {statusLabel(t.status)}
+                </StatusBadge>
+              </div>
+            </li>
+          ))}
+        </ul>
       )}
     </section>
   );
@@ -591,12 +885,16 @@ function RecentTransactionsTable({ loading, transactions }: { loading: boolean; 
 // ---------------------------------------------------------------------------
 
 function TopEqubsCard({ loading, equbs }: { loading: boolean; equbs: AdminTopEqub[] }) {
+  const cardCls = 'bg-admin-card rounded-card border border-admin-border';
+  const cardTitleCls = 'text-base font-black text-admin-text';
+  const cardSubtitleCls = 'text-xs text-admin-muted';
+
   return (
-    <section className="bg-admin-card rounded-card border border-admin-border p-5">
+    <section className={`${cardCls} p-5`}>
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-base font-black text-admin-text">Top Equbs</h3>
-          <p className="text-xs text-admin-muted">Largest circles by membership</p>
+          <h3 className={cardTitleCls}>Top Equbs</h3>
+          <p className={cardSubtitleCls}>Largest circles by membership</p>
         </div>
         <Link href="/admin/approvals" className="text-xs font-bold text-brand-600 hover:text-brand-700">
           View all
@@ -621,7 +919,9 @@ function TopEqubsCard({ loading, equbs }: { loading: boolean; equbs: AdminTopEqu
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
                   <p className="font-bold text-admin-text truncate">{e.name}</p>
-                  <StatusBadge tone={EQUB_TONE[e.status] ?? 'neutral'} variant="dark">{statusLabel(e.status)}</StatusBadge>
+                  <StatusBadge tone={EQUB_TONE[e.status] ?? 'neutral'} variant="dark">
+                    {statusLabel(e.status)}
+                  </StatusBadge>
                 </div>
                 <p className="text-xs text-admin-muted mt-0.5">
                   {e.member_count} member{e.member_count !== 1 ? 's' : ''} · round {e.current_round}/{e.total_rounds} · ETB {money(e.total_amount)}
@@ -631,122 +931,6 @@ function TopEqubsCard({ loading, equbs }: { loading: boolean; equbs: AdminTopEqu
           ))}
         </ul>
       )}
-    </section>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Pending actions
-// ---------------------------------------------------------------------------
-
-function PendingActionsCard({
-  loading,
-  items,
-}: {
-  loading: boolean;
-  items: { icon: string; iconClass: string; title: string; description: string; href?: string; button: string }[];
-}) {
-  return (
-    <section className="bg-admin-card rounded-card border border-admin-border p-5">
-      <h3 className="text-base font-black text-admin-text">Pending Actions</h3>
-      <p className="text-xs text-admin-muted mb-4">Operational items needing attention</p>
-
-      {loading && !items.length ? (
-        <div className="space-y-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-16 rounded-lg bg-admin-elevated animate-pulse" />
-          ))}
-        </div>
-      ) : items.length === 0 ? (
-        <div className="py-8 text-center">
-          <svg viewBox="0 0 24 24" className="w-8 h-8 mx-auto text-success-500" {...stroke}>
-            <path d="M9 12l2 2 4-4m5.6 2A7.5 7.5 0 1 1 6.4 6.4 7.5 7.5 0 0 1 20.6 10Z" />
-          </svg>
-          <p className="mt-3 text-sm font-bold text-admin-text">All caught up</p>
-          <p className="mt-1 text-xs text-admin-muted">No pending actions right now.</p>
-        </div>
-      ) : (
-        <ul className="space-y-3">
-          {items.map((item) => (
-            <li key={item.title} className="flex items-start gap-3 p-3 rounded-xl border border-admin-border">
-              <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${item.iconClass}`}>
-                <svg viewBox="0 0 24 24" className="w-[18px] h-[18px]" {...stroke}>
-                  <path d={item.icon} />
-                </svg>
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-bold text-admin-text">{item.title}</p>
-                <p className="text-xs text-admin-muted mt-0.5">{item.description}</p>
-              </div>
-              {item.href ? (
-                <Link
-                  href={item.href}
-                  className="px-3 py-1.5 rounded-lg bg-brand-100 text-brand-700 text-xs font-bold hover:bg-brand-200 transition-colors shrink-0"
-                >
-                  {item.button}
-                </Link>
-              ) : (
-                <span className="px-3 py-1.5 rounded-lg bg-admin-elevated text-admin-muted text-xs font-bold shrink-0">
-                  {item.button}
-                </span>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
-    </section>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Quick actions
-// ---------------------------------------------------------------------------
-
-function QuickActionsCard() {
-  const actions: { label: string; href?: string; icon: string; disabled?: boolean }[] = [
-    {
-      label: 'Manage Users',
-      href: '/admin/customers',
-      icon: 'M16 11a3 3 0 1 0-6 0m6 0a3 3 0 1 1-6 0m6 0h.01M10 11h-.01M12 14c-3.87 0-7 1.57-7 3.5V21h14v-3.5C19 15.57 15.87 14 12 14Z',
-    },
-    {
-      label: 'View Reports',
-      icon: 'M5 20V10m7 10V4m7 16v-7',
-      disabled: true,
-    },
-  ];
-
-  return (
-    <section className="bg-admin-card rounded-card border border-admin-border p-5">
-      <h3 className="text-base font-black text-admin-text">Quick Actions</h3>
-      <p className="text-xs text-admin-muted mb-4">Common administrative tasks</p>
-      <div className="grid grid-cols-2 gap-3">
-        {actions.map((action) =>
-          action.disabled ? (
-            <div
-              key={action.label}
-              className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-admin-border-strong py-5 text-admin-disabled cursor-not-allowed"
-              title="Coming soon"
-            >
-              <svg viewBox="0 0 24 24" className="w-5 h-5" {...stroke}>
-                <path d={action.icon} />
-              </svg>
-              <span className="text-xs font-bold">{action.label}</span>
-            </div>
-          ) : action.href ? (
-            <Link
-              key={action.label}
-              href={action.href}
-              className="flex flex-col items-center justify-center gap-2 rounded-xl border border-admin-border py-5 text-admin-text-secondary hover:text-brand-600 hover:border-brand-500/40 hover:bg-admin-elevated hover:shadow-lg hover:shadow-brand-900/10 transition-all"
-            >
-              <svg viewBox="0 0 24 24" className="w-5 h-5" {...stroke}>
-                <path d={action.icon} />
-              </svg>
-              <span className="text-xs font-bold">{action.label}</span>
-            </Link>
-          ) : null,
-        )}
-      </div>
     </section>
   );
 }

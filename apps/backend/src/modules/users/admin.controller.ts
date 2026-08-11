@@ -10,6 +10,7 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 
 import { UsersService } from './users.service';
 import { AdminStatsService } from './admin-stats.service';
+import { AdminFinanceService } from './admin-finance.service';
 import { ResetPinDto } from './dto/reset-pin.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -25,6 +26,7 @@ export class AdminController {
     constructor(
         private readonly usersService: UsersService,
         private readonly adminStatsService: AdminStatsService,
+        private readonly adminFinanceService: AdminFinanceService,
     ) {}
 
     @Get('stats')
@@ -108,5 +110,67 @@ export class AdminController {
         @Body() dto: UpdateRoleDto,
     ) {
         return this.usersService.setUserRole(user.sub, userId, dto.role);
+    }
+
+    @Get('finance/overview')
+    @UseGuards(RolesGuard)
+    @Roles('admin')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Finance KPIs — wallet balance, transaction volume, fees, payout and withdrawal aggregates' })
+    @ApiResponse({ status: 200, description: 'Finance overview aggregates.' })
+    @ApiResponse({ status: 403, description: 'Forbidden — requires role admin.' })
+    async getFinanceOverview(@CurrentUser() user: JwtPayload) {
+        return this.adminFinanceService.getFinanceOverview(user.sub);
+    }
+
+    @Get('finance/transactions')
+    @UseGuards(RolesGuard)
+    @Roles('admin')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'List payments (paged, searchable, filterable by status and date range)' })
+    @ApiResponse({ status: 200, description: 'Paged payment list.' })
+    @ApiResponse({ status: 403, description: 'Forbidden — requires role admin.' })
+    async listFinanceTransactions(
+        @CurrentUser() user: JwtPayload,
+        @Query('page') page?: string,
+        @Query('limit') limit?: string,
+        @Query('status') status?: string,
+        @Query('search') search?: string,
+        @Query('start') start?: string,
+        @Query('end') end?: string,
+    ) {
+        const isoDate = /^\d{4}-\d{2}-\d{2}$/;
+        const validStatus = ['pending', 'paid', 'auto_debited', 'failed'].includes(status ?? '');
+        return this.adminFinanceService.listTransactions({
+            adminId: user.sub,
+            page: Math.max(1, parseInt(page ?? '1', 10) || 1),
+            limit: Math.min(100, Math.max(1, parseInt(limit ?? '20', 10) || 20)),
+            status: validStatus ? status : undefined,
+            search,
+            start: start && isoDate.test(start) ? start : undefined,
+            end: end && isoDate.test(end) ? end : undefined,
+        });
+    }
+
+    @Get('finance/payouts')
+    @UseGuards(RolesGuard)
+    @Roles('admin')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'List rotation payouts (paged, filterable by status)' })
+    @ApiResponse({ status: 200, description: 'Paged payout list.' })
+    @ApiResponse({ status: 403, description: 'Forbidden — requires role admin.' })
+    async listFinancePayouts(
+        @CurrentUser() user: JwtPayload,
+        @Query('page') page?: string,
+        @Query('limit') limit?: string,
+        @Query('status') status?: string,
+    ) {
+        const validStatus = ['pending', 'approved', 'batched', 'completed', 'failed'].includes(status ?? '');
+        return this.adminFinanceService.listPayouts({
+            adminId: user.sub,
+            page: Math.max(1, parseInt(page ?? '1', 10) || 1),
+            limit: Math.min(100, Math.max(1, parseInt(limit ?? '20', 10) || 20)),
+            status: validStatus ? status : undefined,
+        });
     }
 }
