@@ -838,7 +838,7 @@ export const equbAPI = {
    * 'pending' until an admin approves it.
    */
   join: (equbId: string) =>
-    request<{ pending?: boolean }>(`/equbs/${equbId}/join`, { method: 'POST' }),
+    request<{ pending?: boolean; alreadyRequested?: boolean; alreadyMember?: boolean }>(`/equbs/${equbId}/join`, { method: 'POST' }),
 
   /**
    * POST /api/v1/equbs/requests

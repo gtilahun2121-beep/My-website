@@ -1,19 +1,18 @@
 // ========================================================================
 // USER PROFILE DRAWER
-// Right-side slide-over: wallet balance, payout pot, active equbs,
-// next contribution, my equbs, and sign out.
+// Right-side slide-over shown on landing pages (home, docs, etc.). Uses a
+// list format so the menu reads the same everywhere: back to main
+// dashboard (when off it), my profile, settings, and sign out.
 // ========================================================================
 
 'use client';
 
-import { useEffect, useRef, useState, type ChangeEvent } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Language } from '@/i18n/config';
 import { useAuth } from '@/app/context/AuthContext';
-import api from '@/app/services/api';
-import { roleLabel } from '../dashboard/format';
-import type { EqubGroup, Wallet } from '@qalnet/shared-types';
+import { initials } from '../dashboard/format';
 
 interface ProfileDrawerProps {
   isOpen: boolean;
@@ -21,363 +20,128 @@ interface ProfileDrawerProps {
   language: Language;
 }
 
-const MAX_PHOTO_DIM = 256;
-
-/** Reads a file, downscales it to a square-ish JPEG data URL, and returns it. */
-function resizeImageToDataUrl(file: File, maxDim = MAX_PHOTO_DIM): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onerror = () => reject(new Error('Failed to read file'));
-    reader.onload = () => {
-      const img = new Image();
-      img.onerror = () => reject(new Error('Invalid image'));
-      img.onload = () => {
-        const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
-        const w = Math.round(img.width * scale);
-        const h = Math.round(img.height * scale);
-        const canvas = document.createElement('canvas');
-        canvas.width = w;
-        canvas.height = h;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return reject(new Error('Canvas not supported'));
-        ctx.drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', 0.85));
-      };
-      img.src = reader.result as string;
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-export function ProfileDrawer({ isOpen, onClose, language }: ProfileDrawerProps) {
+export default function ProfileDrawer({ isOpen, onClose, language }: ProfileDrawerProps) {
+  const { user, signout } = useAuth();
   const router = useRouter();
-  const { user, signout, updateProfilePhoto } = useAuth();
-  const [wallet, setWallet] = useState<Wallet | null>(null);
-  const [equbs, setEqubs] = useState<EqubGroup[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [photoUploading, setPhotoUploading] = useState(false);
-  const [photoMessage, setPhotoMessage] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const pathname = usePathname();
 
-  const isAmharic = language === 'am';
+  const fullName = `${user?.firstName ?? ''} ${user?.lastName ?? ''}`.trim() || 'QalNet Member';
+  const phone = user?.phoneNumber ?? '';
 
-  useEffect(() => {
-    if (!isOpen || !user) return;
-    let cancelled = false;
-    Promise.all([
-      api.walletAPI.getBalance().catch(() => null),
-      api.equbAPI.getMine().catch(() => []),
-    ]).then(([walletRes, equbsRes]) => {
-      if (cancelled) return;
-      setWallet(walletRes);
-      setEqubs(equbsRes || []);
-      setLoading(false);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [isOpen, user]);
-
-  const activeEqubs = equbs.filter(
-    (e) => e.status === 'active' || e.status === 'open',
-  ).length;
-  const nextContribution = equbs.reduce(
-    (sum, e) => sum + (e.contribution_amount || 0),
-    0,
-  );
-  const payoutPot = equbs.reduce((sum, e) => sum + (e.total_amount || 0), 0);
+  const isAdmin = user?.role === 'admin';
+  const dashPath = isAdmin ? '/admin/dashboard' : '/dashboard';
+  const showBackToDashboard = pathname !== dashPath;
 
   const handleSignOut = async () => {
     await signout();
-    onClose();
     router.push('/');
+    onClose();
   };
 
-  const handlePhotoChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = '';
-    if (!file) return;
-    setPhotoUploading(true);
-    setPhotoMessage(null);
-    try {
-      const dataUrl = await resizeImageToDataUrl(file);
-      await api.userAPI.updateProfile({ profile_photo: dataUrl });
-      updateProfilePhoto(dataUrl);
-      setPhotoMessage(isAmharic ? 'ፎቶ ተለውጧል ✓' : 'Photo updated ✓');
-    } catch {
-      setPhotoMessage(isAmharic ? 'ፎቶ ማዘመን አልተሳካም' : 'Could not update photo');
-    } finally {
-      setPhotoUploading(false);
-    }
+  const go = (href: string) => {
+    router.push(href);
+    onClose();
   };
 
-  const handleRemovePhoto = async () => {
-    setPhotoUploading(true);
-    setPhotoMessage(null);
-    try {
-      await api.userAPI.updateProfile({ profile_photo: null });
-      updateProfilePhoto(null);
-      setPhotoMessage(isAmharic ? 'ፎቶ ተወግዷል ✓' : 'Photo removed ✓');
-    } catch {
-      setPhotoMessage(isAmharic ? 'ፎቶ ማስወገድ አልተሳካም' : 'Could not remove photo');
-    } finally {
-      setPhotoUploading(false);
-    }
-  };
-
-  const initials = (user?.firstName?.[0] || '') + (user?.lastName?.[0] || '');
-
-  const t = {
-    profile: isAmharic ? 'መገለጫዬ' : 'My Profile',
-    dashboard: isAmharic ? 'ወደ ዋና ዳሽቦርድ' : 'Back to main dashboard',
-    walletBalance: isAmharic ? 'የቦርሳ ሚዛን' : 'Wallet Balance',
-    payoutPot: isAmharic ? 'የክፍያ ማሰባሰብያ' : 'Payout Pot',
-    activeEqubs: isAmharic ? 'ንቁ Equbs' : 'Active Equbs',
-    nextContribution: isAmharic ? 'ቀጣይ መዋጮ' : 'Next Contribution',
-    myEqubs: isAmharic ? 'የእኔ Equbs' : 'My Equbs',
-    signOut: isAmharic ? 'ውጣ' : 'Sign Out',
-    noEqubs: isAmharic ? 'እስካሁን ምንም Equb አልተቀላቀሉም' : 'You haven\'t joined any Equb yet',
-    members: isAmharic ? 'አባላት' : 'members',
-    round: isAmharic ? 'ዑደት' : 'Round',
-    loading: isAmharic ? 'በመጫን ላይ...' : 'Loading...',
-    viewAll: isAmharic ? 'ሁሉንም ይመልከቱ' : 'View all',
-    available: isAmharic ? 'ክፍት ሚዛን' : 'Available balance',
-    totalPot: isAmharic ? 'በእርስዎ Equbs ላይ ያለ ድምር' : 'Total pot across your equbs',
-  };
+  const itemBase =
+    'flex w-full items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl text-left';
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
+        <motion.div className="fixed inset-0 z-[100]">
           <motion.div
+            className="absolute inset-0 bg-black/50"
+            onClick={onClose}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/50 z-[60]"
-            onClick={onClose}
-            aria-hidden="true"
           />
-          <motion.aside
+          <motion.div
+            className="absolute right-0 top-0 h-full w-[85%] max-w-sm bg-white shadow-2xl flex flex-col"
+            role="dialog"
+            aria-label="Account menu"
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
-            transition={{ type: 'tween', duration: 0.28, ease: 'easeInOut' }}
-            className="fixed right-0 top-0 bottom-0 w-full max-w-sm bg-white z-[70] shadow-2xl flex flex-col"
-            role="dialog"
-            aria-label={t.profile}
+            transition={{ type: 'spring', damping: 26, stiffness: 200 }}
           >
-            {/* Header */}
-            <div className="bg-gradient-to-r from-[#314fa0] to-[#ce1126] text-white p-6 shrink-0">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-black">{t.profile}</h2>
-                <button
-                  onClick={onClose}
-                  className="p-2 hover:bg-white/20 rounded-full text-xl leading-none"
-                  aria-label="Close"
-                >
-                  ✕
-                </button>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="relative shrink-0">
-                  <div className="w-14 h-14 bg-white rounded-full overflow-hidden flex items-center justify-center text-[#314fa0] text-xl font-black uppercase ring-2 ring-[#d4af37]">
-                    {user?.profilePhoto ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={user.profilePhoto}
-                        alt="Profile"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      initials || '👤'
-                    )}
-                  </div>
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={photoUploading}
-                    className="absolute -bottom-1 -right-1 w-7 h-7 bg-[#d4af37] rounded-full flex items-center justify-center text-[#314fa0] text-sm shadow-md hover:scale-110 transition-transform"
-                    aria-label={isAmharic ? 'ፎቶ ይቀይሩ' : 'Change photo'}
-                  >
-                    {photoUploading ? '⏳' : '📷'}
-                  </button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handlePhotoChange}
-                  />
-                </div>
-                <div className="min-w-0">
-                  <p className="font-bold text-lg truncate">
-                    {user ? `${user.firstName} ${user.lastName}` : '—'}
-                  </p>
-                  <p className="text-xs uppercase tracking-wide text-[#d4af37] font-bold">
-                    {user ? roleLabel(user.role) : ''}
-                  </p>
-                  <p className="text-sm text-white/80 truncate">
-                    {user?.phoneNumber || user?.email || '—'}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Content */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {loading ? (
-                <p className="text-center text-gray-500 py-10">{t.loading}</p>
+            {/* Drawer header — profile photo + name */}
+            <div className="p-5 border-b border-gray-100 flex items-center gap-3">
+              {user?.profilePhoto ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={user.profilePhoto}
+                  alt={fullName}
+                  className="w-14 h-14 rounded-full object-cover"
+                />
               ) : (
-                <>
-                  {/* Back to dashboard */}
-                  <button
-                    onClick={() => {
-                      onClose();
-                      router.push('/dashboard');
-                    }}
-                    className="w-full flex items-center justify-between gap-2 px-4 py-3 bg-[#314fa0]/5 border border-[#314fa0]/20 rounded-xl text-sm font-bold text-[#314fa0] hover:bg-[#314fa0]/10 transition-colors"
-                  >
-                    <span className="flex items-center gap-2">🏠 {t.dashboard}</span>
-                    <span>→</span>
-                  </button>
-
-                  {/* Photo status / actions */}
-                  {photoMessage && (
-                    <p
-                      className={`text-sm font-bold text-center py-2 px-3 rounded-xl ${
-                        photoMessage.includes('✓')
-                          ? 'bg-[#314fa0]/10 text-[#314fa0]'
-                          : 'bg-red-50 text-red-600'
-                      }`}
-                    >
-                      {photoMessage}
-                    </p>
-                  )}
-                  {user?.profilePhoto && (
-                    <button
-                      onClick={handleRemovePhoto}
-                      disabled={photoUploading}
-                      className="w-full py-2 border border-gray-300 text-gray-600 font-bold rounded-xl text-sm hover:bg-gray-50"
-                    >
-                      {isAmharic ? 'ፎቶ አስወግድ' : 'Remove photo'}
-                    </button>
-                  )}
-
-                  {/* Wallet balance */}
-                  <div className="bg-gradient-to-br from-[#314fa0] to-[#2a4183] rounded-2xl p-5 text-white">
-                    <p className="text-sm text-white/80 mb-1">💳 {t.walletBalance}</p>
-                    <p className="text-3xl font-black">
-                      {wallet?.currency || 'ETB'}{' '}
-                      {(wallet?.balance || 0).toLocaleString('en-US', {
-                        minimumFractionDigits: 2,
-                      })}
-                    </p>
-                    <p className="text-xs text-white/60 mt-1">{t.available}</p>
-                  </div>
-
-                  {/* Stats grid */}
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="bg-purple-50 border border-purple-200 rounded-2xl p-4 text-center">
-                      <p className="text-2xl">🏆</p>
-                      <p className="text-lg font-black text-purple-900 mt-1">
-                        {(payoutPot || 0).toLocaleString('en-US')}
-                      </p>
-                      <p className="text-[11px] font-bold text-purple-700 mt-1 leading-tight">
-                        {t.payoutPot}
-                      </p>
-                    </div>
-                    <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 text-center">
-                      <p className="text-2xl">👥</p>
-                      <p className="text-lg font-black text-blue-900 mt-1">{activeEqubs}</p>
-                      <p className="text-[11px] font-bold text-blue-700 mt-1 leading-tight">
-                        {t.activeEqubs}
-                      </p>
-                    </div>
-                    <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4 text-center">
-                      <p className="text-2xl">📅</p>
-                      <p className="text-lg font-black text-orange-900 mt-1">
-                        {(nextContribution || 0).toLocaleString('en-US')}
-                      </p>
-                      <p className="text-[11px] font-bold text-orange-700 mt-1 leading-tight">
-                        {t.nextContribution}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* My Equbs */}
-                  <div className="bg-white border border-gray-200 rounded-2xl">
-                    <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-                      <h3 className="font-bold text-gray-900">👥 {t.myEqubs}</h3>
-                      <button
-                        onClick={() => {
-                          onClose();
-                          router.push('/my-equbs');
-                        }}
-                        className="text-xs font-bold text-[#314fa0] hover:underline"
-                      >
-                        {t.viewAll} →
-                      </button>
-                    </div>
-                    {equbs.length === 0 ? (
-                      <div className="p-4">
-                        <p className="text-sm text-gray-500">{t.noEqubs}</p>
-                        <button
-                          onClick={() => {
-                            onClose();
-                            router.push('/join-equb');
-                          }}
-                          className="mt-3 w-full py-2 bg-[#314fa0] text-white font-bold rounded-lg text-sm hover:bg-[#2a4183]"
-                        >
-                          {isAmharic ? 'Equb ይቀላቀሉ' : 'Join an Equb'}
-                        </button>
-                      </div>
-                    ) : (
-                      <ul className="divide-y divide-gray-100 max-h-56 overflow-y-auto">
-                        {equbs.slice(0, 5).map((equb) => (
-                          <li key={equb.id}>
-                            <button
-                              onClick={() => {
-                                onClose();
-                                router.push(`/equbs/${equb.id}`);
-                              }}
-                              className="w-full flex items-center justify-between gap-2 px-4 py-3 hover:bg-gray-50 text-left"
-                            >
-                              <div className="min-w-0">
-                                <p className="font-semibold text-gray-900 text-sm truncate">
-                                  {equb.name || 'Unnamed Equb'}
-                                </p>
-                                <p className="text-xs text-gray-500">
-                                  {t.round}: {equb.current_round ?? 0}/{equb.total_rounds ?? 0} •{' '}
-                                  {equb.member_count ?? 0} {t.members}
-                                </p>
-                              </div>
-                              <span className="text-sm font-bold text-[#314fa0] shrink-0">
-                                ETB {equb.contribution_amount || 0}
-                              </span>
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                </>
+                <div className="w-14 h-14 bg-accent-600 flex items-center justify-center text-white font-bold text-lg rounded-full shrink-0">
+                  {initials(user?.firstName ?? '', user?.lastName ?? '')}
+                </div>
               )}
-            </div>
-
-            {/* Footer */}
-            <div className="border-t border-gray-200 p-4 shrink-0">
+              <div className="flex-1 min-w-0">
+                <p className="text-lg font-bold text-slate-900 truncate">{fullName}</p>
+                <p className="text-sm text-slate-500 truncate">{phone}</p>
+              </div>
               <button
-                onClick={handleSignOut}
-                className="w-full bg-red-600 text-white font-bold py-3 rounded-xl hover:bg-red-700 transition-colors"
+                type="button"
+                onClick={onClose}
+                aria-label="Close menu"
+                className="p-2 rounded-full hover:bg-slate-100 text-slate-400"
               >
-                🚪 {t.signOut}
+                <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
+                  <path d="M18 6 6 18M6 6l12 12" />
+                </svg>
               </button>
             </div>
-          </motion.aside>
-        </>
+
+            {/* Drawer body — menu list */}
+            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2">
+              {showBackToDashboard && (
+                <button
+                  type="button"
+                  onClick={() => go(dashPath)}
+                  className={`${itemBase} bg-[#314fa0] text-white justify-center`}
+                >
+                  {language === 'en' ? 'Back to Main Dashboard' : 'ወደ ዋና ዳሽቦርድ ተመለስ'}
+                </button>
+              )}
+              <Link
+                href="/profile"
+                onClick={onClose}
+                className={`${itemBase} bg-gray-100 text-slate-800`}
+              >
+                <span className="w-8 h-8 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
+                  <svg viewBox="0 0 24 24" className="w-4.5 h-4.5" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0Zm-4 7c-4.4 0-8 2.4-8 5.3V21h16v-1.7C20 16.4 16.4 14 12 14Z" />
+                  </svg>
+                </span>
+                {language === 'en' ? 'My Profile' : 'የመገለጫዬ'}
+              </Link>
+              <Link
+                href="/settings"
+                onClick={onClose}
+                className={`${itemBase} bg-gray-100 text-slate-800`}
+              >
+                <span className="w-8 h-8 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
+                  <svg viewBox="0 0 24 24" className="w-4.5 h-4.5" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm8.4-3a8.9 8.9 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a8.9 8.9 0 0 0-2-1.2L15.5 3h-4l-.4 2.6a8.9 8.9 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6a8.9 8.9 0 0 0 0 2.4l-2 1.6 2 3.4 2.4-1a8.9 8.9 0 0 0 2 1.2l.4 2.6h4l.4-2.6a8.9 8.9 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.07-.4.1-.8.1-1.2Z" />
+                  </svg>
+                </span>
+                {language === 'en' ? 'Settings' : 'ቅንብሮች'}
+              </Link>
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className={`${itemBase} bg-red-50 text-red-600 justify-center`}
+              >
+                {language === 'en' ? 'Sign out' : 'መውጣት'}
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
       )}
     </AnimatePresence>
   );
 }
-
-export default ProfileDrawer;

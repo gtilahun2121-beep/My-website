@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/app/context/AuthContext';
 import { initials, roleLabel } from '../dashboard/format';
 
@@ -14,9 +14,15 @@ const stroke = {
   strokeLinejoin: 'round',
 } as const;
 
-export default function ProfileMenu() {
+interface ProfileMenuProps {
+  /** 'light' for light headers (dashboard shell), 'navy' for the landing header. */
+  variant?: 'light' | 'navy';
+}
+
+export default function ProfileMenu({ variant = 'light' }: ProfileMenuProps) {
   const { user, signout } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -39,6 +45,13 @@ export default function ProfileMenu() {
   if (!user) return null;
 
   const fullName = `${user.firstName} ${user.lastName}`.trim();
+  const isNavy = variant === 'navy';
+
+  // "Back to main dashboard" is only shown while you're NOT on your main
+  // application dashboard, so the profile menu reads the same everywhere.
+  const isAdmin = user.role === 'admin';
+  const dashPath = isAdmin ? '/admin/dashboard' : '/dashboard';
+  const showBackToDashboard = pathname !== dashPath;
 
   const handleSignOut = async () => {
     setOpen(false);
@@ -46,12 +59,22 @@ export default function ProfileMenu() {
     router.push('/');
   };
 
+  const handleBackToDashboard = () => {
+    setOpen(false);
+    router.push(dashPath);
+  };
+
+  const nameCls = isNavy ? 'text-white' : 'text-slate-800';
+  const roleCls = isNavy ? 'text-white/70' : 'text-slate-400';
+  const chevronCls = isNavy ? 'text-white/80' : 'text-slate-400';
+  const borderCls = isNavy ? 'border-white/30' : 'border-slate-200';
+
   return (
     <div className="relative" ref={ref}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2 pl-2 border-l border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500/40 rounded-lg"
+        className={`flex items-center gap-2 pl-2 border-l ${borderCls} focus:outline-none focus:ring-2 focus:ring-brand-500/40 rounded-lg`}
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label="Account menu"
@@ -69,12 +92,12 @@ export default function ProfileMenu() {
           </div>
         )}
         <div className="hidden sm:block text-left">
-          <p className="text-sm font-bold text-slate-800 leading-none">{fullName || 'Member'}</p>
-          <p className="text-xs text-slate-400 mt-0.5 capitalize">{roleLabel(user.role)}</p>
+          <p className={`text-sm font-bold leading-none ${nameCls}`}>{fullName || 'Member'}</p>
+          <p className={`text-xs mt-0.5 capitalize ${roleCls}`}>{roleLabel(user.role)}</p>
         </div>
         <svg
           viewBox="0 0 24 24"
-          className={`w-4 h-4 text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`}
+          className={`w-4 h-4 transition-transform ${chevronCls} ${open ? 'rotate-180' : ''}`}
           {...stroke}
         >
           <path d="m6 9 6 6 6-6" />
@@ -104,6 +127,20 @@ export default function ProfileMenu() {
               <p className="text-xs text-slate-500 truncate">{user.phoneNumber || user.email || '—'}</p>
             </div>
           </div>
+
+          {showBackToDashboard && (
+            <button
+              type="button"
+              role="menuitem"
+              onClick={handleBackToDashboard}
+              className="flex w-full items-center gap-3 px-4 py-2.5 text-sm font-semibold text-brand-600 hover:bg-brand-50 border-b border-slate-100"
+            >
+              <svg viewBox="0 0 24 24" className="w-4.5 h-4.5" {...stroke}>
+                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2h-4v-7h-6v7H5a2 2 0 0 1-2-2Z" />
+              </svg>
+              {isAdmin ? 'Back to Admin Dashboard' : 'Back to main dashboard'}
+            </button>
+          )}
 
           <div className="py-1.5">
             <Link

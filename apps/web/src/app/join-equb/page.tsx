@@ -25,8 +25,10 @@ export default function JoinEqubPage() {
   const handleJoin = async (equbId: string) => {
     try {
       const result = await api.equbAPI.join(equbId);
-      if (result?.pending) {
-        alert(lang === 'en' ? 'Join request submitted — awaiting admin approval.' : 'የመቀላቀል ጥያቄ ቀርቧል — የአስተዳዳሪ ማጽደቅ በመጠበቅ ላይ።');
+      if (result?.alreadyMember) {
+        alert(lang === 'en' ? 'You are already a member of this Equb.' : 'ቀድሞውኑ የዚህ ኢቁብ አባል ነዎት።');
+      } else if (result?.pending) {
+        alert(lang === 'en' ? 'Join request already submitted — awaiting admin approval.' : 'የመቀላቀል ጥያቄ ቀርቧል — የአስተዳዳሪ ማጽደቅ በመጠበቅ ላይ።');
       } else {
         alert(lang === 'en' ? 'Successfully joined the Equb!' : 'በተሳካ ሁኔታ ተቀላቅለዋል!');
       }

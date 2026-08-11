@@ -5,7 +5,8 @@
 
 // Layout Components
 export { BottomNavigation } from './layout/BottomNavigation';
-export { ProfileDrawer } from './layout/ProfileDrawer';
+export { default as ProfileMenu } from './layout/ProfileMenu';
+export { default as ProfileDrawer } from './layout/ProfileDrawer';
 
 // Equb Components
 export { EqubCard } from './equb/EqubCard';

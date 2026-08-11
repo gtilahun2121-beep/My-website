@@ -83,6 +83,17 @@ export class EqubsService {
 
         if (result && result.error) {
             if (result.error === 'EQUB_NOT_FOUND') throw new NotFoundException(result.message);
+
+            // Idempotent "already requested / already a member" cases — report
+            // them as successes so the client shows a friendly notice instead
+            // of an error (clicking Join twice is not a failure).
+            if (result.error === 'ALREADY_PENDING') {
+                return { success: true, pending: true, alreadyRequested: true, message: result.message };
+            }
+            if (result.error === 'ALREADY_MEMBER') {
+                return { success: true, pending: false, alreadyMember: true, message: result.message };
+            }
+
             throw new BadRequestException(result.message);
         }
 
