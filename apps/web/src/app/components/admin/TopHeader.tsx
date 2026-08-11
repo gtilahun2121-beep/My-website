@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react';
 import type { ShellVariant } from './Sidebar';
 import ProfileMenu from '../layout/ProfileMenu';
+import NotificationsDrawer from '../notifications/NotificationsDrawer';
+import { useAuth } from '@/app/context/AuthContext';
+import { useNotifications } from '@/app/hooks/useNotifications';
 import { languages, type Language } from '@/i18n/config';
 
 interface TopHeaderProps {
@@ -25,6 +28,10 @@ const LANG_KEY = 'qalnet_lang';
 export default function TopHeader({ title, subtitle, onMenuClick, variant = 'admin' }: TopHeaderProps) {
   const [search, setSearch] = useState('');
   const [lang, setLang] = useState<Language>('en');
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+
+  const { isAuthenticated } = useAuth();
+  const { unreadCount, refresh } = useNotifications(isAuthenticated);
 
   useEffect(() => {
     const stored = typeof window !== 'undefined' ? localStorage.getItem(LANG_KEY) : null;
@@ -37,6 +44,11 @@ export default function TopHeader({ title, subtitle, onMenuClick, variant = 'adm
   const changeLang = (next: Language) => {
     setLang(next);
     if (typeof window !== 'undefined') localStorage.setItem(LANG_KEY, next);
+  };
+
+  const openNotifications = () => {
+    refresh();
+    setNotificationsOpen(true);
   };
 
   const isAdmin = variant === 'admin';
@@ -54,7 +66,8 @@ export default function TopHeader({ title, subtitle, onMenuClick, variant = 'adm
     : 'bg-slate-50 border-slate-200 text-sm placeholder:text-slate-400 focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500';
 
   return (
-    <header className={`sticky top-0 z-30 backdrop-blur-md border-b ${headerCls}`}>
+    <>
+      <header className={`sticky top-0 z-30 backdrop-blur-md border-b ${headerCls}`}>
       <div className="flex items-center gap-4 px-4 sm:px-6 h-16">
         {/* Mobile menu toggle */}
         <button
@@ -117,13 +130,18 @@ export default function TopHeader({ title, subtitle, onMenuClick, variant = 'adm
           {/* Notifications */}
           <button
             type="button"
+            onClick={openNotifications}
             className={`relative p-2 rounded-lg ${iconBtnCls}`}
             aria-label="Notifications"
           >
             <svg viewBox="0 0 24 24" className="w-5 h-5" {...stroke}>
               <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5m6 0v1a3 3 0 1 1-6 0v-1m6 0H9" />
             </svg>
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-danger-500" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-danger-500 border-2 border-white text-[10px] font-black text-white flex items-center justify-center">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
           </button>
 
           {/* Profile */}
@@ -153,6 +171,13 @@ export default function TopHeader({ title, subtitle, onMenuClick, variant = 'adm
           />
         </div>
       )}
-    </header>
+      </header>
+
+      <NotificationsDrawer
+        isOpen={notificationsOpen}
+        onClose={() => setNotificationsOpen(false)}
+        language={lang}
+      />
+    </>
   );
 }

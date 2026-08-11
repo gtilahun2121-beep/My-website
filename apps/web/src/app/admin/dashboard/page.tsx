@@ -77,7 +77,7 @@ export default function AdminDashboardPage() {
     if (showSpinner) setLoading(true);
     setError(null);
     try {
-      const res = await adminAPI.getStats();
+      const res = await adminAPI.getStats(range);
       setStats(res);
     } catch (err) {
       const message =
@@ -90,12 +90,12 @@ export default function AdminDashboardPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [range]);
 
   useEffect(() => {
     const t = setTimeout(() => void load(), 0);
     return () => clearTimeout(t);
-  }, [load]);
+  }, [load, range]);
 
   const trend = useMemo(
     () =>
@@ -105,11 +105,6 @@ export default function AdminDashboardPage() {
       })),
     [stats],
   );
-
-  const trendForRange = useMemo(() => {
-    if (range === '7d') return trend.slice(-7);
-    return trend;
-  }, [range, trend]);
 
   const paymentSegments = useMemo(() => {
     const k = stats?.kpis;
@@ -277,7 +272,9 @@ export default function AdminDashboardPage() {
             <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
               <div>
                 <h3 className={cardTitleCls}>Platform Activity</h3>
-                <p className={cardSubtitleCls}>New member registrations · last 30 days</p>
+                <p className={cardSubtitleCls}>
+                  New member registrations · last {range === '7d' ? '7 days' : range === '90d' ? '90 days' : '30 days'}
+                </p>
               </div>
               <div className="inline-flex items-center rounded-lg border border-admin-border bg-admin-elevated p-0.5">
                 {ranges.map((r) => (
@@ -300,7 +297,7 @@ export default function AdminDashboardPage() {
               <div className="h-52 animate-pulse rounded-lg bg-admin-elevated" />
             ) : (
               <AreaChart
-                data={trendForRange}
+                data={trend}
                 color="#0d9488"
                 valueFormatter={(v) => String(v)}
               />
@@ -650,11 +647,6 @@ function QuickActionsCard() {
       label: 'View Reports',
       icon: 'M5 20V10m7 10V4m7 16v-7',
       disabled: true,
-    },
-    {
-      label: 'System Settings',
-      href: '/settings',
-      icon: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm8.4-3a8.9 8.9 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a8.9 8.9 0 0 0-2-1.2L15.5 3h-4l-.4 2.6a8.9 8.9 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6a8.9 8.9 0 0 0 0 2.4l-2 1.6 2 3.4 2.4-1a8.9 8.9 0 0 0 2 1.2l.4 2.6h4l.4-2.6a8.9 8.9 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.07-.4.1-.8.1-1.2Z',
     },
   ];
 

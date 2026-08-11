@@ -137,57 +137,85 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Pull persisted profile data (e.g. profile photo) from the backend and
+  // merge it into the current user + storage. Best-effort — never throws.
+  const syncProfile = useCallback(async () => {
+    try {
+      const profile = await userAPI.getProfile();
+      if (!profile) return;
+      setUser((prev) => {
+        if (!prev) return prev;
+        const next = { ...prev, profilePhoto: profile.profile_photo ?? null };
+        localStorage.setItem(STORAGE.USER, JSON.stringify(next));
+        return next;
+      });
+    } catch {
+      // profile fetch is best-effort
+    }
+  }, []);
+
   // Restore session from localStorage on mount
   useEffect(() => {
     if (typeof window === 'undefined') {
       return;
     }
 
-    const storedToken = localStorage.getItem(STORAGE.ACCESS_TOKEN);
-    const storedUser = localStorage.getItem(STORAGE.USER);
-
     // Defer the synchronous restore to a microtask so state updates never run
     // inside the effect body (keeps the initial render consistent on both
     // server and client — first paint is always unauthenticated).
     queueMicrotask(() => {
-      if (storedToken && storedUser) {
-        try {
-          // Verify the token is not expired before restoring
-          const payload = decodeJwtPayload(storedToken);
-          const now = Math.floor(Date.now() / 1000);
+      void (async () => {
+        const storedToken = localStorage.getItem(STORAGE.ACCESS_TOKEN);
+        const storedUser = localStorage.getItem(STORAGE.USER);
+        const storedRefresh = localStorage.getItem(STORAGE.REFRESH_TOKEN);
 
-          if (payload && payload.exp && payload.exp > now) {
+        if (!storedToken || !storedUser) {
+          setIsLoading(false);
+          return;
+        }
+
+        const payload = decodeJwtPayload(storedToken);
+        const now = Math.floor(Date.now() / 1000);
+        const tokenValid = !!payload && !!payload.exp && payload.exp > now;
+
+        try {
+          if (!tokenValid && storedRefresh) {
+            // Access token expired but a refresh token exists — rotate silently
+            // so an admin reloading the dashboard stays signed in.
+            const response = await authAPI.refreshToken(storedRefresh);
+            const freshPayload = decodeJwtPayload(response.access_token);
+            if (!freshPayload) throw new Error('Invalid refreshed token');
+
+            const userData = userFromJwt(freshPayload, JSON.parse(storedUser) as Partial<User>);
+            setUser(userData);
+            localStorage.setItem(STORAGE.ACCESS_TOKEN, response.access_token);
+            localStorage.setItem(STORAGE.USER, JSON.stringify(userData));
+            if (response.refresh_token) {
+              localStorage.setItem(STORAGE.REFRESH_TOKEN, response.refresh_token);
+            }
+            await syncProfile();
+            setIsLoading(false);
+            return;
+          }
+
+          if (tokenValid) {
             setUser(JSON.parse(storedUser) as User);
-            // Pull persisted profile data (e.g. profile photo) from the backend
-            userAPI
-              .getProfile()
-              .then((profile) => {
-                setUser((prev) => {
-                  if (!prev) return prev;
-                  const next = { ...prev, profilePhoto: profile?.profile_photo ?? null };
-                  localStorage.setItem(STORAGE.USER, JSON.stringify(next));
-                  return next;
-                });
-              })
-              .catch(() => {
-                // profile fetch is best-effort
-              });
-          } else {
-            // Token expired — clear stale session
-            localStorage.removeItem(STORAGE.ACCESS_TOKEN);
-            localStorage.removeItem(STORAGE.REFRESH_TOKEN);
-            localStorage.removeItem(STORAGE.USER);
+            await syncProfile();
+            setIsLoading(false);
+            return;
           }
         } catch {
-          localStorage.removeItem(STORAGE.ACCESS_TOKEN);
-          localStorage.removeItem(STORAGE.REFRESH_TOKEN);
-          localStorage.removeItem(STORAGE.USER);
+          // Fall through — no usable refresh path, clear the session.
         }
-      }
 
-      setIsLoading(false);
+        // Token expired with no usable refresh token — clear stale session.
+        localStorage.removeItem(STORAGE.ACCESS_TOKEN);
+        localStorage.removeItem(STORAGE.REFRESH_TOKEN);
+        localStorage.removeItem(STORAGE.USER);
+        setIsLoading(false);
+      })();
     });
-  }, []);
+  }, [syncProfile]);
 
   // ── profile photo ────────────────────────────────────────────────────────
 

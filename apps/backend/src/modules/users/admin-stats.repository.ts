@@ -10,7 +10,7 @@ import { withAdminContext } from '../../config/database.config';
  */
 @Injectable()
 export class AdminStatsRepository {
-    async getDashboardStats(adminId: string) {
+    async getDashboardStats(adminId: string, days: number = 30) {
         return withAdminContext(adminId, async (sql) => {
             const [kpis] = await sql`
                 SELECT
@@ -32,7 +32,7 @@ export class AdminStatsRepository {
 
             const trend = await sql`
                 SELECT to_char(d, 'YYYY-MM-DD') AS date, COUNT(u.id)::int AS count
-                FROM generate_series(CURRENT_DATE - INTERVAL '29 days', CURRENT_DATE, '1 day') AS d
+                FROM generate_series(CURRENT_DATE - make_interval(days => ${days}), CURRENT_DATE, '1 day') AS d
                 LEFT JOIN users u ON u.created_at::date = d
                 GROUP BY d
                 ORDER BY d

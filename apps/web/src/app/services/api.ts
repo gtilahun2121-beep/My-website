@@ -67,6 +67,48 @@ export class APIError extends Error {
 }
 
 // ---------------------------------------------------------------------------
+// Token refresh — silent 401 recovery
+// ---------------------------------------------------------------------------
+
+let refreshPromise: Promise<boolean> | null = null;
+
+/**
+ * Attempts to rotate the access token using the stored refresh token
+ * (falls back to the HttpOnly cookie). Deduplicated so concurrent 401s
+ * trigger a single refresh round-trip. Returns true when a new access
+ * token was persisted.
+ */
+async function refreshAccessToken(): Promise<boolean> {
+  if (refreshPromise) return refreshPromise;
+
+  refreshPromise = (async () => {
+    const refreshToken =
+      typeof window !== 'undefined' ? localStorage.getItem('refreshToken') : null;
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/${API_VERSION}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ refresh_token: refreshToken }),
+      });
+      if (!res.ok) return false;
+      const data = (await res.json()) as AuthTokenResponse;
+      if (!data.access_token) return false;
+      localStorage.setItem('authToken', data.access_token);
+      if (data.refresh_token) localStorage.setItem('refreshToken', data.refresh_token);
+      return true;
+    } catch {
+      return false;
+    } finally {
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+}
+
+// ---------------------------------------------------------------------------
 // Core request helper
 // ---------------------------------------------------------------------------
 
@@ -91,15 +133,38 @@ async function request<T = unknown>(
     if (searchParams.toString()) url += `?${searchParams.toString()}`;
   }
 
-  const token =
-    typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+  // One silent retry per request after a token refresh.
+  let attempts = 0;
 
-  const headers = new Headers(init.headers || {});
-  headers.set('Content-Type', 'application/json');
-  if (token) headers.set('Authorization', `Bearer ${token}`);
+  for (;;) {
+    const token =
+      typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
 
-  try {
-    const response = await fetch(url, { ...init, headers, credentials: 'include' });
+    const headers = new Headers(init.headers || {});
+    headers.set('Content-Type', 'application/json');
+    if (token) headers.set('Authorization', `Bearer ${token}`);
+
+    let response: Response;
+    try {
+      response = await fetch(url, { ...init, headers, credentials: 'include' });
+    } catch (error) {
+      throw new Error(
+        `API Request Failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+    }
+
+    if (response.status === 401 && attempts === 0) {
+      attempts += 1;
+      const refreshed = await refreshAccessToken();
+      if (refreshed) continue;
+      // Refresh failed — the session is gone. Clear the tokens so the next
+      // page load lands on sign-in instead of throwing unhelpful 401s.
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('refreshToken');
+      }
+      throw new APIError(401, undefined, 'Session expired. Please sign in again.');
+    }
 
     const contentType = response.headers.get('content-type');
     let data: unknown;
@@ -120,11 +185,6 @@ async function request<T = unknown>(
     }
 
     return data as T;
-  } catch (error) {
-    if (error instanceof APIError) throw error;
-    throw new Error(
-      `API Request Failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-    );
   }
 }
 
@@ -557,10 +617,14 @@ export interface PendingMembership {
 export const adminAPI = {
   /**
    * GET /api/v1/admin/stats
-   * Dashboard aggregates — KPIs, 30-day registration trend, recent
-   * transactions and top equbs (admin only).
+   * Dashboard aggregates — KPIs, registration trend, recent transactions
+   * and top equbs (admin only). `range` selects the trend window.
    */
-  getStats: () => request<AdminStats>('/admin/stats', { method: 'GET' }),
+  getStats: (range?: '7d' | '30d' | '90d') =>
+    request<AdminStats>('/admin/stats', {
+      method: 'GET',
+      params: range ? { range } : undefined,
+    }),
 
   /**
    * GET /api/v1/admin/users
