@@ -195,7 +195,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${
                   s <= step
-                    ? 'bg-[#0d7e4d] text-white'
+                    ? 'bg-[#314fa0] text-white'
                     : 'bg-gray-200 text-gray-600'
                 }`}
               >
@@ -204,7 +204,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
               {s < 5 && (
                 <div
                   className={`h-1 flex-grow mx-2 transition-all ${
-                    s < step ? 'bg-[#0d7e4d]' : 'bg-gray-200'
+                    s < step ? 'bg-[#314fa0]' : 'bg-gray-200'
                   }`}
                 ></div>
               )}
@@ -230,7 +230,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                 onChange={handleChange}
                 placeholder="Enter first name"
                 className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-all ${
-                  errors.firstName ? 'border-red-500' : 'border-gray-200 focus:border-[#0d7e4d]'
+                  errors.firstName ? 'border-red-500' : 'border-gray-200 focus:border-[#314fa0]'
                 }`}
               />
               {errors.firstName && <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>}
@@ -244,7 +244,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                 onChange={handleChange}
                 placeholder="Enter last name"
                 className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-all ${
-                  errors.lastName ? 'border-red-500' : 'border-gray-200 focus:border-[#0d7e4d]'
+                  errors.lastName ? 'border-red-500' : 'border-gray-200 focus:border-[#314fa0]'
                 }`}
               />
               {errors.lastName && <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>}
@@ -267,7 +267,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                 onChange={handleChange}
                 placeholder="+2519xxxxxxxx"
                 className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-all ${
-                  errors.phoneNumber ? 'border-red-500' : 'border-gray-200 focus:border-[#0d7e4d]'
+                  errors.phoneNumber ? 'border-red-500' : 'border-gray-200 focus:border-[#314fa0]'
                 }`}
               />
               {errors.phoneNumber && <p className="text-red-500 text-sm mt-1">{errors.phoneNumber}</p>}
@@ -281,7 +281,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                 onChange={handleChange}
                 placeholder="your.email@gmail.com"
                 className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-all ${
-                  errors.email ? 'border-red-500' : 'border-gray-200 focus:border-[#0d7e4d]'
+                  errors.email ? 'border-red-500' : 'border-gray-200 focus:border-[#314fa0]'
                 }`}
               />
               {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
@@ -304,7 +304,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                 onChange={handleChange}
                 placeholder="At least 8 characters with uppercase, lowercase, digit, special char"
                 className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-all ${
-                  errors.password ? 'border-red-500' : 'border-gray-200 focus:border-[#0d7e4d]'
+                  errors.password ? 'border-red-500' : 'border-gray-200 focus:border-[#314fa0]'
                 }`}
               />
               {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
@@ -347,7 +347,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                 onChange={handleChange}
                 placeholder="At least 4 digits"
                 className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-all ${
-                  errors.pin ? 'border-red-500' : 'border-gray-200 focus:border-[#0d7e4d]'
+                  errors.pin ? 'border-red-500' : 'border-gray-200 focus:border-[#314fa0]'
                 }`}
               />
               {errors.pin && <p className="text-red-500 text-sm mt-1">{errors.pin}</p>}
@@ -370,7 +370,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                 onChange={handleChange}
                 placeholder="Enter 16-digit Fayda number"
                 className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-all ${
-                  errors.fayda ? 'border-red-500' : 'border-gray-200 focus:border-[#0d7e4d]'
+                  errors.fayda ? 'border-red-500' : 'border-gray-200 focus:border-[#314fa0]'
                 }`}
               />
               {errors.fayda && <p className="text-red-500 text-sm mt-1">{errors.fayda}</p>}
@@ -395,7 +395,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                 onChange={handleChange}
                 placeholder="Enter 6-digit OTP"
                 className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-all ${
-                  errors.faydaOtp ? 'border-red-500' : 'border-gray-200 focus:border-[#0d7e4d]'
+                  errors.faydaOtp ? 'border-red-500' : 'border-gray-200 focus:border-[#314fa0]'
                 }`}
               />
               {errors.faydaOtp && <p className="text-red-500 text-sm mt-1">{errors.faydaOtp}</p>}
@@ -409,7 +409,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                     setErrors({ faydaOtp: 'Invalid Fayda or OTP format' });
                   }
                 }}
-                className="w-full mt-3 px-4 py-3 bg-[#0d7e4d] text-white font-bold rounded-lg hover:bg-[#0a5c38] transition-all"
+                className="w-full mt-3 px-4 py-3 bg-[#314fa0] text-white font-bold rounded-lg hover:bg-[#2a4183] transition-all"
               >
                 Verify Fayda
               </button>
@@ -445,7 +445,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
         <button
           onClick={handleNextStep}
           disabled={submitting}
-          className="flex-1 px-6 py-3 bg-[#0d7e4d] text-white font-bold rounded-lg hover:bg-[#0a5c38] transition-all disabled:opacity-50"
+          className="flex-1 px-6 py-3 bg-[#314fa0] text-white font-bold rounded-lg hover:bg-[#2a4183] transition-all disabled:opacity-50"
         >
           {submitting ? '⏳ Processing...' : step === 5 ? '🎉 Create Account' : 'Next →'}
         </button>

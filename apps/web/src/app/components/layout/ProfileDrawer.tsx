@@ -168,7 +168,7 @@ export function ProfileDrawer({ isOpen, onClose, language }: ProfileDrawerProps)
             aria-label={t.profile}
           >
             {/* Header */}
-            <div className="bg-gradient-to-r from-[#0d7e4d] to-[#ce1126] text-white p-6 shrink-0">
+            <div className="bg-gradient-to-r from-[#314fa0] to-[#ce1126] text-white p-6 shrink-0">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-black">{t.profile}</h2>
                 <button
@@ -181,7 +181,7 @@ export function ProfileDrawer({ isOpen, onClose, language }: ProfileDrawerProps)
               </div>
               <div className="flex items-center gap-3">
                 <div className="relative shrink-0">
-                  <div className="w-14 h-14 bg-white rounded-full overflow-hidden flex items-center justify-center text-[#0d7e4d] text-xl font-black uppercase ring-2 ring-[#d4af37]">
+                  <div className="w-14 h-14 bg-white rounded-full overflow-hidden flex items-center justify-center text-[#314fa0] text-xl font-black uppercase ring-2 ring-[#d4af37]">
                     {user?.profilePhoto ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -196,7 +196,7 @@ export function ProfileDrawer({ isOpen, onClose, language }: ProfileDrawerProps)
                   <button
                     onClick={() => fileInputRef.current?.click()}
                     disabled={photoUploading}
-                    className="absolute -bottom-1 -right-1 w-7 h-7 bg-[#d4af37] rounded-full flex items-center justify-center text-[#0d7e4d] text-sm shadow-md hover:scale-110 transition-transform"
+                    className="absolute -bottom-1 -right-1 w-7 h-7 bg-[#d4af37] rounded-full flex items-center justify-center text-[#314fa0] text-sm shadow-md hover:scale-110 transition-transform"
                     aria-label={isAmharic ? 'ፎቶ ይቀይሩ' : 'Change photo'}
                   >
                     {photoUploading ? '⏳' : '📷'}
@@ -235,7 +235,7 @@ export function ProfileDrawer({ isOpen, onClose, language }: ProfileDrawerProps)
                       onClose();
                       router.push('/dashboard');
                     }}
-                    className="w-full flex items-center justify-between gap-2 px-4 py-3 bg-[#0d7e4d]/5 border border-[#0d7e4d]/20 rounded-xl text-sm font-bold text-[#0d7e4d] hover:bg-[#0d7e4d]/10 transition-colors"
+                    className="w-full flex items-center justify-between gap-2 px-4 py-3 bg-[#314fa0]/5 border border-[#314fa0]/20 rounded-xl text-sm font-bold text-[#314fa0] hover:bg-[#314fa0]/10 transition-colors"
                   >
                     <span className="flex items-center gap-2">🏠 {t.dashboard}</span>
                     <span>→</span>
@@ -246,7 +246,7 @@ export function ProfileDrawer({ isOpen, onClose, language }: ProfileDrawerProps)
                     <p
                       className={`text-sm font-bold text-center py-2 px-3 rounded-xl ${
                         photoMessage.includes('✓')
-                          ? 'bg-[#0d7e4d]/10 text-[#0d7e4d]'
+                          ? 'bg-[#314fa0]/10 text-[#314fa0]'
                           : 'bg-red-50 text-red-600'
                       }`}
                     >
@@ -264,7 +264,7 @@ export function ProfileDrawer({ isOpen, onClose, language }: ProfileDrawerProps)
                   )}
 
                   {/* Wallet balance */}
-                  <div className="bg-gradient-to-br from-[#0d7e4d] to-[#0a5c38] rounded-2xl p-5 text-white">
+                  <div className="bg-gradient-to-br from-[#314fa0] to-[#2a4183] rounded-2xl p-5 text-white">
                     <p className="text-sm text-white/80 mb-1">💳 {t.walletBalance}</p>
                     <p className="text-3xl font-black">
                       {wallet?.currency || 'ETB'}{' '}
@@ -313,7 +313,7 @@ export function ProfileDrawer({ isOpen, onClose, language }: ProfileDrawerProps)
                           onClose();
                           router.push('/my-equbs');
                         }}
-                        className="text-xs font-bold text-[#0d7e4d] hover:underline"
+                        className="text-xs font-bold text-[#314fa0] hover:underline"
                       >
                         {t.viewAll} →
                       </button>
@@ -326,7 +326,7 @@ export function ProfileDrawer({ isOpen, onClose, language }: ProfileDrawerProps)
                             onClose();
                             router.push('/join-equb');
                           }}
-                          className="mt-3 w-full py-2 bg-[#0d7e4d] text-white font-bold rounded-lg text-sm hover:bg-[#0a5c38]"
+                          className="mt-3 w-full py-2 bg-[#314fa0] text-white font-bold rounded-lg text-sm hover:bg-[#2a4183]"
                         >
                           {isAmharic ? 'Equb ይቀላቀሉ' : 'Join an Equb'}
                         </button>
@@ -351,7 +351,7 @@ export function ProfileDrawer({ isOpen, onClose, language }: ProfileDrawerProps)
                                   {equb.member_count ?? 0} {t.members}
                                 </p>
                               </div>
-                              <span className="text-sm font-bold text-[#0d7e4d] shrink-0">
+                              <span className="text-sm font-bold text-[#314fa0] shrink-0">
                                 ETB {equb.contribution_amount || 0}
                               </span>
                             </button>

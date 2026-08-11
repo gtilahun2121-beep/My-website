@@ -28,7 +28,7 @@ export default function PhoneVerificationStep({
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
       <div>
-        <h3 className="text-2xl font-black text-[#0d7e4d] mb-2 text-center">📱 Your Phone</h3>
+        <h3 className="text-2xl font-black text-[#314fa0] mb-2 text-center">📱 Your Phone</h3>
         <p className="text-center text-sm text-gray-600 mb-4">
           We&apos;ll send a verification code to this number
         </p>

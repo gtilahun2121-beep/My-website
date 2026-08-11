@@ -58,7 +58,7 @@ export default function EqubRotation({
   };
 
   return (
-    <section className="py-20 md:py-32 bg-gradient-to-br from-[#0d7e4d] to-[#ce1126] relative overflow-hidden">
+    <section className="py-20 md:py-32 bg-gradient-to-br from-[#314fa0] to-[#ce1126] relative overflow-hidden">
       {/* Animated background pattern */}
       <div className="absolute inset-0 pattern-eth opacity-5"></div>
 
@@ -105,7 +105,7 @@ export default function EqubRotation({
             <defs>
               <linearGradient id="rotatingGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="#d4af37" />
-                <stop offset="100%" stopColor="#0d7e4d" />
+                <stop offset="100%" stopColor="#314fa0" />
               </linearGradient>
             </defs>
 
@@ -135,7 +135,7 @@ export default function EqubRotation({
               cx="150"
               cy="150"
               r="80"
-              fill="rgba(13, 126, 77, 0.1)"
+              fill="rgba(49, 79, 160, 0.1)"
               stroke="rgba(212, 175, 55, 0.3)"
               strokeWidth="2"
             />
@@ -179,7 +179,7 @@ export default function EqubRotation({
                   <motion.div
                     className={`w-16 h-16 rounded-full flex items-center justify-center font-black text-2xl shadow-lg border-4 transition-all ${
                       isActive
-                        ? 'border-[#d4af37] bg-[#0d7e4d] text-[#d4af37] scale-110'
+                        ? 'border-[#d4af37] bg-[#314fa0] text-[#d4af37] scale-110'
                         : 'border-white bg-[#ce1126] text-white'
                     }`}
                     custom={idx}
@@ -192,7 +192,7 @@ export default function EqubRotation({
                   </motion.div>
 
                   {/* Member index badge */}
-                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-[#d4af37] rounded-full text-[#0d7e4d] flex items-center justify-center text-xs font-black shadow-lg">
+                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-[#d4af37] rounded-full text-[#314fa0] flex items-center justify-center text-xs font-black shadow-lg">
                     {idx + 1}
                   </div>
                 </div>
@@ -214,7 +214,7 @@ export default function EqubRotation({
             </motion.div>
 
             {/* Center circle */}
-            <div className="absolute w-20 h-20 rounded-full bg-gradient-to-br from-[#d4af37] to-[#0d7e4d] flex items-center justify-center shadow-2xl border-4 border-white">
+            <div className="absolute w-20 h-20 rounded-full bg-gradient-to-br from-[#d4af37] to-[#314fa0] flex items-center justify-center shadow-2xl border-4 border-white">
               <div className="text-3xl">🏦</div>
             </div>
           </motion.div>

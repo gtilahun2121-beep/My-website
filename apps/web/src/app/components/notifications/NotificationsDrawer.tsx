@@ -70,7 +70,7 @@ export default function NotificationsDrawer({
             aria-label={t.title}
           >
             {/* Header */}
-            <div className="bg-gradient-to-r from-[#0d7e4d] to-[#ce1126] text-white p-6 shrink-0">
+            <div className="bg-gradient-to-r from-[#314fa0] to-[#ce1126] text-white p-6 shrink-0">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-black flex items-center gap-2">
                   🔔 {t.title}
@@ -117,7 +117,7 @@ export default function NotificationsDrawer({
                       className={`flex items-start gap-3 p-3 rounded-xl border ${
                         notif.is_read
                           ? 'bg-gray-50 border-gray-100'
-                          : 'bg-[#0d7e4d]/5 border-[#0d7e4d]/20'
+                          : 'bg-[#314fa0]/5 border-[#314fa0]/20'
                       }`}
                     >
                       <div className="w-9 h-9 shrink-0 rounded-full bg-white shadow-sm flex items-center justify-center text-lg">
@@ -133,7 +133,7 @@ export default function NotificationsDrawer({
                         <p className="text-[11px] text-gray-400 mt-1">
                           {timeAgo(notif.created_at, isAmharic)}
                           {!notif.is_read && (
-                            <span className="ml-2 text-[#0d7e4d] font-bold">
+                            <span className="ml-2 text-[#314fa0] font-bold">
                               {isAmharic ? 'አዲስ' : 'NEW'}
                             </span>
                           )}

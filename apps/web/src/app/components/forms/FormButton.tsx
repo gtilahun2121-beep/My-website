@@ -16,9 +16,9 @@ interface FormButtonProps {
 
 const variantStyles: Record<ButtonVariant, string> = {
     primary:
-        'bg-[#0d7e4d] text-white hover:bg-[#0a5c38] active:scale-[0.98]',
+        'bg-[#314fa0] text-white hover:bg-[#2a4183] active:scale-[0.98]',
     secondary:
-        'border-2 border-[#0d7e4d] text-[#0d7e4d] bg-white hover:bg-gray-50 active:scale-[0.98]',
+        'border-2 border-[#314fa0] text-[#314fa0] bg-white hover:bg-gray-50 active:scale-[0.98]',
     danger:
         'bg-[#ce1126] text-white hover:bg-[#a50e1f] active:scale-[0.98]',
 };

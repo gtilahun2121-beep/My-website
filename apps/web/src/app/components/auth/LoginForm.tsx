@@ -83,7 +83,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-bold text-[#0d7e4d] mb-2">
+              <label className="block text-sm font-bold text-[#314fa0] mb-2">
                 Phone Number
               </label>
               <input
@@ -120,7 +120,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
 
             <p className="text-center text-sm text-[#5a5a5a] mb-6">
               Don&apos;t have an account?{' '}
-              <a href="/auth?mode=register" className="text-[#0d7e4d] font-black hover:underline">
+              <a href="/auth?mode=register" className="text-[#314fa0] font-black hover:underline">
                 Sign up here
               </a>
             </p>
@@ -140,7 +140,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-bold text-[#0d7e4d] mb-2">
+              <label className="block text-sm font-bold text-[#314fa0] mb-2">
                 4-Digit Security PIN
               </label>
               <input
@@ -182,7 +182,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
                 setError('');
                 setPin('');
               }}
-              className="w-full py-2 text-[#0d7e4d] font-bold hover:underline"
+              className="w-full py-2 text-[#314fa0] font-bold hover:underline"
             >
               ← Use Different Phone
             </button>
@@ -200,7 +200,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
               }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="w-full py-2 border-2 border-[#d4af37] text-[#0d7e4d] font-bold rounded-lg hover:bg-[#d4af37]/10 transition-all"
+              className="w-full py-2 border-2 border-[#d4af37] text-[#314fa0] font-bold rounded-lg hover:bg-[#d4af37]/10 transition-all"
             >
               🆘 Reset PIN
             </motion.button>
@@ -223,15 +223,15 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
             ✅
           </motion.div>
 
-          <h3 className="text-2xl font-black text-[#0d7e4d] mb-4">
+          <h3 className="text-2xl font-black text-[#314fa0] mb-4">
             Welcome Back!
           </h3>
           <p className="text-gray-600 mb-6">
             Hello, {`${user.firstName} ${user.lastName}`.trim() || 'QalNet Member'}! 👋
           </p>
 
-          <div className="bg-[#0d7e4d]/10 border-2 border-[#0d7e4d] rounded-lg p-4 mb-6 text-left">
-            <p className="text-sm font-bold text-[#0d7e4d] mb-3">✓ Account Details:</p>
+          <div className="bg-[#314fa0]/10 border-2 border-[#314fa0] rounded-lg p-4 mb-6 text-left">
+            <p className="text-sm font-bold text-[#314fa0] mb-3">✓ Account Details:</p>
             <div className="space-y-2 text-xs text-gray-600">
               <p>📱 Phone: {user.phoneNumber}</p>
               <p>👤 Name: {`${user.firstName} ${user.lastName}`.trim()}</p>
@@ -244,7 +244,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
             onClick={() => window.location.href = '/'}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="w-full py-3 bg-gradient-to-r from-[#0d7e4d] to-[#d4af37] text-white font-black rounded-full hover:shadow-lg transition-all duration-300 mb-3"
+            className="w-full py-3 bg-gradient-to-r from-[#314fa0] to-[#d4af37] text-white font-black rounded-full hover:shadow-lg transition-all duration-300 mb-3"
           >
             🎯 Go to Dashboard
           </motion.button>
@@ -253,7 +253,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
             onClick={() => window.location.href = '/'}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="w-full py-2 border-2 border-[#0d7e4d] text-[#0d7e4d] font-bold rounded-full hover:bg-[#0d7e4d]/10 transition-all"
+            className="w-full py-2 border-2 border-[#314fa0] text-[#314fa0] font-bold rounded-full hover:bg-[#314fa0]/10 transition-all"
           >
             🏠 Go to Home
           </motion.button>

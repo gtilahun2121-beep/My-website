@@ -151,13 +151,13 @@ export default function WalletPage() {
           </h1>
 
           {/* Wallet Balance */}
-          <div className="bg-gradient-to-r from-[#0d7e4d] to-[#d4af37] text-white rounded-2xl shadow-lg p-8 mb-8">
+          <div className="bg-gradient-to-r from-[#314fa0] to-[#d4af37] text-white rounded-2xl shadow-lg p-8 mb-8">
             <p className="text-sm opacity-90">{lang === 'en' ? 'Current Balance' : 'አሁን ሚዛን'}</p>
             <h2 className="text-5xl font-black mb-4">ETB {balance.toLocaleString()}</h2>
             <div className="flex gap-4">
               <button 
                 onClick={() => setShowDepositModal(true)}
-                className="bg-white text-[#0d7e4d] font-bold px-6 py-2 rounded-lg hover:shadow-lg transition-all"
+                className="bg-white text-[#314fa0] font-bold px-6 py-2 rounded-lg hover:shadow-lg transition-all"
               >
                 {lang === 'en' ? 'Deposit' : 'ተወገዱ'}
               </button>
@@ -208,7 +208,7 @@ export default function WalletPage() {
                   value={depositAmount}
                   onChange={(e) => setDepositAmount(e.target.value)}
                   placeholder="Enter amount"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#0d7e4d]"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#314fa0]"
                 />
               </div>
               <div className="flex gap-3">
@@ -223,7 +223,7 @@ export default function WalletPage() {
                 </button>
                 <button
                   onClick={handleDeposit}
-                  className="flex-1 px-4 py-3 bg-[#0d7e4d] text-white font-bold rounded-lg hover:bg-[#0a5c38] transition-all"
+                  className="flex-1 px-4 py-3 bg-[#314fa0] text-white font-bold rounded-lg hover:bg-[#2a4183] transition-all"
                 >
                   Deposit
                 </button>
@@ -270,7 +270,7 @@ export default function WalletPage() {
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
                   placeholder="+2519xxxxxxxx"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#0d7e4d]"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#314fa0]"
                 />
               </div>
 
@@ -283,7 +283,7 @@ export default function WalletPage() {
                   value={withdrawAmount}
                   onChange={(e) => setWithdrawAmount(e.target.value)}
                   placeholder="Enter amount"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#0d7e4d]"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#314fa0]"
                 />
               </div>
 
@@ -301,7 +301,7 @@ export default function WalletPage() {
                 </button>
                 <button
                   onClick={handleWithdraw}
-                  className="flex-1 px-4 py-3 bg-[#0d7e4d] text-white font-bold rounded-lg hover:bg-[#0a5c38] transition-all"
+                  className="flex-1 px-4 py-3 bg-[#314fa0] text-white font-bold rounded-lg hover:bg-[#2a4183] transition-all"
                 >
                   Withdraw
                 </button>

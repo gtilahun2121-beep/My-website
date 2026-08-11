@@ -39,7 +39,7 @@ export default function PromoBanner({
   };
 
   return (
-    <section className="py-20 md:py-32 bg-gradient-to-r from-[#ce1126] via-[#0d7e4d] to-[#d4af37] relative overflow-hidden">
+    <section className="py-20 md:py-32 bg-gradient-to-r from-[#ce1126] via-[#314fa0] to-[#d4af37] relative overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 pattern-eth opacity-20"></div>
 
@@ -107,7 +107,7 @@ export default function PromoBanner({
             >
               <Link
                 href={ctaLink}
-                className="inline-block px-10 py-4 bg-white text-[#0d7e4d] font-black rounded-full hover:shadow-2xl transition-all duration-300 text-lg drop-shadow-lg"
+                className="inline-block px-10 py-4 bg-white text-[#314fa0] font-black rounded-full hover:shadow-2xl transition-all duration-300 text-lg drop-shadow-lg"
               >
                 {ctaText} →
               </Link>
@@ -143,7 +143,7 @@ export default function PromoBanner({
             ].map((badge, idx) => (
               <motion.div
                 key={idx}
-                className="absolute bg-white/90 rounded-full px-4 py-2 shadow-lg border-2 border-white flex items-center gap-2 font-black text-[#0d7e4d]"
+                className="absolute bg-white/90 rounded-full px-4 py-2 shadow-lg border-2 border-white flex items-center gap-2 font-black text-[#314fa0]"
                 style={{
                   top: badge.top,
                   bottom: badge.bottom,

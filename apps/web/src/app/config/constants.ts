@@ -177,8 +177,8 @@ export const VALIDATION = {
 export const UI = {
   // Colors
   COLORS: {
-    PRIMARY: '#10b981', // Emerald green
-    SUCCESS: '#10b981',
+    PRIMARY: '#314fa0', // Navy primary
+    SUCCESS: '#16a34a',
     ERROR: '#ef4444',
     WARNING: '#f59e0b',
     INFO: '#3b82f6',

@@ -7,8 +7,7 @@ import type { PendingMembership } from '@/app/services/api';
 import type { EqubCreationRequest } from '@qalnet/shared-types';
 import KpiCard from '@/app/components/admin/KpiCard';
 import { StatusBadge, BadgeTone } from '@/app/components/admin/StatusBadge';
-import { AreaChart, DonutChart } from '@/app/components/admin/DashboardCharts';
-import { ErrorState } from '@/app/components/admin/States';
+import { AreaChart } from '@/app/components/admin/DashboardCharts';import { ErrorState } from '@/app/components/admin/States';
 import { useRequireAdmin } from '@/app/hooks/useRequireAdmin';
 import { AdminRouteLoading } from '@/app/components/admin/AdminGate';
 import { useAuth } from '@/app/context/AuthContext';
@@ -230,31 +229,6 @@ export default function AdminDashboardPage() {
   );
 
   const k = stats?.kpis;
-
-  const paymentSegments = useMemo(() => {
-    return [
-      { label: 'Successful', value: k?.successful_payments ?? 0, color: '#16A86B' },
-      { label: 'Pending', value: k?.pending_payments ?? 0, color: '#F59E0B' },
-      { label: 'Failed', value: k?.failed_transactions ?? 0, color: '#EF4444' },
-    ];
-  }, [k]);
-
-  const donutTotal = paymentSegments.reduce((s, seg) => s + seg.value, 0);
-  const successPct =
-    donutTotal > 0 ? Math.round((paymentSegments[0].value / donutTotal) * 100) : 0;
-
-  const memberSegments = useMemo(() => {
-    const verified = k?.active_users ?? 0;
-    const total = Math.max(verified, k?.total_users ?? 0);
-    return [
-      { label: 'Active', value: verified, color: '#16A86B' },
-      { label: 'Inactive', value: Math.max(0, total - verified), color: '#E2E8F0' },
-    ];
-  }, [k]);
-
-  const memberPct = memberSegments[0].value + memberSegments[1].value > 0
-    ? Math.round((memberSegments[0].value / (memberSegments[0].value + memberSegments[1].value)) * 100)
-    : 0;
 
   const activitySummary = useMemo(() => {
     const now = new Date();
@@ -478,11 +452,9 @@ export default function AdminDashboardPage() {
         />
       </div>
 
-      {/* ── Analytics grid: activity | payment health | verification ─────── */}
-      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)] gap-6 items-start">
-        {/* Platform Activity */}
-        <section className={`${cardCls} p-5`}>
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+      {/* ── Platform Activity ───────────────────────────────────────────── */}
+      <section className={`${cardCls} p-5`}>
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
             <div>
               <h3 className={cardTitleCls}>Platform Activity</h3>
               <p className={cardSubtitleCls}>Registrations, payments, equbs &amp; joins · {rangeLabel}</p>
@@ -533,7 +505,7 @@ export default function AdminDashboardPage() {
           ) : (
             <AreaChart
               data={trend}
-              color="#0AAE9A"
+              color="#1E3A8A"
               valueFormatter={(v) => String(v)}
             />
           )}
@@ -550,50 +522,7 @@ export default function AdminDashboardPage() {
               </div>
             ))}
           </div>
-        </section>
-
-        {/* Payment Health */}
-        <section className={`${cardCls} p-5`}>
-          <h3 className={cardTitleCls}>Payment Health</h3>
-          <p className={`${cardSubtitleCls} mb-4`}>Distribution of payment outcomes</p>
-          {loading && !stats ? (
-            <div className="h-44 animate-pulse rounded-lg bg-admin-elevated" />
-          ) : (
-            <DonutChart
-              segments={paymentSegments}
-              centerTitle={donutTotal > 0 ? `${successPct}%` : '—'}
-              centerSubtitle="success rate"
-            />
-          )}
-          <Link
-            href="/admin/finance"
-            className="mt-4 block text-center text-xs font-bold text-brand-600 hover:text-brand-700"
-          >
-            View all payments →
-          </Link>
-        </section>
-
-        {/* Member Verification */}
-        <section className={`${cardCls} p-5`}>
-          <h3 className={cardTitleCls}>Member Verification</h3>
-          <p className={`${cardSubtitleCls} mb-4`}>Active vs registered accounts</p>
-          {loading && !stats ? (
-            <div className="h-44 animate-pulse rounded-lg bg-admin-elevated" />
-          ) : (
-            <DonutChart
-              segments={memberSegments}
-              centerTitle={`${memberPct}%`}
-              centerSubtitle="active"
-            />
-          )}
-          <Link
-            href="/admin/kyc"
-            className="mt-4 block text-center text-xs font-bold text-brand-600 hover:text-brand-700"
-          >
-            Review KYC requests →
-          </Link>
-        </section>
-      </div>
+      </section>
 
       {/* ── Recent pending approvals ─────────────────────────────────────── */}
       <RecentPendingApprovals loading={approvalsLoading} rows={approvals} adminInitials={adminInitials} />

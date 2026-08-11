@@ -195,7 +195,7 @@ export default function CreateAccountModal({
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="bg-gradient-to-r from-[#0d7e4d] to-[#d4af37] px-8 py-6 flex justify-between items-center rounded-t-2xl">
+            <div className="bg-gradient-to-r from-[#314fa0] to-[#d4af37] px-8 py-6 flex justify-between items-center rounded-t-2xl">
               <div>
                 <h2 className="text-2xl font-black text-white">
                   {step === 'account' ? '🏦 Create Account' : '✅ Verify OTP'}
@@ -297,7 +297,7 @@ export default function CreateAccountModal({
 
                   <button
                     onClick={() => setStep('account')}
-                    className="w-full text-center text-sm text-gray-600 hover:text-[#0d7e4d] font-semibold"
+                    className="w-full text-center text-sm text-gray-600 hover:text-[#314fa0] font-semibold"
                   >
                     ← {lang === 'en' ? 'Back' : 'ተመለስ'}
                   </button>

@@ -46,7 +46,7 @@ export default function Testimonials({ testimonials }: TestimonialsProps) {
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-4xl md:text-5xl font-black text-[#0d7e4d] mb-4">
+          <h2 className="text-4xl md:text-5xl font-black text-[#314fa0] mb-4">
             💬 What Our Members Say
           </h2>
           <p className="text-xl text-[#5a5a5a]">
@@ -83,11 +83,11 @@ export default function Testimonials({ testimonials }: TestimonialsProps) {
 
               {/* Author */}
               <div className="flex items-center gap-4 pt-6 border-t border-[#d4af37]/30">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#0d7e4d] to-[#d4af37] flex items-center justify-center text-white text-xl font-black">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#314fa0] to-[#d4af37] flex items-center justify-center text-white text-xl font-black">
                   {testimonial.image}
                 </div>
                 <div>
-                  <p className="font-black text-[#0d7e4d]">{testimonial.name}</p>
+                  <p className="font-black text-[#314fa0]">{testimonial.name}</p>
                   <p className="text-sm text-[#5a5a5a]">{testimonial.role}</p>
                 </div>
               </div>

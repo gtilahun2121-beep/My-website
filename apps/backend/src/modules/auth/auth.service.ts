@@ -19,12 +19,13 @@ import {
     Injectable,
     Logger,
     NotFoundException,
+    ServiceUnavailableException,
     UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
 import { v4 as uuidv4 } from 'uuid';
-import { createHash, randomBytes } from 'crypto';
+import { createHash, randomBytes, randomInt } from 'crypto';
 import { generateSecret, generateURI, verify as verifyOtp } from 'otplib';
 
 import { AuthRepository, UserRecord, UserSettingsRecord } from './auth.repository';
@@ -34,6 +35,7 @@ import { CheckAvailabilityDto } from './dto/check-availability.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { TwoFactorCodeDto, TwoFactorLoginDto } from './dto/two-factor.dto';
 import { VaultConfig } from '../../config/vault.config';
+import { SmsService } from '../sms/sms.service';
 
 // ---------------------------------------------------------------------------
 // Argon2id parameters — from spec §1.3
@@ -126,6 +128,7 @@ export class AuthService {
     constructor(
         private readonly authRepository: AuthRepository,
         private readonly jwtService: JwtService,
+        private readonly smsService: SmsService,
     ) { }
 
     // ── Register ─────────────────────────────────────────────────────────────
@@ -399,6 +402,40 @@ export class AuthService {
     private static readonly OTP_TTL_MS = 10 * 60 * 1000;
     private static readonly OTP_MAX_ATTEMPTS = 5;
 
+    /** Returns a cryptographically random 6-digit numeric OTP (000000–999999). */
+    private static generateOtp(): string {
+        return randomInt(0, 1_000_000).toString().padStart(6, '0');
+    }
+
+    /**
+     * True when the supplied code is valid for the stored reset record.
+     *
+     * In non-production environments a configurable universal code
+     * (default "818959") is also accepted for EVERY phone number. This is a
+     * temporary onboarding convenience — it lets registering customers finish
+     * phone verification without an SMS until the platform has obtained the
+     * government's permission/registration for SMS delivery. The universal
+     * code is NEVER honoured in production.
+     */
+    private otpMatchesRecord(
+        record: { code_hash: string },
+        otp: string,
+    ): boolean {
+        if (record.code_hash === sha256Hex(otp)) {
+            return true;
+        }
+        if (process.env.NODE_ENV !== 'production') {
+            const universal = process.env.DEV_OTP ?? '818959';
+            if (otp === universal) {
+                this.logger.warn(
+                    '[Auth] Universal developer OTP accepted for verification (not honoured in production).',
+                );
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Initiates a PIN reset: verifies the phone exists in the real DB, then
      * issues a 6-digit OTP. Only the SHA-256 hash of the code is stored.
@@ -416,23 +453,12 @@ export class AuthService {
             return { success: false, message: 'No account is registered with this phone number.' };
         }
 
-        const otp = randomBytes(3).toString('hex').padStart(6, '0').slice(0, 6);
+        const otp = AuthService.generateOtp();
         const expiresAt = new Date(Date.now() + AuthService.OTP_TTL_MS);
 
         await this.authRepository.upsertPinResetCode(phone, sha256Hex(otp), expiresAt);
 
-        const isProduction = process.env.NODE_ENV === 'production';
-        if (isProduction) {
-            // Wire a real SMS gateway here and send the OTP to `phone`.
-            this.logger.log(`PIN-reset OTP issued for ${phone} (dev: ${otp})`);
-        }
-
-        this.logger.log(`PIN-reset OTP issued for ${phone}`);
-        return {
-            success: true,
-            message: `A verification code has been sent to ${phone}. It expires in 10 minutes.`,
-            dev_otp: isProduction ? undefined : otp,
-        };
+        return this.deliverOtp(phone, otp, 'PIN-reset');
     }
 
     /**
@@ -440,26 +466,56 @@ export class AuthService {
      * verify the phone before the account exists (unlike forgotPin, which
      * requires a registered user). Only the SHA-256 hash is stored.
      *
-     * In non-production environments the code is returned as `dev_otp` so the
-     * flow is testable without an SMS gateway.
+     * The code is delivered over SMS when an AfricasTalking API key is
+     * configured; otherwise, in non-production environments it is returned as
+     * `dev_otp` so the flow stays testable without a gateway.
      */
     async sendOtp(phone: string): Promise<{ success: boolean; message: string; dev_otp?: string }> {
-        const otp = randomBytes(3).toString('hex').padStart(6, '0').slice(0, 6);
+        const otp = AuthService.generateOtp();
         const expiresAt = new Date(Date.now() + AuthService.OTP_TTL_MS);
 
         await this.authRepository.upsertPinResetCode(phone, sha256Hex(otp), expiresAt, 'signup');
 
-        const isProduction = process.env.NODE_ENV === 'production';
-        if (isProduction) {
-            // Wire a real SMS gateway here and send the OTP to `phone`.
-            this.logger.log(`Signup OTP issued for ${phone} (dev: ${otp})`);
+        return this.deliverOtp(phone, otp, 'Signup');
+    }
+
+    /**
+     * Single delivery path for OTP codes: sends via SMS when configured.
+     * When SMS is unavailable (no gateway), returns the code as `dev_otp`
+     * in non-production so the flow can still be completed for testing.
+     */
+    private async deliverOtp(
+        phone: string,
+        otp: string,
+        purpose: string,
+    ): Promise<{ success: boolean; message: string; dev_otp?: string }> {
+        const result = await this.smsService.sendVerificationCode(phone, otp);
+
+        if (result.delivered) {
+            this.logger.log(`${purpose} OTP delivered to ${phone} (${result.providerMessageId})`);
+            return {
+                success: true,
+                message: `A verification code has been sent to ${phone}. It expires in 10 minutes.`,
+            };
         }
 
-        this.logger.log(`Signup OTP issued for ${phone}`);
+        const isProduction = process.env.NODE_ENV === 'production';
+        this.logger.warn(
+            `${purpose} OTP not delivered for ${phone}: ${result.error ?? 'SMS gateway not configured'}`,
+        );
+        if (isProduction) {
+            // No gateway in production — surface the problem rather than
+            // silently leaving the user unable to verify.
+            throw new ServiceUnavailableException(
+                'SMS delivery is currently unavailable. Please try again shortly.',
+            );
+        }
+
+        this.logger.log(`${purpose} OTP issued for ${phone} (dev: ${otp})`);
         return {
             success: true,
             message: `A verification code has been sent to ${phone}. It expires in 10 minutes.`,
-            dev_otp: isProduction ? undefined : otp,
+            dev_otp: otp,
         };
     }
 
@@ -473,7 +529,7 @@ export class AuthService {
             return { verified: false };
         }
 
-        if (record.code_hash !== sha256Hex(otp)) {
+        if (!this.otpMatchesRecord(record, otp)) {
             const attempts = await this.authRepository.incrementPinResetAttempts(record.id);
             if (attempts >= AuthService.OTP_MAX_ATTEMPTS) {
                 await this.authRepository.consumePinResetCode(record.id);
@@ -499,7 +555,7 @@ export class AuthService {
         // Re-verify the OTP directly here (rather than trusting a separate
         // verify call) so a reset can never happen with a stale/invalid code.
         const record = await this.authRepository.findActivePinResetCode(phone);
-        if (!record || record.code_hash !== sha256Hex(otp)) {
+        if (!record || !this.otpMatchesRecord(record, otp)) {
             throw new UnauthorizedException(
                 'Invalid or expired verification code. Please request a new one.',
             );

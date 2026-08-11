@@ -71,7 +71,7 @@ export default function MyEqubsPage() {
               <div className="flex gap-3 justify-center">
                 <Link
                   href="/join-equb"
-                  className="px-6 py-3 bg-[#0d7e4d] text-white font-bold rounded-lg hover:bg-[#0a5c38] transition-all"
+                  className="px-6 py-3 bg-[#314fa0] text-white font-bold rounded-lg hover:bg-[#2a4183] transition-all"
                 >
                   {lang === 'en' ? 'Join an Equb' : 'እቁብ ይቀላቀሉ'}
                 </Link>
@@ -88,7 +88,7 @@ export default function MyEqubsPage() {
               {equbs.map((equb) => (
                 <div
                   key={equb.id}
-                  className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all cursor-pointer border-l-4 border-[#0d7e4d]"
+                  className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all cursor-pointer border-l-4 border-[#314fa0]"
                 >
                   <div className="flex justify-between items-start mb-4">
                     <h3 className="text-xl font-bold text-gray-900">{equb.name}</h3>
@@ -137,7 +137,7 @@ export default function MyEqubsPage() {
                   </div>
                   <Link
                     href={`/equbs/${equb.id}`}
-                    className="block text-center w-full bg-[#0d7e4d] text-white font-bold py-2 rounded-lg hover:bg-[#0a5c38] transition-all"
+                    className="block text-center w-full bg-[#314fa0] text-white font-bold py-2 rounded-lg hover:bg-[#2a4183] transition-all"
                   >
                     {lang === 'en' ? 'View Details' : 'ዝርዝር ይመልከቱ'}
                   </Link>

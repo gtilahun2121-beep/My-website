@@ -5,7 +5,7 @@ import { equbCategories, getTotalMembers } from '@/app/data/equbCategories';
 
 export default function GuestStatsSection() {
   const stats = [
-    { label: 'Categories', value: equbCategories.length, icon: '📦', color: 'bg-[#0d7e4d]' },
+    { label: 'Categories', value: equbCategories.length, icon: '📦', color: 'bg-[#314fa0]' },
     { label: 'Total Members', value: `${getTotalMembers().toLocaleString()}+`, icon: '👥', color: 'bg-[#d4af37]' },
     { label: 'On-Time Payouts', value: '99%', icon: '✅', color: 'bg-[#ce1126]' },
   ];

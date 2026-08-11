@@ -54,7 +54,7 @@ export default function FormInput({
                         disabled ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white',
                         error
                             ? 'border-red-400 focus:ring-red-300'
-                            : 'border-gray-300 focus:ring-[#0d7e4d] focus:border-[#0d7e4d]',
+                            : 'border-gray-300 focus:ring-[#314fa0] focus:border-[#314fa0]',
                     ].join(' ')}
                 />
             </div>

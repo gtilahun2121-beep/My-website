@@ -94,7 +94,7 @@ export default function EqubDetailPage() {
         <div className="max-w-4xl mx-auto">
           <button
             onClick={() => router.back()}
-            className="text-sm text-[#0d7e4d] font-bold hover:underline mb-6"
+            className="text-sm text-[#314fa0] font-bold hover:underline mb-6"
           >
             ← {lang === 'en' ? 'Back' : 'ተመለስ'}
           </button>
@@ -138,7 +138,7 @@ export default function EqubDetailPage() {
                     <p className="text-xs text-gray-500 uppercase font-bold mb-1">
                       {lang === 'en' ? 'Contribution' : 'መዋጮ'}
                     </p>
-                    <p className="text-xl font-black text-[#0d7e4d]">
+                    <p className="text-xl font-black text-[#314fa0]">
                       ETB {Number(equb.contribution_amount).toLocaleString()}
                     </p>
                   </div>
@@ -209,7 +209,7 @@ export default function EqubDetailPage() {
                       className={`w-full py-3 font-black rounded-lg transition-all ${
                         disabled
                           ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                          : 'bg-[#0d7e4d] text-white hover:bg-[#0a5c38]'
+                          : 'bg-[#314fa0] text-white hover:bg-[#2a4183]'
                       }`}
                     >
                       {joining ? (lang === 'en' ? 'Submitting...' : 'በመላክ ላይ...') : label}

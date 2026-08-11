@@ -97,7 +97,7 @@ export default function HowItWorks({ title, steps }: HowItWorksProps) {
                 >
                   {/* Icon */}
                   <motion.div
-                    className="mx-auto mb-4 w-16 h-16 bg-gradient-to-br from-[#0d7e4d] to-[#d4af37] rounded-full flex items-center justify-center shadow-lg"
+                    className="mx-auto mb-4 w-16 h-16 bg-gradient-to-br from-[#314fa0] to-[#d4af37] rounded-full flex items-center justify-center shadow-lg"
                     custom={idx}
                     variants={iconVariants}
                     initial="hidden"
@@ -107,12 +107,12 @@ export default function HowItWorks({ title, steps }: HowItWorksProps) {
                   </motion.div>
 
                   {/* Number Badge */}
-                  <div className="absolute -top-4 -right-4 w-10 h-10 bg-[#d4af37] rounded-full flex items-center justify-center font-black text-[#0d7e4d] shadow-lg">
+                  <div className="absolute -top-4 -right-4 w-10 h-10 bg-[#d4af37] rounded-full flex items-center justify-center font-black text-[#314fa0] shadow-lg">
                     {step.number}
                   </div>
 
                   {/* Content */}
-                  <h3 className="text-xl font-black text-[#0d7e4d] mb-2">
+                  <h3 className="text-xl font-black text-[#314fa0] mb-2">
                     {step.title}
                   </h3>
                   <p className="text-gray-600 text-sm">
@@ -123,7 +123,7 @@ export default function HowItWorks({ title, steps }: HowItWorksProps) {
                 {/* Animated Connector Arrow */}
                 {idx < steps.length - 1 && (
                   <motion.div
-                    className="hidden lg:block absolute top-1/4 -right-6 w-12 h-1 bg-gradient-to-r from-[#0d7e4d] to-[#d4af37]"
+                    className="hidden lg:block absolute top-1/4 -right-6 w-12 h-1 bg-gradient-to-r from-[#314fa0] to-[#d4af37]"
                     custom={idx}
                     variants={connectorVariants}
                     initial="hidden"
@@ -152,7 +152,7 @@ export default function HowItWorks({ title, steps }: HowItWorksProps) {
                   <div className="flex gap-6">
                     {/* Icon */}
                     <motion.div
-                      className="w-16 h-16 flex-shrink-0 bg-gradient-to-br from-[#0d7e4d] to-[#d4af37] rounded-full flex items-center justify-center shadow-lg"
+                      className="w-16 h-16 flex-shrink-0 bg-gradient-to-br from-[#314fa0] to-[#d4af37] rounded-full flex items-center justify-center shadow-lg"
                       custom={idx}
                       variants={iconVariants}
                       initial="hidden"
@@ -164,10 +164,10 @@ export default function HowItWorks({ title, steps }: HowItWorksProps) {
                     {/* Content */}
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="inline-block w-8 h-8 bg-[#d4af37] rounded-full text-center leading-8 font-black text-[#0d7e4d]">
+                        <span className="inline-block w-8 h-8 bg-[#d4af37] rounded-full text-center leading-8 font-black text-[#314fa0]">
                           {step.number}
                         </span>
-                        <h3 className="text-lg font-black text-[#0d7e4d]">
+                        <h3 className="text-lg font-black text-[#314fa0]">
                           {step.title}
                         </h3>
                       </div>
@@ -181,7 +181,7 @@ export default function HowItWorks({ title, steps }: HowItWorksProps) {
                 {/* Vertical Connector */}
                 {idx < steps.length - 1 && (
                   <motion.div
-                    className="ml-8 h-8 w-1 bg-gradient-to-b from-[#0d7e4d] to-[#d4af37]"
+                    className="ml-8 h-8 w-1 bg-gradient-to-b from-[#314fa0] to-[#d4af37]"
                     custom={idx}
                     variants={connectorVariants}
                     initial="hidden"

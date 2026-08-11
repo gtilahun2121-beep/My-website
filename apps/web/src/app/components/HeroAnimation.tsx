@@ -70,7 +70,7 @@ export default function HeroAnimation({
   ];
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-[#0d7e4d] via-[#d4af37] to-[#ce1126] py-20 md:py-32">
+    <section className="relative overflow-hidden bg-gradient-to-br from-[#314fa0] via-[#d4af37] to-[#ce1126] py-20 md:py-32">
       {/* Floating background shapes */}
       <div className="absolute inset-0 overflow-hidden">
         {floatingShapes.map((shape, idx) => (
@@ -150,7 +150,7 @@ export default function HeroAnimation({
             >
               <Link
                 href="/features"
-                className="inline-block px-8 py-4 bg-white text-[#0d7e4d] font-bold rounded-full hover:shadow-2xl transition-all duration-300 text-lg"
+                className="inline-block px-8 py-4 bg-white text-[#314fa0] font-bold rounded-full hover:shadow-2xl transition-all duration-300 text-lg"
               >
                 {cta} ➜
               </Link>
@@ -165,7 +165,7 @@ export default function HeroAnimation({
             >
               <Link
                 href="/architecture"
-                className="inline-block px-8 py-4 bg-[#d4af37] text-[#0d7e4d] font-bold rounded-full border-2 border-white hover:shadow-2xl transition-all duration-300 text-lg"
+                className="inline-block px-8 py-4 bg-[#d4af37] text-[#314fa0] font-bold rounded-full border-2 border-white hover:shadow-2xl transition-all duration-300 text-lg"
               >
                 {ctaSecondary} 🏗️
               </Link>

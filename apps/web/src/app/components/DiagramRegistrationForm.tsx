@@ -130,9 +130,9 @@ export default function DiagramRegistrationForm({
       <div className="mb-8">
         <div className="flex justify-between mb-4">
           {[1, 2, 3, 4].map(s => (
-            <div key={s} className={`flex-1 text-center ${s <= step ? 'text-[#0d7e4d]' : 'text-gray-400'}`}>
+            <div key={s} className={`flex-1 text-center ${s <= step ? 'text-[#314fa0]' : 'text-gray-400'}`}>
               <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold mx-auto mb-2 ${
-                s < step ? 'bg-[#0d7e4d] text-white' : s === step ? 'bg-[#0d7e4d] text-white' : 'bg-gray-200'
+                s < step ? 'bg-[#314fa0] text-white' : s === step ? 'bg-[#314fa0] text-white' : 'bg-gray-200'
               }`}>
                 {s < step ? '✓' : s}
               </div>
@@ -141,7 +141,7 @@ export default function DiagramRegistrationForm({
           ))}
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2">
-          <div className="bg-[#0d7e4d] h-2 rounded-full transition-all" style={{ width: `${(step/4)*100}%` }} />
+          <div className="bg-[#314fa0] h-2 rounded-full transition-all" style={{ width: `${(step/4)*100}%` }} />
         </div>
       </div>
 
@@ -157,7 +157,7 @@ export default function DiagramRegistrationForm({
               placeholder="John"
               value={formData.firstName}
               onChange={e => updateField('firstName', e.target.value)}
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#0d7e4d] focus:outline-none"
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#314fa0] focus:outline-none"
             />
             {errors.firstName && <p className="text-red-500 text-sm">{errors.firstName}</p>}
           </div>
@@ -169,14 +169,14 @@ export default function DiagramRegistrationForm({
               placeholder="Doe"
               value={formData.lastName}
               onChange={e => updateField('lastName', e.target.value)}
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#0d7e4d] focus:outline-none"
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#314fa0] focus:outline-none"
             />
             {errors.lastName && <p className="text-red-500 text-sm">{errors.lastName}</p>}
           </div>
 
           <button
             onClick={handleNext}
-            className="w-full bg-[#0d7e4d] text-white font-bold py-3 rounded-lg hover:bg-[#0a5c38] mt-6"
+            className="w-full bg-[#314fa0] text-white font-bold py-3 rounded-lg hover:bg-[#2a4183] mt-6"
           >
             Next →
           </button>
@@ -193,7 +193,7 @@ export default function DiagramRegistrationForm({
               placeholder="+2519 + 8 digits"
               value={formData.phoneNumber}
               onChange={e => updateField('phoneNumber', e.target.value)}
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#0d7e4d] focus:outline-none"
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#314fa0] focus:outline-none"
             />
             {errors.phoneNumber && <p className="text-red-500 text-sm">{errors.phoneNumber}</p>}
           </div>
@@ -205,7 +205,7 @@ export default function DiagramRegistrationForm({
               placeholder="user@gmail.com"
               value={formData.email}
               onChange={e => updateField('email', e.target.value)}
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#0d7e4d] focus:outline-none"
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#314fa0] focus:outline-none"
             />
             {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
           </div>
@@ -213,13 +213,13 @@ export default function DiagramRegistrationForm({
           <div className="flex gap-3">
             <button
               onClick={() => setStep(1)}
-              className="flex-1 border-2 border-[#0d7e4d] text-[#0d7e4d] font-bold py-3 rounded-lg hover:bg-gray-50"
+              className="flex-1 border-2 border-[#314fa0] text-[#314fa0] font-bold py-3 rounded-lg hover:bg-gray-50"
             >
               ← Back
             </button>
             <button
               onClick={handleNext}
-              className="flex-1 bg-[#0d7e4d] text-white font-bold py-3 rounded-lg hover:bg-[#0a5c38]"
+              className="flex-1 bg-[#314fa0] text-white font-bold py-3 rounded-lg hover:bg-[#2a4183]"
             >
               Next →
             </button>
@@ -238,7 +238,7 @@ export default function DiagramRegistrationForm({
               value={formData.fayda}
               onChange={e => updateField('fayda', e.target.value)}
               disabled={fayda.verified}
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#0d7e4d] focus:outline-none disabled:bg-gray-100"
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#314fa0] focus:outline-none disabled:bg-gray-100"
             />
             {errors.fayda && <p className="text-red-500 text-sm">{errors.fayda}</p>}
           </div>
@@ -275,7 +275,7 @@ export default function DiagramRegistrationForm({
           <div className="flex gap-3">
             <button
               onClick={() => setStep(2)}
-              className="flex-1 border-2 border-[#0d7e4d] text-[#0d7e4d] font-bold py-3 rounded-lg hover:bg-gray-50"
+              className="flex-1 border-2 border-[#314fa0] text-[#314fa0] font-bold py-3 rounded-lg hover:bg-gray-50"
             >
               ← Back
             </button>
@@ -283,7 +283,7 @@ export default function DiagramRegistrationForm({
               onClick={handleNext}
               disabled={!fayda.verified}
               className={`flex-1 font-bold py-3 rounded-lg ${
-                fayda.verified ? 'bg-[#0d7e4d] text-white hover:bg-[#0a5c38]' : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                fayda.verified ? 'bg-[#314fa0] text-white hover:bg-[#2a4183]' : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               }`}
             >
               Next →
@@ -308,7 +308,7 @@ export default function DiagramRegistrationForm({
               placeholder="Min 8 characters"
               value={formData.password}
               onChange={e => updateField('password', e.target.value)}
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#0d7e4d] focus:outline-none"
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#314fa0] focus:outline-none"
             />
             {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
           </div>
@@ -321,7 +321,7 @@ export default function DiagramRegistrationForm({
               placeholder="Re-enter password"
               value={formData.confirmPassword}
               onChange={e => updateField('confirmPassword', e.target.value)}
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#0d7e4d] focus:outline-none"
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#314fa0] focus:outline-none"
             />
             {errors.confirmPassword && <p className="text-red-500 text-sm">{errors.confirmPassword}</p>}
           </div>
@@ -335,7 +335,7 @@ export default function DiagramRegistrationForm({
               maxLength={6}
               value={formData.pin}
               onChange={e => updateField('pin', e.target.value)}
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#0d7e4d] focus:outline-none"
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#314fa0] focus:outline-none"
             />
             {errors.pin && <p className="text-red-500 text-sm">{errors.pin}</p>}
           </div>
@@ -356,7 +356,7 @@ export default function DiagramRegistrationForm({
               value={formData.otp}
               onChange={e => updateField('otp', e.target.value)}
               maxLength={5}
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#0d7e4d] focus:outline-none text-center text-2xl tracking-widest"
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#314fa0] focus:outline-none text-center text-2xl tracking-widest"
             />
             {errors.otp && <p className="text-red-500 text-sm text-center">{errors.otp}</p>}
           </div>
@@ -366,14 +366,14 @@ export default function DiagramRegistrationForm({
           <div className="flex gap-3">
             <button
               onClick={() => setStep(3)}
-              className="flex-1 border-2 border-[#0d7e4d] text-[#0d7e4d] font-bold py-3 rounded-lg hover:bg-gray-50"
+              className="flex-1 border-2 border-[#314fa0] text-[#314fa0] font-bold py-3 rounded-lg hover:bg-gray-50"
             >
               ← Back
             </button>
             <button
               onClick={handleCreateAccount}
               disabled={submitting}
-              className="flex-1 bg-[#0d7e4d] text-white font-bold py-3 rounded-lg hover:bg-[#0a5c38] disabled:opacity-50"
+              className="flex-1 bg-[#314fa0] text-white font-bold py-3 rounded-lg hover:bg-[#2a4183] disabled:opacity-50"
             >
               {submitting ? '⏳ Creating...' : '🎉 Create Account'}
             </button>
