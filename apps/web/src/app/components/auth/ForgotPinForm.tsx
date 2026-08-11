@@ -2,6 +2,14 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Language } from '@/i18n/config';
+import { translations } from '@/i18n/translations';
+import { equbCategories, EqubCategory } from '@/app/data/equbCategories';
+import FormInput from '@/app/components/forms/FormInput';
+import FormButton from '@/app/components/forms/FormButton';
+import FormError from '@/app/components/forms/FormError';
+import ValidationSchema from '@/app/utils/validation';
+import { authAPI } from '@/app/services/api';
 
 interface ForgotPinFormProps {
   onSuccess?: (title: string, message: string, duration?: number) => void;
@@ -18,7 +26,11 @@ export default function ForgotPinForm({ onSuccess, onError }: ForgotPinFormProps
   const [confirmPin, setConfirmPin] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [userData, setUserData] = useState<any>(null);
+
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+  };
 
   // Step 1: Phone verification
   const handlePhoneSubmit = async () => {
@@ -30,19 +42,16 @@ export default function ForgotPinForm({ onSuccess, onError }: ForgotPinFormProps
     }
 
     setLoading(true);
-    setTimeout(() => {
-      const storedUser = localStorage.getItem(`qalnet_user_${phoneNumber}`);
-      if (!storedUser) {
-        setError('User not found. Please check your phone number.');
-        onError?.('Account Not Found', 'Phone number not registered', 3000);
-        setLoading(false);
-        return;
-      }
-
+    try {
+      const response = await authAPI.forgotPin(phoneNumber);
+      console.log('SMS sent:', phoneNumber);
       onSuccess?.('SMS Sent', `Verification code sent to ${phoneNumber}`, 3000);
       setLoading(false);
       setStep('otp');
-    }, 1000);
+    } catch (err: any) {
+      setError(err?.message || 'Failed to send verification code');
+      setLoading(false);
+    }
   };
 
   // Step 2: OTP verification
@@ -55,18 +64,22 @@ export default function ForgotPinForm({ onSuccess, onError }: ForgotPinFormProps
     }
 
     setLoading(true);
-    setTimeout(() => {
-      // Demo: Accept any 6-digit code or specific test codes
-      if (otp === '000000' || otp.length === 6) {
-        onSuccess?.('OTP Verified', 'Code verified successfully', 3000);
+    try {
+      const response = await authAPI.verifyOTP(phoneNumber, otp);
+      if (!response.verified) {
+        setError('Invalid OTP');
+        onError?.('Invalid OTP', 'The code you entered is incorrect', 3000);
         setLoading(false);
-        setStep('newpin');
-      } else {
-        setError('Invalid OTP code');
-        onError?.('Invalid Code', 'The OTP you entered is incorrect', 3000);
-        setLoading(false);
+        return;
       }
-    }, 1000);
+      console.log('OTP verified:', otp);
+      onSuccess?.('OTP Verified', 'Code verified successfully', 3000);
+      setLoading(false);
+      setStep('newpin');
+    } catch (err: any) {
+      setError(err?.message || 'Failed to verify OTP');
+      setLoading(false);
+    }
   };
 
   // Step 3: Set new PIN
@@ -85,24 +98,16 @@ export default function ForgotPinForm({ onSuccess, onError }: ForgotPinFormProps
     }
 
     setLoading(true);
-    setTimeout(() => {
-      // Update user PIN in localStorage
-      const storedUser = localStorage.getItem(`qalnet_user_${phoneNumber}`);
-      if (storedUser) {
-        const user = JSON.parse(storedUser);
-        user.pin = newPin;
-        localStorage.setItem(`qalnet_user_${phoneNumber}`, JSON.stringify(user));
-        setUserData(user);
-        onSuccess?.('✅ PIN Reset', 'Your access code has been reset successfully', 4000);
-        setLoading(false);
-        setStep('success');
-      }
-    }, 1500);
-  };
-
-  const containerVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+    try {
+      const response = await authAPI.resetPin(phoneNumber, otp, newPin);
+      console.log('PIN reset for:', phoneNumber);
+      onSuccess?.('✅ PIN Reset', 'Your access code has been reset successfully', 4000);
+      setLoading(false);
+      setStep('success');
+    } catch (err: any) {
+      setError(err?.message || 'Failed to reset PIN');
+      setLoading(false);
+    }
   };
 
   return (
@@ -186,7 +191,7 @@ export default function ForgotPinForm({ onSuccess, onError }: ForgotPinFormProps
                 className="w-full px-4 py-3 border-2 border-[#d4af37] rounded-lg focus:outline-none focus:border-[#ce1126] font-bold text-3xl text-center tracking-widest"
               />
               <p className="text-xs text-[#5a5a5a] mt-2 text-center">
-                Demo: Use any 6-digit code
+                Check your SMS for the code
               </p>
             </div>
 

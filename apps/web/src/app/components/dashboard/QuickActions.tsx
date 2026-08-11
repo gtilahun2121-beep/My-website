@@ -27,13 +27,6 @@ const icon = (path: string) => (
 
 const ACTIONS: Action[] = [
   {
-    label: 'Join an Equb',
-    description: 'Browse open Equbs and request to join',
-    href: '/join-equb',
-    icon: icon('M12 5v14m-7-7h14'),
-    iconBg: 'bg-brand-100 text-brand-700',
-  },
-  {
     label: 'Create an Equb',
     description: 'Start a savings circle with your group',
     href: '/create-equb',

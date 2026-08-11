@@ -49,11 +49,6 @@ const MEMBER_NAV: NavItem[] = [
     icon: icon('M17 21v-4a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v4M7 4h10a2 2 0 0 1 2 2v15H5V6a2 2 0 0 1 2-2Zm2 6h6m-6 4h6'),
   },
   {
-    label: 'Discover Equbs',
-    href: '/discover',
-    icon: icon('M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm3-12-5 3.4v-2.4H8m4 4.4 3-3.4'),
-  },
-  {
     label: 'Wallet',
     href: '/wallet',
     icon: icon('M3 10h18M7 15h2m4 0h2M5 6h14a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1Z'),

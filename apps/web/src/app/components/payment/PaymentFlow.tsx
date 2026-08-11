@@ -6,16 +6,23 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Payment } from '../../data';
 import { paymentsAPI } from '../../services/api';
 
 interface PaymentFlowProps {
   equbId: string;
   roundNumber: number;
   amount: number;
-  onSuccess: (payment: Payment) => void;
+  onSuccess: (result: CheckoutResult) => void;
   onCancel: () => void;
   language: 'en' | 'am' | 'om' | 'ti';
+}
+
+/** Real shape returned by POST /api/v1/payments/checkout. */
+export interface CheckoutResult {
+  payment_id?: string;
+  checkout_url?: string;
+  status: string;
+  message: string;
 }
 
 type PaymentStep = 'method-selection' | 'gateway-redirect' | 'confirmation' | 'error';
@@ -32,9 +39,9 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({
   const [selectedMethod, setSelectedMethod] = useState<'telebirr' | 'chapa' | 'wallet' | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [transactionRef, setTransactionRef] = useState<string | null>(null);
+  const [checkoutResult, setCheckoutResult] = useState<CheckoutResult | null>(null);
 
-  const paymentMethods = [
+  const paymentMethods: { id: 'telebirr' | 'chapa' | 'wallet'; name: string; description: string; icon: string; available: boolean }[] = [
     {
       id: 'wallet',
       name: 'In-App Wallet',
@@ -69,17 +76,21 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({
         equb_id: equbId,
         round_number: roundNumber,
         payment_method: selectedMethod,
-      });
-      setTransactionRef(result.payment_id ?? result.paymentId ?? null);
+      }) as CheckoutResult;
+
+      setCheckoutResult(result);
 
       if (selectedMethod === 'wallet') {
-        // Wallet payments resolve immediately
-        await processWalletPayment(result.payment_id ?? result.paymentId);
+        // Wallet payments are confirmed synchronously by the backend checkout endpoint.
+        // No fabrication: use the real payment_id and status returned by the API.
+        setStep('confirmation');
       } else {
-        // Redirect to external gateway
-        setStep('gateway-redirect');
-        if (result.gateway_url || result.gatewayUrl) {
-          window.location.href = result.gateway_url ?? result.gatewayUrl;
+        // External gateway — redirect using the real checkout_url from the backend.
+        if (result.checkout_url) {
+          setStep('gateway-redirect');
+          window.location.assign(result.checkout_url);
+        } else {
+          setStep('confirmation');
         }
       }
     } catch (err) {
@@ -90,16 +101,9 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({
     }
   };
 
-  const processWalletPayment = async (_paymentId: string) => {
-    // NOTE: /payments/:id/verify does not exist in the backend.
-    // Wallet payments are confirmed synchronously by the checkout endpoint.
-    // Status updates arrive via the /payments/webhook endpoint (server-side).
-    try {
-      setStep('confirmation');
-      setTimeout(() => onSuccess({} as any), 1500);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Payment processing failed');
-      setStep('error');
+  const handleConfirm = () => {
+    if (checkoutResult) {
+      onSuccess(checkoutResult);
     }
   };
 
@@ -137,7 +141,7 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({
                 {paymentMethods.map((method) => (
                   <button
                     key={method.id}
-                    onClick={() => setSelectedMethod(method.id as any)}
+                    onClick={() => setSelectedMethod(method.id)}
                     disabled={!method.available}
                     className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
                       selectedMethod === method.id
@@ -205,15 +209,21 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({
           {step === 'confirmation' && (
             <div className="text-center py-8">
               <div className="text-6xl mb-4">✅</div>
-              <p className="text-lg font-semibold text-gray-900 mb-2">Payment Successful!</p>
-              <p className="text-sm text-gray-600 mb-4">
-                Your payment has been processed. Your membership is now active.
+              <p className="text-lg font-semibold text-gray-900 mb-2">
+                {checkoutResult?.status === 'pending'
+                  ? 'Payment Queued'
+                  : 'Payment Successful!'}
               </p>
-              {transactionRef && (
-                <p className="text-xs text-gray-500 mb-4">Ref: {transactionRef}</p>
+              <p className="text-sm text-gray-600 mb-4">
+                {checkoutResult?.status === 'pending'
+                  ? 'Insufficient balance — auto-debit has been queued.'
+                  : 'Your payment has been processed.'}
+              </p>
+              {checkoutResult?.payment_id && (
+                <p className="text-xs text-gray-500 mb-4">Ref: {checkoutResult.payment_id}</p>
               )}
               <button
-                onClick={() => onSuccess({ id: transactionRef || '', userId: '', equbId, roundNumber, amount, feeDeducted: amount * 0.0008, hostCommissionDeducted: amount * 0.0002, paymentStatus: 'paid', transactionReference: transactionRef || '', paidAt: new Date().toISOString(), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() })}
+                onClick={handleConfirm}
                 className="w-full bg-emerald-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-emerald-700 transition-colors"
               >
                 Continue

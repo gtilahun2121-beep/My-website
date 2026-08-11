@@ -305,7 +305,7 @@ export function ProfileDrawer({ isOpen, onClose, language }: ProfileDrawerProps)
                         <button
                           onClick={() => {
                             onClose();
-                            router.push('/discover');
+                            router.push('/join-equb');
                           }}
                           className="mt-3 w-full py-2 bg-[#0d7e4d] text-white font-bold rounded-lg text-sm hover:bg-[#0a5c38]"
                         >

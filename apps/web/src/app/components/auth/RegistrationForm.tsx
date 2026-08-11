@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Language } from '@/i18n/config';
 import { translations } from '@/i18n/translations';
 import { equbCategories, EqubCategory } from '@/app/data/equbCategories';
+import { authAPI } from '@/app/services/api';
 
 interface RegistrationFormProps {
   lang: Language;
@@ -12,14 +13,12 @@ interface RegistrationFormProps {
   onError?: (title: string, message: string, duration?: number) => void;
 }
 
-type RegistrationStep = 'equb' | 'phone' | 'otp' | 'details' | 'success';
+type RegistrationStep = 'equb' | 'phone' | 'details' | 'success';
 
 export default function RegistrationForm({ lang, onSuccess, onError }: RegistrationFormProps) {
-  const t = translations[lang];
   const [step, setStep] = useState<RegistrationStep>('equb');
   const [selectedEqub, setSelectedEqub] = useState<EqubCategory | null>(null);
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [otp, setOtp] = useState('');
   const [fullName, setFullName] = useState('');
   const [pin, setPin] = useState('');
   const [faydaNumber, setFaydaNumber] = useState('');
@@ -28,48 +27,12 @@ export default function RegistrationForm({ lang, onSuccess, onError }: Registrat
   const [searchEqub, setSearchEqub] = useState('');
 
   // Filter equbs by search
-  const filteredEqubs = equbCategories.filter(equb =>
+  const filteredEqubs = equbCategories.filter((equb) =>
     equb.name.toLowerCase().includes(searchEqub.toLowerCase()) ||
     equb.profession.toLowerCase().includes(searchEqub.toLowerCase())
   );
 
-  // Simulated OTP sending
-  const handleSendOTP = async () => {
-    setError('');
-    if (!phoneNumber.match(/^\+?[1-9]\d{1,14}$/)) {
-      setError('Invalid phone number format');
-      onError?.('Invalid Number', 'Please enter a valid phone number with country code', 3000);
-      return;
-    }
-    setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      console.log('OTP sent to:', phoneNumber);
-      onSuccess?.('OTP Sent', `Verification code sent to ${phoneNumber}`, 4000);
-      setLoading(false);
-      setStep('otp');
-    }, 1500);
-  };
-
-  // Simulated OTP verification
-  const handleVerifyOTP = async () => {
-    setError('');
-    if (otp.length !== 6) {
-      setError('OTP must be 6 digits');
-      onError?.('Invalid OTP', 'OTP must be exactly 6 digits', 3000);
-      return;
-    }
-    setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      console.log('OTP verified:', otp);
-      onSuccess?.('OTP Verified', 'Phone number verified successfully', 3000);
-      setLoading(false);
-      setStep('details');
-    }, 1500);
-  };
-
-  // Simulated registration completion
+  // Handle registration completion
   const handleCompleteRegistration = async () => {
     setError('');
     if (!fullName.trim()) {
@@ -89,30 +52,27 @@ export default function RegistrationForm({ lang, onSuccess, onError }: Registrat
     }
 
     setLoading(true);
-    // Simulate API call - Save to localStorage for demo
-    const userData = {
-      phoneNumber,
-      fullName,
-      pin,
-      faydaNumber,
-      registeredAt: new Date().toISOString(),
-    };
-    localStorage.setItem(`qalnet_user_${phoneNumber}`, JSON.stringify(userData));
-    
-    setTimeout(() => {
+    try {
+      const response = await authAPI.signup({
+        firstName: fullName,
+        lastName: '',
+        email: '',
+        phoneNumber,
+        password: pin,
+        fayda: faydaNumber,
+      });
       setLoading(false);
       onSuccess?.('✅ Account Created!', `Welcome to QalNet, ${fullName}! Your account is ready.`, 5000);
       setStep('success');
-    }, 1500);
+    } catch (err: any) {
+      setError(err?.message || 'Registration failed');
+      setLoading(false);
+    }
   };
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.5 },
-    },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
   };
 
   return (
@@ -132,7 +92,6 @@ export default function RegistrationForm({ lang, onSuccess, onError }: Registrat
             Select the profession-based Equb that matches your income level
           </p>
 
-          {/* Search */}
           <div className="mb-4">
             <input
               type="text"
@@ -143,7 +102,6 @@ export default function RegistrationForm({ lang, onSuccess, onError }: Registrat
             />
           </div>
 
-          {/* Equb List */}
           <div className="space-y-3 max-h-72 overflow-y-auto mb-4">
             {filteredEqubs.map((equb) => (
               <motion.div
@@ -203,7 +161,7 @@ export default function RegistrationForm({ lang, onSuccess, onError }: Registrat
             disabled={!selectedEqub}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="w-full py-3 bg-gradient-to-r from-[#0d7e4d] to-[#d4af37] text-white font-black rounded-full hover:shadow-lg transition-all duration-300 disabled:opacity-50"
+            className="w-full py-3 bg-gradient-to-r from-[#0d7e4d] to-[#d4af37] text-white font-black rounded-lg hover:shadow-lg transition-all duration-300 disabled:opacity-50"
           >
             ✓ Continue with Selected Equb
           </motion.button>
@@ -241,13 +199,21 @@ export default function RegistrationForm({ lang, onSuccess, onError }: Registrat
             )}
 
             <motion.button
-              onClick={handleSendOTP}
+              onClick={() => {
+                setError('');
+                if (!phoneNumber.match(/^\+?[1-9]\d{1,14}$/)) {
+                  setError('Invalid phone number format');
+                  onError?.('Invalid Number', 'Please enter a valid phone number with country code', 3000);
+                  return;
+                }
+                setStep('details');
+              }}
               disabled={loading}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="w-full py-3 bg-gradient-to-r from-[#0d7e4d] to-[#d4af37] text-white font-black rounded-full hover:shadow-lg transition-all duration-300 disabled:opacity-50"
             >
-              {loading ? '⏳ Sending OTP...' : '✓ Send OTP Code'}
+              {loading ? '⏳ Sending OTP...' : '✓ Continue'}
             </motion.button>
 
             <button
@@ -263,61 +229,7 @@ export default function RegistrationForm({ lang, onSuccess, onError }: Registrat
         </motion.div>
       )}
 
-      {/* Step 2: OTP Verification */}
-      {step === 'otp' && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <h3 className="text-2xl font-black text-[#0d7e4d] mb-6 text-center">
-            🔐 Enter OTP Code
-          </h3>
-
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-bold text-[#0d7e4d] mb-2">
-                6-Digit OTP Code
-              </label>
-              <input
-                type="text"
-                placeholder="000000"
-                maxLength={6}
-                value={otp}
-                onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                className="w-full px-4 py-3 border-2 border-[#d4af37] rounded-lg focus:outline-none focus:border-[#0d7e4d] font-bold text-3xl text-center tracking-widest"
-              />
-              <p className="text-xs text-[#5a5a5a] mt-1 text-center">
-                Check your SMS for the code (usually arrives in seconds)
-              </p>
-            </div>
-
-            {error && (
-              <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded">
-                {error}
-              </div>
-            )}
-
-            <motion.button
-              onClick={handleVerifyOTP}
-              disabled={loading}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="w-full py-3 bg-gradient-to-r from-[#0d7e4d] to-[#d4af37] text-white font-black rounded-full hover:shadow-lg transition-all duration-300 disabled:opacity-50"
-            >
-              {loading ? '⏳ Verifying...' : '✓ Verify OTP'}
-            </motion.button>
-
-            <button
-              onClick={() => {
-                setStep('phone');
-                setError('');
-              }}
-              className="w-full py-2 text-[#0d7e4d] font-bold hover:underline"
-            >
-              ← Back
-            </button>
-          </div>
-        </motion.div>
-      )}
-
-      {/* Step 3: User Details */}
+      {/* Step 2: User Details */}
       {step === 'details' && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <h3 className="text-2xl font-black text-[#0d7e4d] mb-6 text-center">
@@ -389,7 +301,7 @@ export default function RegistrationForm({ lang, onSuccess, onError }: Registrat
 
             <button
               onClick={() => {
-                setStep('otp');
+                setStep('phone');
                 setError('');
               }}
               className="w-full py-2 text-[#0d7e4d] font-bold hover:underline"

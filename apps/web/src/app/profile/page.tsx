@@ -5,7 +5,7 @@ import AppShell from '@/app/components/admin/AppShell';
 import { StatusBadge } from '@/app/components/admin/StatusBadge';
 import ProfilePhotoModal from '@/app/components/profile/ProfilePhotoModal';
 import { useAuth } from '@/app/context/AuthContext';
-import { userAPI, APIError } from '@/app/services/api';
+import { userAPI, authAPI, APIError } from '@/app/services/api';
 import { initials, roleLabel, trustTierLabel, formatDateLong } from '@/app/components/dashboard/format';
 
 const stroke = {
@@ -26,7 +26,7 @@ function Field({ label, value }: { label: string; value: string }) {
 }
 
 export default function ProfilePage() {
-  const { user, isLoading, isAuthenticated, updateProfilePhoto, resetPin } = useAuth();
+  const { user, isLoading, isAuthenticated, updateProfilePhoto } = useAuth();
 
   const [photoOpen, setPhotoOpen] = useState(false);
   const [form, setForm] = useState({ firstName: '', lastName: '', phone: '', email: '' });
@@ -123,9 +123,12 @@ export default function ProfilePage() {
     setPinBusy(true);
     setPinError(null);
     try {
-      await resetPin(user.phoneNumber, '');
+      await authAPI.forgotPin(user.phoneNumber);
+      setPinError(
+        'A verification code has been sent to your phone. Sign out and use "Forgot PIN" on the sign-in screen to complete the reset.',
+      );
     } catch (err) {
-      setPinError(err instanceof Error ? err.message : 'Could not change your PIN.');
+      setPinError(err instanceof Error ? err.message : 'Could not start a PIN reset.');
     } finally {
       setPinBusy(false);
     }

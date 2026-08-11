@@ -43,6 +43,11 @@ import { LoginDto } from './dto/login.dto';
 import { CheckAvailabilityDto } from './dto/check-availability.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { ForgotPinDto } from './dto/forgot-pin.dto';
+import { SendOtpDto } from './dto/send-otp.dto';
+import { VerifyOtpDto } from './dto/verify-otp.dto';
+import { ResetPinDto } from './dto/reset-pin.dto';
+import { VerifyFaydaDto } from './dto/verify-fayda.dto';
 import { TwoFactorCodeDto, TwoFactorLoginDto } from './dto/two-factor.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -295,34 +300,67 @@ export class AuthController {
         };
     }
 
-    // ── Stubs ─────────────────────────────────────────────────────────────────
+    // ── PIN reset via SMS OTP ────────────────────────────────────────────────
 
     @Post('verify-otp')
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Stub for OTP verification' })
-    async verifyOtp() {
-        return { verified: true };
+    @ApiOperation({ summary: 'Verify an OTP issued by forgot-pin' })
+    @ApiResponse({ status: 200, description: 'OTP verified.' })
+    @ApiResponse({ status: 400, description: 'Validation error.' })
+    async verifyOtp(
+        @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+        dto: VerifyOtpDto,
+    ) {
+        return this.authService.verifyOtp(dto.phone, dto.otp);
+    }
+
+    @Post('send-otp')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Send an OTP to a phone for signup (Fayda) verification' })
+    @ApiResponse({ status: 200, description: 'OTP issued.' })
+    @ApiResponse({ status: 400, description: 'Validation error.' })
+    async sendOtp(
+        @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+        dto: SendOtpDto,
+    ) {
+        return this.authService.sendOtp(dto.phone);
     }
 
     @Post('verify-fayda')
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Stub for Fayda verification' })
-    async verifyFayda() {
-        return { verified: true };
+    @ApiOperation({ summary: 'Verify a Fayda national ID before registration' })
+    @ApiResponse({ status: 200, description: 'Fayda verification result.' })
+    @ApiResponse({ status: 400, description: 'Validation error.' })
+    async verifyFayda(
+        @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+        dto: VerifyFaydaDto,
+    ) {
+        return this.authService.verifyFayda(dto.fayda_id);
     }
 
     @Post('forgot-pin')
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Stub for forgot PIN' })
-    async forgotPin() {
-        return { success: true };
+    @ApiOperation({ summary: 'Initiate a PIN reset — issues an OTP to the phone' })
+    @ApiResponse({ status: 200, description: 'OTP issued.' })
+    @ApiResponse({ status: 400, description: 'Validation error.' })
+    async forgotPin(
+        @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+        dto: ForgotPinDto,
+    ) {
+        return this.authService.forgotPin(dto.phone);
     }
 
     @Post('reset-pin')
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Stub for reset PIN' })
-    async resetPin() {
-        return { success: true };
+    @ApiOperation({ summary: 'Reset a PIN using a verified OTP' })
+    @ApiResponse({ status: 200, description: 'PIN reset.' })
+    @ApiResponse({ status: 400, description: 'Validation error.' })
+    @ApiResponse({ status: 401, description: 'Invalid or expired OTP.' })
+    async resetPin(
+        @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+        dto: ResetPinDto,
+    ) {
+        return this.authService.resetPin(dto.phone, dto.otp, dto.new_pin);
     }
 
     // ── Private Helper ────────────────────────────────────────────────────────

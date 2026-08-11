@@ -72,12 +72,11 @@ interface AuthContextType {
    */
   updateProfilePhoto: (photo: string | null) => void;
   /**
-   * Resets the user's PIN via the backend.
-   * NOTE: The backend does not yet expose a PIN-reset endpoint.
-   * This calls POST /api/v1/auth/reset-pin when it becomes available.
-   * Until then it throws an informative error.
+   * Resets the user's PIN via the backend's SMS-OTP flow.
+   * Calls POST /api/v1/auth/reset-pin — the OTP must already be issued
+   * (via /auth/forgot-pin) and verified for the reset to succeed.
    */
-  resetPin: (phoneNumber: string, newPin: string) => Promise<void>;
+  resetPin: (phoneNumber: string, newPin: string, otp: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -306,12 +305,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // ── resetPin ─────────────────────────────────────────────────────────────
 
-  const resetPin = useCallback(async (_phoneNumber: string, _newPin: string) => {
-    // TODO: Call POST /api/v1/auth/reset-pin when the backend exposes this endpoint.
-    // For now we throw a user-friendly message so the UI can show a toast.
-    throw new Error(
-      'PIN reset via SMS OTP is not yet available. Please contact support to reset your PIN.',
-    );
+  const resetPin = useCallback(async (phoneNumber: string, newPin: string, otp: string) => {
+    try {
+      // api.ts pads the new PIN and POSTs /auth/reset-pin with the OTP
+      await authAPI.resetPin(phoneNumber, otp, newPin);
+    } catch (error) {
+      const message =
+        error instanceof APIError
+          ? error.data?.message || error.message
+          : error instanceof Error
+            ? error.message
+            : 'Failed to reset your PIN';
+      throw new Error(message);
+    }
   }, []);
 
   // ── context value ───────────────────────────────────────────────────────────

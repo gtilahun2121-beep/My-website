@@ -228,11 +228,10 @@ export const authAPI = {
   logout: () =>
     request<{ message: string }>('/auth/logout', { method: 'POST' }),
 
-  // ── Stubs — these endpoints do not yet exist on the backend ──────────────
-  // Implement backend endpoints before enabling these.
+  // ── OTP / PIN reset — real backend endpoints ─────────────────────────────
 
   /**
-   * POST /api/v1/auth/verify-otp  [NOT YET IMPLEMENTED IN BACKEND]
+   * POST /api/v1/auth/verify-otp
    * Verifies the OTP sent to the user's phone.
    */
   verifyOTP: (phoneNumber: string, otp: string) =>
@@ -242,7 +241,18 @@ export const authAPI = {
     }),
 
   /**
-   * POST /api/v1/auth/verify-fayda  [NOT YET IMPLEMENTED IN BACKEND]
+   * POST /api/v1/auth/send-otp
+   * Sends an OTP to a phone for signup (Fayda) verification — works before
+   * the account exists (unlike forgot-pin).
+   */
+  sendOtp: (phoneNumber: string) =>
+    request<{ success: boolean; message: string; dev_otp?: string }>('/auth/send-otp', {
+      method: 'POST',
+      body: JSON.stringify({ phone: phoneNumber }),
+    }),
+
+  /**
+   * POST /api/v1/auth/verify-fayda
    * Verifies a Fayda national ID number.
    */
   verifyFayda: (fayda_id: string) =>
@@ -252,17 +262,17 @@ export const authAPI = {
     }),
 
   /**
-   * POST /api/v1/auth/forgot-pin  [NOT YET IMPLEMENTED IN BACKEND]
+   * POST /api/v1/auth/forgot-pin
    * Initiates a PIN reset flow — sends OTP to phone.
    */
   forgotPin: (phoneNumber: string) =>
-    request<{ success: boolean; message: string }>('/auth/forgot-pin', {
+    request<{ success: boolean; message: string; dev_otp?: string }>('/auth/forgot-pin', {
       method: 'POST',
       body: JSON.stringify({ phone: phoneNumber }),
     }),
 
   /**
-   * POST /api/v1/auth/reset-pin  [NOT YET IMPLEMENTED IN BACKEND]
+   * POST /api/v1/auth/reset-pin
    * Resets PIN using OTP verification.
    */
   resetPin: (phoneNumber: string, otp: string, newPin: string) =>

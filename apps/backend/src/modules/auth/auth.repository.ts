@@ -42,6 +42,12 @@ export interface CreateUserInput {
     first_name: string;
     last_name: string;
     fayda_id: string;
+    /**
+     * SHA-256 of the plaintext Fayda ID. Stored in a dedicated column so
+     * verify-fayda can detect duplicate registrations without needing to
+     * decrypt the pgp-encrypted fayda_id value.
+     */
+    fayda_id_hash: string;
     telegram_handle?: string;
     /**
      * Classified at registration: the platform owner's phone/email becomes
@@ -57,6 +63,17 @@ export interface UserSettingsRecord {
     backup_codes: string[];
     theme: string;
     updated_at: Date;
+}
+
+export interface PinResetCodeRecord {
+    id: string;
+    phone: string;
+    purpose: string;
+    code_hash: string;
+    expires_at: Date;
+    attempts: number;
+    consumed_at: Date | null;
+    created_at: Date;
 }
 
 // ---------------------------------------------------------------------------
@@ -106,6 +123,27 @@ export class AuthRepository {
         failed_login_attempts, lockout_stage, locked_until
       FROM users
       WHERE id = ${id}
+      LIMIT 1
+    `;
+
+        return rows[0] ?? null;
+    }
+
+    /**
+     * Find a user by their exact phone number — used by the forgot-PIN flow.
+     * Runs without RLS context (same as findByIdentifier) because the
+     * request happens before a session exists.
+     */
+    async findByPhone(phone: string): Promise<UserRecord | null> {
+        const sql = getPool();
+
+        const rows = await sql<UserRecord[]>`
+      SELECT
+        id, phone, email, first_name, last_name, fayda_id, telegram_handle,
+        password_hash, role, is_active, created_at,
+        failed_login_attempts, lockout_stage, locked_until
+      FROM users
+      WHERE phone = ${phone}
       LIMIT 1
     `;
 
@@ -165,7 +203,7 @@ export class AuthRepository {
             const result = await sql.begin(async (tx) => {
                 // 1. Insert user
                 const [user] = await tx<UserRecord[]>`
-          INSERT INTO users (phone, email, password_hash, first_name, last_name, fayda_id, telegram_handle, role)
+          INSERT INTO users (phone, email, password_hash, first_name, last_name, fayda_id, fayda_id_hash, telegram_handle, role)
           VALUES (
             ${input.phone},
             ${input.email.toLowerCase()},
@@ -173,6 +211,7 @@ export class AuthRepository {
             ${input.first_name},
             ${input.last_name},
             ${input.fayda_id},
+            ${input.fayda_id_hash},
             ${input.telegram_handle ?? null},
             ${input.role ?? 'participant'}
           )
@@ -429,5 +468,134 @@ export class AuthRepository {
           updated_at            = NOW()
       WHERE id = ${userId}
     `;
+    }
+
+    // ── PIN reset OTP codes ──────────────────────────────────────────────────
+
+    /**
+     * Replaces any outstanding PIN-reset code for the phone with a new one.
+     * Only the SHA-256 hash of the code is stored — never the plaintext.
+     */
+    async upsertPinResetCode(
+        phone: string,
+        codeHash: string,
+        expiresAt: Date,
+        purpose: string = 'pin_reset',
+    ): Promise<void> {
+        const sql = getPool();
+
+        await sql.begin(async (tx) => {
+            // Invalidate any existing unconsumed code for this phone
+            await tx`
+        UPDATE pin_reset_codes
+        SET consumed_at = NOW()
+        WHERE phone = ${phone} AND consumed_at IS NULL
+      `;
+
+            await tx`
+        INSERT INTO pin_reset_codes (phone, purpose, code_hash, expires_at)
+        VALUES (${phone}, ${purpose}, ${codeHash}, ${expiresAt})
+      `;
+        });
+    }
+
+    /**
+     * Returns the most recent unconsumed, unexpired PIN-reset code for a phone.
+     */
+    async findActivePinResetCode(phone: string): Promise<PinResetCodeRecord | null> {
+        const sql = getPool();
+
+        const rows = await sql<PinResetCodeRecord[]>`
+      SELECT id, phone, purpose, code_hash, expires_at, attempts, consumed_at, created_at
+      FROM pin_reset_codes
+      WHERE phone = ${phone}
+        AND consumed_at IS NULL
+        AND expires_at > NOW()
+      ORDER BY created_at DESC
+      LIMIT 1
+    `;
+
+        return rows[0] ?? null;
+    }
+
+    /**
+     * Increments the attempt counter for a PIN-reset code.
+     * Returns the new attempt count.
+     */
+    async incrementPinResetAttempts(codeId: string): Promise<number> {
+        const sql = getPool();
+
+        const [row] = await sql<{ attempts: number }[]>`
+      UPDATE pin_reset_codes
+      SET attempts = attempts + 1
+      WHERE id = ${codeId}
+      RETURNING attempts
+    `;
+
+        return row?.attempts ?? 0;
+    }
+
+    /**
+     * Marks a PIN-reset code as consumed so it cannot be reused.
+     */
+    async consumePinResetCode(codeId: string): Promise<void> {
+        const sql = getPool();
+
+        await sql`
+      UPDATE pin_reset_codes
+      SET consumed_at = NOW()
+      WHERE id = ${codeId}
+    `;
+    }
+
+    /**
+     * Replaces a user's password hash AND clears the whole login-lockout
+     * state. Used by the self-service PIN-reset flow once the OTP verifies.
+     * Runs without an RLS context because the request is pre-session (the
+     * same pattern as updatePasswordHash / resetLoginAttempts).
+     */
+    async resetPinAndUnlockByPhone(
+        phone: string,
+        passwordHash: string,
+    ): Promise<UserRecord | null> {
+        const sql = getPool();
+
+        const rows = await sql<UserRecord[]>`
+      UPDATE users
+      SET password_hash         = ${passwordHash},
+          failed_login_attempts = 0,
+          lockout_stage         = 0,
+          locked_until          = NULL,
+          updated_at            = NOW()
+      WHERE phone = ${phone}
+      RETURNING
+        id, phone, email, first_name, last_name, fayda_id, telegram_handle,
+        password_hash, role, is_active, created_at,
+        failed_login_attempts, lockout_stage, locked_until
+    `;
+
+        return rows[0] ?? null;
+    }
+
+    /**
+     * Checks whether any registered account already uses the given Fayda ID.
+     * The fayda_id column is stored encrypted (pgp_sym_encrypt), so we look
+     * up the deterministic SHA-256 hash instead — a hash every registration
+     * stores alongside the encrypted value.
+     */
+    async findUserByFaydaHash(faydaIdHash: string): Promise<UserRecord | null> {
+        const sql = getPool();
+
+        const rows = await sql<UserRecord[]>`
+      SELECT
+        id, phone, email, first_name, last_name, fayda_id, telegram_handle,
+        password_hash, role, is_active, created_at,
+        failed_login_attempts, lockout_stage, locked_until
+      FROM users
+      WHERE fayda_id_hash = ${faydaIdHash}
+      LIMIT 1
+    `;
+
+        return rows[0] ?? null;
     }
 }

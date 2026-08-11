@@ -39,14 +39,8 @@ export default function MyEqubs({ equbs, loading, error }: MyEqubsProps) {
           <div className="rounded-card border border-dashed border-slate-300 px-6 py-10 text-center">
             <p className="text-sm font-bold text-slate-700">No Equbs yet</p>
             <p className="mt-1 text-sm text-slate-500">
-              Join a community Equb to start saving together.
+              Use &quot;Join an Equb&quot; above to start saving together.
             </p>
-            <Link
-              href="/join-equb"
-              className="mt-4 inline-flex items-center justify-center px-4 py-2 rounded-lg bg-brand-600 text-white text-sm font-bold hover:bg-brand-700 transition-colors"
-            >
-              Find an Equb
-            </Link>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
