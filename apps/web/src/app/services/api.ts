@@ -560,6 +560,9 @@ export interface AdminStatsKpis {
   pending_withdrawals: number;
   total_payout_volume: number;
   operational_equbs: number;
+  transactions_30d: number;
+  transactions_prev_30d: number;
+  db_size_bytes: number;
 }
 
 export interface AdminTrendPoint {
@@ -601,6 +604,73 @@ export interface AdminStats {
   trend: AdminTrendPoint[];
   recent_transactions: AdminRecentTransaction[];
   top_equbs: AdminTopEqub[];
+}
+
+export interface AdminFinanceOverview {
+  total_wallet_balance: number;
+  wallet_count: number;
+  transaction_volume: number;
+  successful_payments: number;
+  pending_payments: number;
+  pending_volume: number;
+  failed_payments: number;
+  fees_collected: number;
+  admin_fees_collected: number;
+  payout_volume: number;
+  completed_payouts: number;
+  pending_withdrawals: number;
+  pending_withdrawal_volume: number;
+}
+
+export interface AdminFinanceTransaction {
+  id: string;
+  amount: string;
+  fee_deducted: string;
+  host_commission_deducted: string;
+  round_number: number;
+  status: string;
+  transaction_reference: string | null;
+  paid_at: string | null;
+  created_at: string;
+  user_first_name: string;
+  user_last_name: string;
+  user_phone: string;
+  equb_name: string;
+}
+
+export interface AdminFinancePayout {
+  id: string;
+  round_number: number;
+  total_pot_amount: string;
+  status: string;
+  created_at: string;
+  winner_first_name: string;
+  winner_last_name: string;
+  winner_phone: string;
+  equb_name: string;
+}
+
+export interface AdminFinanceTransactionListResponse {
+  items: AdminFinanceTransaction[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface AdminFinancePayoutListResponse {
+  items: AdminFinancePayout[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface AdminFinanceTransactionParams {
+  page?: number;
+  limit?: number;
+  status?: string;
+  search?: string;
+  start?: string;
+  end?: string;
 }
 
 export interface PendingMembership {
@@ -709,6 +779,37 @@ export const adminAPI = {
     request<unknown>(`/admin/users/${userId}/role`, {
       method: 'PATCH',
       body: JSON.stringify({ role }),
+    }),
+
+  /**
+   * GET /api/v1/admin/finance/overview
+   * Finance KPIs — wallet balance, transaction volume, fees, payout and
+   * withdrawal aggregates (admin only).
+   */
+  getFinanceOverview: () =>
+    request<AdminFinanceOverview>('/admin/finance/overview', { method: 'GET' }),
+
+  /**
+   * GET /api/v1/admin/finance/transactions
+   * Lists payments with pagination, search and status/date filters (admin only).
+   */
+  listFinanceTransactions: (params: AdminFinanceTransactionParams = {}) =>
+    request<AdminFinanceTransactionListResponse>('/admin/finance/transactions', {
+      method: 'GET',
+      params:
+        params && (params.page || params.limit || params.status || params.search || params.start || params.end)
+          ? params
+          : undefined,
+    }),
+
+  /**
+   * GET /api/v1/admin/finance/payouts
+   * Lists rotation payouts with pagination and status filter (admin only).
+   */
+  listFinancePayouts: (params: { page?: number; limit?: number; status?: string } = {}) =>
+    request<AdminFinancePayoutListResponse>('/admin/finance/payouts', {
+      method: 'GET',
+      params: params && (params.page || params.limit || params.status) ? params : undefined,
     }),
 };
 

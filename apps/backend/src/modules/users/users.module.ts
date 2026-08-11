@@ -5,10 +5,19 @@ import { UsersService } from './users.service';
 import { UsersRepository } from './users.repository';
 import { AdminStatsService } from './admin-stats.service';
 import { AdminStatsRepository } from './admin-stats.repository';
+import { AdminFinanceService } from './admin-finance.service';
+import { AdminFinanceRepository } from './admin-finance.repository';
 
 @Module({
     controllers: [UsersController, AdminController],
-    providers: [UsersService, UsersRepository, AdminStatsService, AdminStatsRepository],
+    providers: [
+        UsersService,
+        UsersRepository,
+        AdminStatsService,
+        AdminStatsRepository,
+        AdminFinanceService,
+        AdminFinanceRepository,
+    ],
     exports: [UsersService],
 })
 export class UsersModule {}

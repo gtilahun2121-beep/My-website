@@ -94,6 +94,13 @@
   --color-admin-text-secondary: #334155;
   --color-admin-muted: #64748b;
   --color-admin-disabled: #94a3b8;
+
+  /* ── Admin drawer (deep navy) — per QalNet Admin Console DESIGN_SPEC.md §5 */
+  --color-admin-nav-bg: #0d1626;
+  --color-admin-nav-border: #1b2a41;
+  --color-admin-nav-elevated: #14213a;
+  --color-admin-nav-text: #e6ecf5;
+  --color-admin-nav-muted: #93a4bd;
 }
 
 body {

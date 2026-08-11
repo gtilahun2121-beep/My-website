@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Sidebar, { type ShellVariant } from './Sidebar';
 import TopHeader from './TopHeader';
 
@@ -12,9 +12,26 @@ interface AppShellProps {
 }
 
 export default function AppShell({ title, subtitle, variant = 'admin', children }: AppShellProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
   const isAdmin = variant === 'admin';
+
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+
+  const closeSidebar = useCallback(() => {
+    setSidebarOpen(false);
+    menuButtonRef.current?.focus();
+  }, []);
+
+  /* Escape closes the off-canvas drawer */
+  useEffect(() => {
+    if (!sidebarOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeSidebar();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [sidebarOpen, closeSidebar]);
 
   return (
     <div
@@ -22,12 +39,18 @@ export default function AppShell({ title, subtitle, variant = 'admin', children 
         isAdmin ? 'bg-admin-bg' : 'bg-surface'
       }`}
     >
-      <Sidebar variant={variant} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar
+        variant={variant}
+        open={sidebarOpen}
+        onClose={closeSidebar}
+        collapsed={isAdmin ? collapsed : false}
+        onToggleCollapsed={isAdmin ? () => setCollapsed((v) => !v) : undefined}
+      />
 
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-30 bg-black/60 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
+          onClick={closeSidebar}
           aria-hidden="true"
         />
       )}
@@ -38,6 +61,7 @@ export default function AppShell({ title, subtitle, variant = 'admin', children 
           subtitle={subtitle}
           variant={variant}
           onMenuClick={() => setSidebarOpen(true)}
+          menuButtonRef={menuButtonRef}
         />
         <main
           className={`flex-1 px-4 sm:px-6 py-6 space-y-6 ${

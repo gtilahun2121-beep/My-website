@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { adminAPI, APIError, type PendingMembership } from '@/app/services/api';
-import AppShell from '@/app/components/admin/AppShell';
 import { StatusBadge } from '@/app/components/admin/StatusBadge';
 import { EmptyState, ErrorState } from '@/app/components/admin/States';
 import type { EqubCreationRequest } from '@qalnet/shared-types';
@@ -91,7 +90,7 @@ export default function AdminApprovalsPage() {
   if (!authorized) return <AdminRouteLoading />;
 
   return (
-    <AppShell title="Approvals" subtitle="Review Equb creation and membership join requests">
+    <>
       {/* Message banner */}
       {message && (
         <div className="bg-brand-100 border border-brand-200 text-brand-700 rounded-lg px-4 py-3 text-sm font-semibold">
@@ -163,7 +162,7 @@ export default function AdminApprovalsPage() {
           }
         />
       )}
-    </AppShell>
+    </>
   );
 }
 

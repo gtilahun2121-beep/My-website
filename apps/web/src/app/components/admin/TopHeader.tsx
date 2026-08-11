@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ShellVariant } from './Sidebar';
 import ProfileMenu from '../layout/ProfileMenu';
 import NotificationsDrawer from '../notifications/NotificationsDrawer';
@@ -13,6 +13,7 @@ interface TopHeaderProps {
   subtitle?: string;
   onMenuClick: () => void;
   variant?: ShellVariant;
+  menuButtonRef?: React.Ref<HTMLButtonElement>;
 }
 
 const stroke = {
@@ -25,13 +26,37 @@ const stroke = {
 
 const LANG_KEY = 'qalnet_lang';
 
-export default function TopHeader({ title, subtitle, onMenuClick, variant = 'admin' }: TopHeaderProps) {
+export default function TopHeader({ title, subtitle, onMenuClick, variant = 'admin', menuButtonRef }: TopHeaderProps) {
   const [search, setSearch] = useState('');
   const [lang, setLang] = useState<Language>('en');
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
 
   const { isAuthenticated } = useAuth();
   const { unreadCount, refresh } = useNotifications(isAuthenticated);
+
+  /* Ctrl/Cmd + K focuses global search */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        searchRef.current?.focus();
+        searchRef.current?.select();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
+
+  /* Browser fullscreen toggle */
+  const toggleFullscreen = () => {
+    if (typeof document === 'undefined') return;
+    if (document.fullscreenElement) {
+      void document.exitFullscreen();
+    } else {
+      void document.documentElement.requestFullscreen();
+    }
+  };
 
   useEffect(() => {
     const stored = typeof window !== 'undefined' ? localStorage.getItem(LANG_KEY) : null;
@@ -71,10 +96,11 @@ export default function TopHeader({ title, subtitle, onMenuClick, variant = 'adm
       <div className="flex items-center gap-4 px-4 sm:px-6 h-16">
         {/* Mobile menu toggle */}
         <button
+          ref={menuButtonRef}
           type="button"
           onClick={onMenuClick}
           className={`lg:hidden p-2 rounded-lg ${iconBtnCls}`}
-          aria-label="Open sidebar"
+          aria-label={isAdmin ? 'Open admin navigation' : 'Open navigation'}
         >
           <svg viewBox="0 0 24 24" className="w-6 h-6" {...stroke}>
             <path d="M4 6h16M4 12h16M4 18h16" />
@@ -100,12 +126,17 @@ export default function TopHeader({ title, subtitle, onMenuClick, variant = 'adm
               <path d="m20 20-3.2-3.2" />
             </svg>
             <input
+              ref={searchRef}
               type="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search customers, transactions…"
-              className={`w-full py-2 pl-9 pr-3 rounded-lg border text-sm focus:outline-none ${searchCls}`}
+              placeholder="Search members, transactions, wallets…"
+              aria-label="Search members, transactions and wallets"
+              className={`w-full py-2 pl-9 pr-14 rounded-lg border text-sm focus:outline-none ${searchCls}`}
             />
+            <kbd className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded border border-admin-border bg-admin-card text-[10px] font-bold text-admin-disabled">
+              Ctrl K
+            </kbd>
           </div>
         )}
 
@@ -126,6 +157,18 @@ export default function TopHeader({ title, subtitle, onMenuClick, variant = 'adm
               ))}
             </select>
           )}
+
+          {/* Fullscreen */}
+          <button
+            type="button"
+            onClick={toggleFullscreen}
+            className={`p-2 rounded-lg ${iconBtnCls}`}
+            aria-label="Toggle fullscreen"
+          >
+            <svg viewBox="0 0 24 24" className="w-5 h-5" {...stroke}>
+              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+            </svg>
+          </button>
 
           {/* Notifications */}
           <button

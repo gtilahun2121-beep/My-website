@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { adminAPI, APIError, AdminCustomer, AdminCustomerListResponse, ListUsersParams } from '@/app/services/api';
-import AppShell from '@/app/components/admin/AppShell';
 import KpiCard from '@/app/components/admin/KpiCard';
 import { StatusBadge, roleBadge, activeBadge, BadgeTone } from '@/app/components/admin/StatusBadge';
 import { SkeletonTable, EmptyState, ErrorState } from '@/app/components/admin/States';
@@ -399,7 +398,7 @@ export default function RegisteredCustomersPage() {
   if (!authorized) return <AdminRouteLoading />;
 
   return (
-    <AppShell title="Registered Customers" subtitle="Manage all members on the QalNet platform">
+    <>
       {/* ── KPI cards ─────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <KpiCard
@@ -652,6 +651,6 @@ export default function RegisteredCustomersPage() {
         onClose={() => setRoleTarget(null)}
         onSuccess={handleRoleSuccess}
       />
-    </AppShell>
+    </>
   );
 }
