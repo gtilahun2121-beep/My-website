@@ -40,6 +40,20 @@ export type MembershipStatus = 'pending' | 'approved' | 'rejected';
 export class EqubsRepository {
     // ── Read ──────────────────────────────────────────────────────────────────
 
+    async getUserName(userId: string): Promise<{ first_name: string; last_name: string } | null> {
+        const sql = getPool();
+        const rows = await sql<{ first_name: string; last_name: string }[]>`
+            SELECT first_name, last_name FROM users WHERE id = ${userId}
+        `;
+        return rows[0] ?? null;
+    }
+
+    async getEqubName(equbId: string): Promise<string | null> {
+        const sql = getPool();
+        const rows = await sql`SELECT name FROM equb_groups WHERE id = ${equbId}`;
+        return rows[0]?.name ?? null;
+    }
+
     async findAll(): Promise<any[]> {
         const sql = getPool();
         return sql`
@@ -73,13 +87,14 @@ export class EqubsRepository {
                 (SELECT COUNT(*) FROM memberships m WHERE m.equb_id = e.id AND m.status = 'approved')::int AS member_count,
                 GREATEST(e.total_rounds - (SELECT COUNT(*) FROM memberships m WHERE m.equb_id = e.id AND m.status = 'approved')::int, 0) AS open_slots,
                 CASE
-                    WHEN ${userId ?? null} IS NOT NULL THEN (
+                    WHEN ${userId ?? null}::uuid IS NOT NULL THEN (
                         SELECT mm.status FROM memberships mm
-                        WHERE mm.equb_id = e.id AND mm.user_id = ${userId ?? null}
+                        WHERE mm.equb_id = e.id AND mm.user_id = ${userId ?? null}::uuid
                         LIMIT 1
                     )
                     ELSE NULL
-                END AS membership_status
+                END AS membership_status,
+                (e.host_id = ${userId ?? null}::uuid) AS is_host
             FROM equb_groups e
             JOIN users u ON u.id = e.host_id
             WHERE e.id = ${id}
@@ -147,7 +162,7 @@ export class EqubsRepository {
     async join(equbId: string, userId: string, ctx: RlsContext, isAdmin: boolean): Promise<any> {
         return inTransaction(ctx, async (tx) => {
             const [equb] = await tx`
-                SELECT id, status, total_rounds, current_round
+                SELECT id, name, status, total_rounds, current_round
                 FROM equb_groups
                 WHERE id = ${equbId}
                 FOR UPDATE
@@ -179,7 +194,7 @@ export class EqubsRepository {
                     WHERE id = ${existing[0].id}
                     RETURNING id, user_id, equb_id, status, joined_at
                 `;
-                return { success: true, membership: updated, pending: true, message: 'Join request submitted — awaiting admin approval' };
+                return { success: true, membership: updated, pending: true, equbName: equb.name, message: 'Join request submitted — awaiting admin approval' };
             }
 
             // Capacity is measured against APPROVED members only; a pending
@@ -199,9 +214,9 @@ export class EqubsRepository {
             `;
 
             if (isAdmin) {
-                return { success: true, membership, pending: false, message: 'Joined Equb successfully' };
+                return { success: true, membership, pending: false, equbName: equb.name, message: 'Joined Equb successfully' };
             }
-            return { success: true, membership, pending: true, message: 'Join request submitted — awaiting admin approval' };
+            return { success: true, membership, pending: true, equbName: equb.name, message: 'Join request submitted — awaiting admin approval' };
         });
     }
 
@@ -298,7 +313,7 @@ export class EqubsRepository {
                 WHERE id = ${requestId}
             `;
 
-            return { success: true, equb, requestId };
+            return { success: true, equb, requestId, requesterId: request.requester_id };
         });
     }
 
@@ -311,7 +326,7 @@ export class EqubsRepository {
                     reviewed_by = ${adminId},
                     reviewed_at = CURRENT_TIMESTAMP
                 WHERE id = ${requestId} AND status = 'pending'
-                RETURNING id, status, admin_notes
+                RETURNING id, requester_id, status, admin_notes, name
             `;
             if (rows.length === 0) {
                 const [existing] = await tx`SELECT id FROM equb_creation_requests WHERE id = ${requestId}`;
@@ -350,10 +365,12 @@ export class EqubsRepository {
     async approveMembership(membershipId: string, adminId: string): Promise<any> {
         return withAdminContext(adminId, async (tx) => {
             const rows = await tx`
-                UPDATE memberships
+                UPDATE memberships m
                 SET status = 'approved'
-                WHERE id = ${membershipId} AND status = 'pending'
-                RETURNING id, user_id, equb_id, status
+                WHERE m.id = ${membershipId} AND m.status = 'pending'
+                RETURNING
+                    m.id, m.user_id, m.equb_id, m.status,
+                    (SELECT e.name FROM equb_groups e WHERE e.id = m.equb_id) AS equb_name
             `;
             if (rows.length === 0) {
                 const [existing] = await tx`SELECT id FROM memberships WHERE id = ${membershipId}`;
@@ -369,10 +386,12 @@ export class EqubsRepository {
     async rejectMembership(membershipId: string, adminId: string): Promise<any> {
         return withAdminContext(adminId, async (tx) => {
             const rows = await tx`
-                UPDATE memberships
+                UPDATE memberships m
                 SET status = 'rejected'
-                WHERE id = ${membershipId} AND status = 'pending'
-                RETURNING id, user_id, equb_id, status
+                WHERE m.id = ${membershipId} AND m.status = 'pending'
+                RETURNING
+                    m.id, m.user_id, m.equb_id, m.status,
+                    (SELECT e.name FROM equb_groups e WHERE e.id = m.equb_id) AS equb_name
             `;
             if (rows.length === 0) {
                 const [existing] = await tx`SELECT id FROM memberships WHERE id = ${membershipId}`;

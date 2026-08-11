@@ -17,6 +17,8 @@ import { useMemo, useState } from 'react';
 export interface AreaChartPoint {
   label: string;
   value: number;
+  /** Optional per-signal breakdown rendered in the hover tooltip. */
+  detail?: { label: string; value: number }[];
 }
 
 interface AreaChartProps {
@@ -149,22 +151,35 @@ export function AreaChart({
               <g pointerEvents="none">
                 <line x1={p.x} y1={PAD.top} x2={p.x} y2={H - PAD.bottom} className="stroke-admin-border-strong" strokeDasharray="3 3" />
                 <g>
-                  <rect
-                    x={Math.max(0, Math.min(W - 120, p.x - 60))}
-                    y={Math.max(2, p.y - 44)}
-                    rx={6}
-                    width={120}
-                    height={32}
-                    className="fill-admin-elevated"
-                  />
-                  <text
-                    x={Math.max(60, Math.min(W - 60, p.x))}
-                    y={Math.max(24, p.y - 24)}
-                    textAnchor="middle"
-                    className="fill-admin-text text-[10px] font-bold"
-                  >
-                    {data[i].label}: {valueFormatter ? valueFormatter(data[i].value) : data[i].value}
-                  </text>
+                  {(() => {
+                    const lines = [
+                      { label: data[i].label, value: `${valueFormatter ? valueFormatter(data[i].value) : data[i].value}` },
+                      ...(data[i].detail ?? []).map((d) => ({
+                        label: d.label,
+                        value: `${valueFormatter ? valueFormatter(d.value) : d.value}`,
+                      })),
+                    ];
+                    const tooltipH = 24 + lines.length * 15 + 6;
+                    const tooltipW = 148;
+                    const rectX = Math.max(0, Math.min(W - tooltipW, p.x - tooltipW / 2));
+                    const rectY = Math.max(2, p.y - tooltipH - 8);
+                    return (
+                      <g>
+                        <rect x={rectX} y={rectY} rx={6} width={tooltipW} height={tooltipH} className="fill-admin-elevated" />
+                        {lines.map((line, li) => (
+                          <text
+                            key={li}
+                            x={rectX + tooltipW / 2}
+                            y={rectY + 17 + li * 15}
+                            textAnchor="middle"
+                            className={li === 0 ? 'fill-admin-text text-[10px] font-bold' : 'fill-admin-muted text-[9px] font-semibold'}
+                          >
+                            {line.label}: {line.value}
+                          </text>
+                        ))}
+                      </g>
+                    );
+                  })()}
                 </g>
               </g>
             )}

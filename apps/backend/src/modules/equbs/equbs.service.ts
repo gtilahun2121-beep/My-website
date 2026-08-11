@@ -1,14 +1,20 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import {
     EqubsRepository,
     CreateEqubInput,
     CreateRequestInput,
 } from './equbs.repository';
 import { RlsContext } from '../../config/database.config';
+import { NotificationsRepository } from '../notifications/notifications.repository';
 
 @Injectable()
 export class EqubsService {
-    constructor(private readonly repo: EqubsRepository) {}
+    private readonly logger = new Logger(EqubsService.name);
+
+    constructor(
+        private readonly repo: EqubsRepository,
+        private readonly notifications: NotificationsRepository,
+    ) {}
 
     async findAll() {
         return this.repo.findAll();
@@ -79,6 +85,11 @@ export class EqubsService {
             if (result.error === 'EQUB_NOT_FOUND') throw new NotFoundException(result.message);
             throw new BadRequestException(result.message);
         }
+
+        // A pending join request needs admin review — notify every admin.
+        if (result?.pending) {
+            await this.dispatchJoinRequest(equbId, userId, result.equbName);
+        }
         return result;
     }
 
@@ -119,7 +130,16 @@ export class EqubsService {
 
     async requestCreate(userId: string, data: any) {
         const input = this.validateRequestPayload(data);
-        return this.repo.createCreationRequest(input, userId);
+        const request = await this.repo.createCreationRequest(input, userId);
+
+        // A member asked the admin to create an Equb — notify every admin.
+        const user = await this.repo.getUserName(userId);
+        const name = user ? `${user.first_name} ${user.last_name}`.trim() : 'A member';
+        await this.notifyAdmins(
+            'New equb creation request',
+            `${name} requested to create an equb named "${input.name}".`,
+        );
+        return request;
     }
 
     async getMyRequests(userId: string) {
@@ -138,6 +158,13 @@ export class EqubsService {
             if (result.error === 'REQUEST_NOT_FOUND') throw new NotFoundException(result.message);
             throw new BadRequestException(result.message);
         }
+        if (result.requesterId) {
+            await this.notifyUser(
+                result.requesterId,
+                'Equb approved',
+                `Your request to create "${result.equb.name}" has been approved and the Equb is ready.`,
+            );
+        }
         return result;
     }
 
@@ -146,6 +173,15 @@ export class EqubsService {
         if (!result.success) {
             if (result.error === 'REQUEST_NOT_FOUND') throw new NotFoundException(result.message);
             throw new BadRequestException(result.message);
+        }
+        const requesterId = result.request?.requester_id;
+        if (requesterId) {
+            const detail = notes ? ` Reason: ${notes}` : '';
+            await this.notifyUser(
+                requesterId,
+                'Request rejected',
+                `Your request to create "${result.request?.name ?? 'an equb'}" was rejected.${detail}`,
+            );
         }
         return result;
     }
@@ -162,6 +198,14 @@ export class EqubsService {
             if (result.error === 'MEMBERSHIP_NOT_FOUND') throw new NotFoundException(result.message);
             throw new BadRequestException(result.message);
         }
+        const m = result.membership;
+        if (m?.user_id) {
+            await this.notifyUser(
+                m.user_id,
+                'Join request approved',
+                `You have been approved to join "${m.equb_name ?? 'the Equb'}".`,
+            );
+        }
         return result;
     }
 
@@ -171,6 +215,51 @@ export class EqubsService {
             if (result.error === 'MEMBERSHIP_NOT_FOUND') throw new NotFoundException(result.message);
             throw new BadRequestException(result.message);
         }
+        const m = result.membership;
+        if (m?.user_id) {
+            await this.notifyUser(
+                m.user_id,
+                'Join request rejected',
+                `Your request to join "${m.equb_name ?? 'the Equb'}" was rejected.`,
+            );
+        }
         return result;
+    }
+
+    // ── Notification helpers ───────────────────────────────────────────────────
+
+    /**
+     * Best-effort notification dispatch — a failure to notify must never
+     * break the underlying operation, so every dispatch is swallowed.
+     */
+    private async notifyAdmins(title: string, body: string): Promise<void> {
+        try {
+            await this.notifications.dispatchToAdmins('operational', title, body);
+        } catch (err) {
+            this.logger.warn(`Failed to notify admins: ${err instanceof Error ? err.message : 'unknown'}`);
+        }
+    }
+
+    private async notifyUser(userId: string, title: string, body: string): Promise<void> {
+        try {
+            await this.notifications.dispatch({ user_id: userId, category: 'operational', title, body });
+        } catch (err) {
+            this.logger.warn(`Failed to notify user ${userId}: ${err instanceof Error ? err.message : 'unknown'}`);
+        }
+    }
+
+    private async dispatchJoinRequest(equbId: string, userId: string, equbName?: string | null): Promise<void> {
+        try {
+            const user = await this.repo.getUserName(userId);
+            const name = user ? `${user.first_name} ${user.last_name}`.trim() : 'A member';
+            const name2 = equbName ?? (await this.repo.getEqubName(equbId)) ?? 'an Equb';
+            await this.notifications.dispatchToAdmins(
+                'operational',
+                'New join request',
+                `${name} wants to join "${name2}".`,
+            );
+        } catch (err) {
+            this.logger.warn(`Failed to notify join request: ${err instanceof Error ? err.message : 'unknown'}`);
+        }
     }
 }

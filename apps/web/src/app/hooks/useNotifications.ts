@@ -4,21 +4,16 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import api from '@/app/services/api';
 import type { Notification } from '@qalnet/shared-types';
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  process.env.NEXT_PUBLIC_API_URL ||
-  'http://localhost:3000';
-
-function getApiBase(): string {
-  const base = API_BASE_URL.replace(/\/$/, '');
-  return base.endsWith('/api/v1') ? base : `${base}/api/v1`;
-}
+// The notifications/stream SSE endpoint is not implemented on the backend, so
+// we poll on a modest interval instead. Polling is intentionally cheap: it is
+// paused when the hook is inactive and skipped while a request is in flight.
+const POLL_INTERVAL_MS = 20_000;
 
 export function useNotifications(active = true) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
-  const eventSourceRef = useRef<EventSource | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const refresh = useCallback(async () => {
     try {
@@ -44,6 +39,7 @@ export function useNotifications(active = true) {
 
   useEffect(() => {
     if (!active) return;
+
     api.notificationsAPI
       .getNotifications()
       .then((data) => {
@@ -55,31 +51,17 @@ export function useNotifications(active = true) {
       })
       .finally(() => setLoading(false));
 
-    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
-    if (!token || typeof EventSource === 'undefined') return;
-
-    const source = new EventSource(`${getApiBase()}/notifications/stream?token=${token}`);
-    eventSourceRef.current = source;
-
-    source.onmessage = (event) => {
-      try {
-        const next = JSON.parse(event.data) as Notification;
-        setNotifications((prev) => [
-          next,
-          ...prev.filter((n) => n.id !== next.id),
-        ]);
-        setUnreadCount((c) => c + 1);
-      } catch {
-        // ignore malformed events
-      }
-    };
-    source.onerror = () => source.close();
+    timerRef.current = setInterval(() => {
+      void refresh();
+    }, POLL_INTERVAL_MS);
 
     return () => {
-      source.close();
-      eventSourceRef.current = null;
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
     };
-  }, [active]);
+  }, [active, refresh]);
 
   return { notifications, unreadCount, loading, refresh, markAllRead };
 }

@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { Language, defaultLanguage } from '@/i18n/config';
-import { translations } from '@/i18n/translations';
 import { useAuth } from '@/app/context/AuthContext';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
@@ -25,14 +24,18 @@ export default function JoinEqubPage() {
 
   const handleJoin = async (equbId: string) => {
     try {
-      await api.equbAPI.join(equbId);
-      alert('Successfully joined the Equb!');
+      const result = await api.equbAPI.join(equbId);
+      if (result?.pending) {
+        alert(lang === 'en' ? 'Join request submitted — awaiting admin approval.' : 'የመቀላቀል ጥያቄ ቀርቧል — የአስተዳዳሪ ማጽደቅ በመጠበቅ ላይ።');
+      } else {
+        alert(lang === 'en' ? 'Successfully joined the Equb!' : 'በተሳካ ሁኔታ ተቀላቅለዋል!');
+      }
       // Refresh list
       const data = await api.equbAPI.getAll();
       setEqubs(data);
     } catch (err) {
       console.error(err);
-      alert('Failed to join Equb.');
+      alert(err instanceof Error ? err.message : 'Failed to join Equb.');
     }
   };
 

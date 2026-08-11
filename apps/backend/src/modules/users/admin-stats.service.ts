@@ -5,7 +5,10 @@ import { AdminStatsRepository } from './admin-stats.repository';
 export class AdminStatsService {
     constructor(private readonly repo: AdminStatsRepository) {}
 
-    async getDashboardStats(adminId: string) {
-        return this.repo.getDashboardStats(adminId);
+    async getDashboardStats(
+        adminId: string,
+        window: { days?: number; start?: string; end?: string } = {},
+    ) {
+        return this.repo.getDashboardStats(adminId, window);
     }
 }

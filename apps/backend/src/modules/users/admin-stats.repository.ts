@@ -10,8 +10,20 @@ import { withAdminContext } from '../../config/database.config';
  */
 @Injectable()
 export class AdminStatsRepository {
-    async getDashboardStats(adminId: string) {
+    async getDashboardStats(
+        adminId: string,
+        window: { days?: number; start?: string; end?: string } = {},
+    ) {
         return withAdminContext(adminId, async (sql) => {
+            const lowerBound = window.start
+                ? sql`${window.start}::date`
+                : sql`CURRENT_DATE - make_interval(days => ${window.days ?? 30})`;
+            const upperBound = window.end
+                ? sql`${window.end}::date`
+                : sql`CURRENT_DATE`;
+            const upperExclusive = window.end
+                ? sql`${window.end}::date + 1`
+                : sql`CURRENT_DATE + 1`;
             const [kpis] = await sql`
                 SELECT
                     (SELECT COUNT(*)::int                FROM users)                        AS total_users,
@@ -31,11 +43,47 @@ export class AdminStatsRepository {
             `;
 
             const trend = await sql`
-                SELECT to_char(d, 'YYYY-MM-DD') AS date, COUNT(u.id)::int AS count
-                FROM generate_series(CURRENT_DATE - INTERVAL '29 days', CURRENT_DATE, '1 day') AS d
-                LEFT JOIN users u ON u.created_at::date = d
-                GROUP BY d
-                ORDER BY d
+                SELECT
+                    to_char(day, 'YYYY-MM-DD')                          AS date,
+                    COALESCE(SUM(cnt), 0)::int                          AS count,
+                    COALESCE(SUM(cnt) FILTER (WHERE kind = 'registrations'), 0)::int AS registrations,
+                    COALESCE(SUM(cnt) FILTER (WHERE kind = 'payments'), 0)::int      AS payments,
+                    COALESCE(SUM(cnt) FILTER (WHERE kind = 'equbs'), 0)::int         AS equbs,
+                    COALESCE(SUM(cnt) FILTER (WHERE kind = 'joins'), 0)::int         AS joins
+                FROM generate_series(
+                    ${lowerBound},
+                    ${upperBound},
+                    '1 day'
+                ) AS day
+                LEFT JOIN (
+                    SELECT u.created_at::date AS d, 'registrations' AS kind, COUNT(*)::int AS cnt
+                    FROM users u
+                    WHERE u.created_at >= ${lowerBound}
+                      AND u.created_at < ${upperExclusive}
+                    GROUP BY 1
+                    UNION ALL
+                    SELECT p.created_at::date AS d, 'payments' AS kind, COUNT(*)::int AS cnt
+                    FROM payments p
+                    WHERE p.payment_status IN ('paid', 'auto_debited')
+                      AND p.created_at >= ${lowerBound}
+                      AND p.created_at < ${upperExclusive}
+                    GROUP BY 1
+                    UNION ALL
+                    SELECT e.created_at::date AS d, 'equbs' AS kind, COUNT(*)::int AS cnt
+                    FROM equb_groups e
+                    WHERE e.created_at >= ${lowerBound}
+                      AND e.created_at < ${upperExclusive}
+                    GROUP BY 1
+                    UNION ALL
+                    SELECT m.joined_at::date AS d, 'joins' AS kind, COUNT(*)::int AS cnt
+                    FROM memberships m
+                    WHERE m.status IN ('approved', 'pending')
+                      AND m.joined_at >= ${lowerBound}
+                      AND m.joined_at < ${upperExclusive}
+                    GROUP BY 1
+                ) s ON s.d = day
+                GROUP BY day
+                ORDER BY day
             `;
 
             const recentTransactions = await sql`

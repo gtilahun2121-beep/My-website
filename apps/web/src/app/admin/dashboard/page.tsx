@@ -49,6 +49,24 @@ function greeting() {
   return 'Good evening';
 }
 
+function todayIso() {
+  const d = new Date();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+
+function formatRangeDate(iso: string) {
+  try {
+    return new Date(iso + 'T00:00:00').toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+    });
+  } catch {
+    return iso;
+  }
+}
+
 const STATUS_TONE: Record<string, BadgeTone> = {
   paid: 'success',
   auto_debited: 'success',
@@ -71,13 +89,21 @@ export default function AdminDashboardPage() {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [range, setRange] = useState<'7d' | '30d' | '90d'>('30d');
+  const [range, setRange] = useState<'7d' | '30d' | '90d' | 'custom'>('30d');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   const load = useCallback(async (showSpinner = false) => {
     if (showSpinner) setLoading(true);
     setError(null);
     try {
-      const res = await adminAPI.getStats();
+      const params =
+        range === 'custom' && startDate && endDate
+          ? { start: startDate, end: endDate }
+          : range === 'custom'
+            ? undefined
+            : { range };
+      const res = await adminAPI.getStats(params);
       setStats(res);
     } catch (err) {
       const message =
@@ -90,7 +116,7 @@ export default function AdminDashboardPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [range, startDate, endDate]);
 
   useEffect(() => {
     const t = setTimeout(() => void load(), 0);
@@ -102,14 +128,15 @@ export default function AdminDashboardPage() {
       (stats?.trend ?? []).map((p) => ({
         label: new Date(p.date + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }),
         value: p.count,
+        detail: [
+          { label: 'Registrations', value: p.registrations ?? 0 },
+          { label: 'Payments', value: p.payments ?? 0 },
+          { label: 'Equbs', value: p.equbs ?? 0 },
+          { label: 'Joins', value: p.joins ?? 0 },
+        ],
       })),
     [stats],
   );
-
-  const trendForRange = useMemo(() => {
-    if (range === '7d') return trend.slice(-7);
-    return trend;
-  }, [range, trend]);
 
   const paymentSegments = useMemo(() => {
     const k = stats?.kpis;
@@ -153,11 +180,21 @@ export default function AdminDashboardPage() {
   const cardCls = 'bg-admin-card rounded-card border border-admin-border';
   const cardTitleCls = 'text-base font-black text-admin-text';
   const cardSubtitleCls = 'text-xs text-admin-muted';
-  const ranges: { key: '7d' | '30d' | '90d'; label: string }[] = [
+  const ranges: { key: '7d' | '30d' | '90d' | 'custom'; label: string }[] = [
     { key: '7d', label: '7D' },
     { key: '30d', label: '30D' },
     { key: '90d', label: '90D' },
+    { key: 'custom', label: 'Custom' },
   ];
+
+  const rangeLabel = useMemo(() => {
+    if (range === 'custom') {
+      if (startDate && endDate)
+        return `${formatRangeDate(startDate)} – ${formatRangeDate(endDate)}`;
+      return 'pick start & end dates';
+    }
+    return `last ${range === '7d' ? '7 days' : range === '90d' ? '90 days' : '30 days'}`;
+  }, [range, startDate, endDate]);
 
   const pendingActions = useMemo(() => {
     const items: { icon: string; iconClass: string; title: string; description: string; href?: string; button: string }[] = [];
@@ -277,30 +314,56 @@ export default function AdminDashboardPage() {
             <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
               <div>
                 <h3 className={cardTitleCls}>Platform Activity</h3>
-                <p className={cardSubtitleCls}>New member registrations · last 30 days</p>
+                <p className={cardSubtitleCls}>
+                  Registrations, payments, equbs &amp; joins · {rangeLabel}
+                </p>
               </div>
-              <div className="inline-flex items-center rounded-lg border border-admin-border bg-admin-elevated p-0.5">
-                {ranges.map((r) => (
-                  <button
-                    key={r.key}
-                    type="button"
-                    onClick={() => setRange(r.key)}
-                    className={`px-3 py-1 rounded-md text-xs font-bold transition-colors ${
-                      range === r.key
-                        ? 'bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow'
-                        : 'text-admin-muted hover:text-admin-text'
-                    }`}
-                  >
-                    {r.label}
-                  </button>
-                ))}
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="inline-flex items-center rounded-lg border border-admin-border bg-admin-elevated p-0.5">
+                  {ranges.map((r) => (
+                    <button
+                      key={r.key}
+                      type="button"
+                      onClick={() => setRange(r.key)}
+                      className={`px-3 py-1 rounded-md text-xs font-bold transition-colors ${
+                        range === r.key
+                          ? 'bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow'
+                          : 'text-admin-muted hover:text-admin-text'
+                      }`}
+                    >
+                      {r.label}
+                    </button>
+                  ))}
+                </div>
+                {range === 'custom' && (
+                  <div className="inline-flex items-center gap-1.5 rounded-lg border border-admin-border bg-admin-elevated p-1">
+                    <input
+                      type="date"
+                      aria-label="Start date"
+                      value={startDate}
+                      max={endDate || todayIso()}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      className="rounded-md border border-admin-border bg-admin-card px-2 py-1 text-xs font-medium text-admin-text focus:outline-none focus:border-brand-500"
+                    />
+                    <span className="text-xs text-admin-muted">→</span>
+                    <input
+                      type="date"
+                      aria-label="End date"
+                      value={endDate}
+                      min={startDate || undefined}
+                      max={todayIso()}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      className="rounded-md border border-admin-border bg-admin-card px-2 py-1 text-xs font-medium text-admin-text focus:outline-none focus:border-brand-500"
+                    />
+                  </div>
+                )}
               </div>
             </div>
             {loading && !stats ? (
               <div className="h-52 animate-pulse rounded-lg bg-admin-elevated" />
             ) : (
               <AreaChart
-                data={trendForRange}
+                data={trend}
                 color="#0d9488"
                 valueFormatter={(v) => String(v)}
               />
@@ -650,11 +713,6 @@ function QuickActionsCard() {
       label: 'View Reports',
       icon: 'M5 20V10m7 10V4m7 16v-7',
       disabled: true,
-    },
-    {
-      label: 'System Settings',
-      href: '/settings',
-      icon: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm8.4-3a8.9 8.9 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a8.9 8.9 0 0 0-2-1.2L15.5 3h-4l-.4 2.6a8.9 8.9 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6a8.9 8.9 0 0 0 0 2.4l-2 1.6 2 3.4 2.4-1a8.9 8.9 0 0 0 2 1.2l.4 2.6h4l.4-2.6a8.9 8.9 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.07-.4.1-.8.1-1.2Z',
     },
   ];
 

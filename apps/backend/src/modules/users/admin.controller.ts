@@ -31,11 +31,22 @@ export class AdminController {
     @UseGuards(RolesGuard)
     @Roles('admin')
     @ApiBearerAuth()
-    @ApiOperation({ summary: 'Dashboard aggregates — KPIs, 30-day trend, recent transactions, top equbs' })
+    @ApiOperation({ summary: 'Dashboard aggregates — KPIs, activity trend (7d/30d/90d or custom start/end dates), recent transactions, top equbs' })
     @ApiResponse({ status: 200, description: 'Dashboard statistics.' })
     @ApiResponse({ status: 403, description: 'Forbidden — requires role admin.' })
-    async getDashboardStats(@CurrentUser() user: JwtPayload) {
-        return this.adminStatsService.getDashboardStats(user.sub);
+    async getDashboardStats(
+        @CurrentUser() user: JwtPayload,
+        @Query('range') range?: string,
+        @Query('start') start?: string,
+        @Query('end') end?: string,
+    ) {
+        const isoDate = /^\d{4}-\d{2}-\d{2}$/;
+        const days = range === '7d' ? 7 : range === '90d' ? 90 : range === '30d' ? 30 : undefined;
+        return this.adminStatsService.getDashboardStats(user.sub, {
+            days,
+            start: start && isoDate.test(start) ? start : undefined,
+            end: end && isoDate.test(end) ? end : undefined,
+        });
     }
 
     @Get('users')
