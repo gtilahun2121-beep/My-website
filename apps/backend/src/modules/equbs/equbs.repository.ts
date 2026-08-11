@@ -87,13 +87,14 @@ export class EqubsRepository {
                 (SELECT COUNT(*) FROM memberships m WHERE m.equb_id = e.id AND m.status = 'approved')::int AS member_count,
                 GREATEST(e.total_rounds - (SELECT COUNT(*) FROM memberships m WHERE m.equb_id = e.id AND m.status = 'approved')::int, 0) AS open_slots,
                 CASE
-                    WHEN ${userId ?? null} IS NOT NULL THEN (
+                    WHEN ${userId ?? null}::uuid IS NOT NULL THEN (
                         SELECT mm.status FROM memberships mm
-                        WHERE mm.equb_id = e.id AND mm.user_id = ${userId ?? null}
+                        WHERE mm.equb_id = e.id AND mm.user_id = ${userId ?? null}::uuid
                         LIMIT 1
                     )
                     ELSE NULL
-                END AS membership_status
+                END AS membership_status,
+                (e.host_id = ${userId ?? null}::uuid) AS is_host
             FROM equb_groups e
             JOIN users u ON u.id = e.host_id
             WHERE e.id = ${id}

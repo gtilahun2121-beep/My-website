@@ -565,6 +565,10 @@ export interface AdminStatsKpis {
 export interface AdminTrendPoint {
   date: string;
   count: number;
+  registrations?: number;
+  payments?: number;
+  equbs?: number;
+  joins?: number;
 }
 
 export interface AdminRecentTransaction {
@@ -617,13 +621,15 @@ export interface PendingMembership {
 export const adminAPI = {
   /**
    * GET /api/v1/admin/stats
-   * Dashboard aggregates — KPIs, registration trend, recent transactions
-   * and top equbs (admin only). `range` selects the trend window.
+   * Dashboard aggregates — KPIs, activity trend, recent transactions
+   * and top equbs (admin only). `range` selects a preset trend window;
+   * `start`/`end` (YYYY-MM-DD) select a custom calendar range.
    */
-  getStats: (range?: '7d' | '30d' | '90d') =>
+  getStats: (params?: { range?: '7d' | '30d' | '90d'; start?: string; end?: string }) =>
     request<AdminStats>('/admin/stats', {
       method: 'GET',
-      params: range ? { range } : undefined,
+      params:
+        params && (params.range || params.start || params.end) ? params : undefined,
     }),
 
   /**
