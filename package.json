@@ -15,6 +15,7 @@
         "test": "turbo test",
         "type-check": "turbo type-check",
         "clean": "turbo clean && rimraf node_modules",
+        "clean:install": "node scripts/clean-install.cjs",
         "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\""
     },
     "devDependencies": {
