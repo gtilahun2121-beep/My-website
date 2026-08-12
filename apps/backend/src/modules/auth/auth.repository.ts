@@ -435,9 +435,9 @@ export class AuthRepository {
     }
 
     /**
-     * Clears an already-expired lock so the user gets a fresh set of attempts.
-     * The lockout_stage is preserved so the next failure escalates to a longer
-     * lock (6h → 1d → 3d → permanent).
+     * Clears an expired lock so the user gets a fresh set of attempts.
+     * The whole lockout state is reset (stage back to 0) because every lock
+     * is identical: 3 consecutive wrong PINs → 10 minutes.
      */
     async clearExpiredLockout(userId: string): Promise<void> {
         const sql = getPool();
@@ -445,6 +445,7 @@ export class AuthRepository {
         await sql`
       UPDATE users
       SET failed_login_attempts = 0,
+          lockout_stage         = 0,
           locked_until          = NULL,
           updated_at            = NOW()
       WHERE id = ${userId}
