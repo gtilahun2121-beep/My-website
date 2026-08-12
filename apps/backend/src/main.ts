@@ -86,7 +86,7 @@ async function bootstrap() {
         .filter(Boolean);
 
     app.enableCors({
-        origin(origin, callback) {
+        origin(origin: string | undefined, callback: (err: Error | null, origin?: boolean | string | RegExp | (string | RegExp)[]) => void) {
             // Allow non-browser clients (curl, mobile, USSD) that send no Origin
             if (!origin || allowedOrigins.includes(origin)) {
                 callback(null, true);
