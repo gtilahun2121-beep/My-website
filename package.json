@@ -18,6 +18,7 @@
         "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\""
     },
     "devDependencies": {
+        "lightningcss-win32-x64-msvc": "^1.32.0",
         "prettier": "^3.3.3",
         "rimraf": "^5.0.10",
         "turbo": "^2.10.8",
