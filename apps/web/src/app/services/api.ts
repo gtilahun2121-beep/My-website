@@ -153,7 +153,12 @@ async function request<T = unknown>(
       );
     }
 
-    if (response.status === 401 && attempts === 0) {
+    // Only try the silent token-refresh retry on AUTHENTICATED requests
+    // (a Bearer token was attached). Public endpoints like /auth/login return
+    // 401 for bad credentials — the real message (e.g. "Invalid PIN" or
+    // "You are locked for 10 minutes") must reach the user unchanged instead
+    // of being replaced by the generic "Session expired" text.
+    if (response.status === 401 && attempts === 0 && token) {
       attempts += 1;
       const refreshed = await refreshAccessToken();
       if (refreshed) continue;

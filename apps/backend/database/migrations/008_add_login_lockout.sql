@@ -1,20 +1,20 @@
 -- 008_add_login_lockout.sql
 --
--- Escalating PIN lockout for failed login attempts.
+-- Fixed PIN lockout for failed login attempts.
 --
 --   failed_login_attempts  consecutive failed PIN attempts since the last
 --                          successful login or lock expiry (resets to 0 on
---                          a successful login or when a lock is applied).
+--                          a successful login, when a lock is applied, or
+--                          when a lock expires).
 --
---   lockout_stage          0 = no lock ever / cleared
---                          1 = 3-hour lock  (after 3rd wrong PIN)
---                          2 = 6-hour lock  (after 3 more wrong PINs)
---                          3 = 3-day lock   (after 3 more wrong PINs)
---                          4 = permanent     (blocked; admin must reset PIN)
+--   lockout_stage          0 = no lock / cleared
+--                          1 = 10-minute lock (after the 3rd consecutive
+--                          wrong PIN). Always resets to 0 when the lock
+--                          expires, so every lock is identical (10 minutes).
 --
 --   locked_until           NULL when not locked, otherwise the timestamp the
---                          current lock expires. Stage 4 (permanent) uses a
---                          NULL locked_until combined with lockout_stage = 4.
+--                          current 10-minute lock expires. The account
+--                          unlocks automatically once this time passes.
 
 ALTER TABLE users
     ADD COLUMN failed_login_attempts INTEGER    NOT NULL DEFAULT 0,
