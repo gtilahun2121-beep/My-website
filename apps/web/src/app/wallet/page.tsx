@@ -146,15 +146,17 @@ export default function WalletPage() {
 
       <div className="flex-grow py-8 px-4">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-4xl font-black text-gray-900 mb-8">
+          <h1 className="text-3xl sm:text-4xl font-black text-gray-900 mb-8">
             {lang === 'en' ? 'Wallet 💰' : 'ዋሊት 💰'}
           </h1>
 
           {/* Wallet Balance */}
-          <div className="bg-gradient-to-r from-[#314fa0] to-[#d4af37] text-white rounded-2xl shadow-lg p-8 mb-8">
+          <div className="bg-gradient-to-r from-[#314fa0] to-[#d4af37] text-white rounded-2xl shadow-lg p-6 sm:p-8 mb-8">
             <p className="text-sm opacity-90">{lang === 'en' ? 'Current Balance' : 'አሁን ሚዛን'}</p>
-            <h2 className="text-5xl font-black mb-4">ETB {balance.toLocaleString()}</h2>
-            <div className="flex gap-4">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black mb-4 break-all">
+              ETB {balance.toLocaleString()}
+            </h2>
+            <div className="flex flex-wrap gap-3">
               <button 
                 onClick={() => setShowDepositModal(true)}
                 className="bg-white text-[#314fa0] font-bold px-6 py-2 rounded-lg hover:shadow-lg transition-all"
@@ -177,13 +179,13 @@ export default function WalletPage() {
             </h2>
             <div className="space-y-4">
               {transactions.map((txn, idx) => (
-                <div key={idx} className="flex items-center justify-between border-b border-gray-200 pb-4 last:border-b-0">
-                  <div>
-                    <p className="font-bold text-gray-900">{txn.type}: {txn.equb}</p>
+                <div key={idx} className="flex items-center justify-between gap-3 border-b border-gray-200 pb-4 last:border-b-0">
+                  <div className="min-w-0">
+                    <p className="font-bold text-gray-900 truncate">{txn.type}: {txn.equb}</p>
                     <p className="text-sm text-gray-500">{txn.date}</p>
                   </div>
-                  <div className="text-right">
-                    <p className={`font-bold text-lg ${txn.amount.includes('-') ? 'text-red-600' : 'text-green-600'}`}>
+                  <div className="text-right shrink-0">
+                    <p className={`font-bold text-lg whitespace-nowrap ${txn.amount.includes('-') ? 'text-red-600' : 'text-green-600'}`}>
                       {txn.amount}
                     </p>
                     <p className="text-xs text-green-600">{txn.status}</p>

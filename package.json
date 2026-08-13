@@ -9,6 +9,7 @@
     ],
     "scripts": {
         "build": "turbo build",
+        "predev": "node scripts/kill-ports.cjs",
         "dev": "turbo dev",
         "dev:restart": "node scripts/dev.cjs",
         "lint": "turbo lint",
@@ -27,6 +28,11 @@
     "engines": {
         "node": ">=20.0.0",
         "npm": ">=10.0.0"
+    },
+    "overrides": {
+        "@nestjs/swagger": {
+            "js-yaml": "^5.2.3"
+        }
     },
     "packageManager": "npm@10.9.2"
 }

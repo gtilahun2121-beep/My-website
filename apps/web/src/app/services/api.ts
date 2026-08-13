@@ -2,7 +2,7 @@
  * api.ts
  * Centralised HTTP client for all backend API calls.
  *
- * Base URL:  NEXT_PUBLIC_API_BASE_URL  (default: http://localhost:3000)
+ * Base URL:  NEXT_PUBLIC_API_BASE_URL  (default: http://localhost:4000)
  * Version:   NEXT_PUBLIC_API_VERSION   (default: v1)
  *
  * PIN padding:
@@ -42,7 +42,7 @@ import type {
 } from '@qalnet/shared-types';
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
+  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000';
 const API_VERSION = process.env.NEXT_PUBLIC_API_VERSION || 'v1';
 
 // ---------------------------------------------------------------------------

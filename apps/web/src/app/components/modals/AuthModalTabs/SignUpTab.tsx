@@ -382,9 +382,9 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
           {[1, 2, 3, 4, 5].map((s) => (
-            <div key={s} className="flex flex-col items-center flex-1">
+            <div key={s} className="flex flex-col items-center flex-1 min-w-0">
               <div
-                className={`flex items-center justify-center w-12 h-12 rounded-full font-bold text-sm transition-all mb-2 ${s <= step
+                className={`flex items-center justify-center w-8 h-8 sm:w-12 sm:h-12 rounded-full font-bold text-sm transition-all mb-2 ${s <= step
                   ? 'bg-[#314fa0] text-white shadow-lg'
                   : 'bg-gray-200 text-gray-500'
                   }`}

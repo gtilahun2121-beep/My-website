@@ -133,7 +133,7 @@ export default function MemberDashboard({
       >
         <div className="mb-4">
           <p className="text-sm opacity-90 font-bold">Available Balance</p>
-          <h3 className="text-4xl font-black">
+          <h3 className="text-3xl sm:text-4xl font-black break-all">
             ETB {walletBalance.toLocaleString()}
           </h3>
         </div>

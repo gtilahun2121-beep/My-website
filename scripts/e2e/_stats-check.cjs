@@ -7,7 +7,7 @@ const argon2 = require('argon2');
 const { Pool } = require('pg');
 dotenv.config({ path: path.join(BACKEND, '.env') });
 
-const BASE = 'http://localhost:3000/api/v1';
+const BASE = 'http://localhost:4000/api/v1';
 const PEPPER = process.env.ARGON2_PEPPER;
 const ARGON2_OPTIONS = { type: argon2.argon2id, memoryCost: 65536, timeCost: 3, parallelism: 4, hashLength: 32, saltLength: 16 };
 const pad = (p) => (p.length >= 8 && /[A-Za-z]/.test(p) ? p : `${p}QN${p}!`);

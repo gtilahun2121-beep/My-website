@@ -55,12 +55,12 @@ export default function Home() {
       {/* Homepage Content */}
       <div className="flex-grow">
         {/* Hero Section */}
-        <section className="bg-gradient-to-br from-[#314fa0] via-[#2a4183] to-[#ce1126] text-white py-20 px-4">
+        <section className="bg-gradient-to-br from-[#314fa0] via-[#2a4183] to-[#ce1126] text-white py-16 sm:py-20 px-4">
           <div className="max-w-6xl mx-auto text-center">
-            <h1 className="text-5xl md:text-6xl font-black mb-4 drop-shadow-lg">
+            <h1 className="text-3xl sm:text-5xl md:text-6xl font-black mb-4 drop-shadow-lg">
               {lang === 'en' ? 'Welcome to QalNet' : lang === 'am' ? 'ወደ QalNet ደህና መጡ' : 'Gara QalNet'}
             </h1>
-            <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto">
+            <p className="text-lg sm:text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto">
               {lang === 'en'
                 ? 'Ethiopia\'s trusted digital Equb platform. Secure, transparent, and built for communities.'
                 : lang === 'am'
@@ -79,7 +79,7 @@ export default function Home() {
         {/* Features Section */}
         <section className="py-16 px-4 bg-white">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-4xl font-black text-gray-800 mb-12 text-center">Features</h2>
+            <h2 className="text-3xl sm:text-4xl font-black text-gray-800 mb-12 text-center">Features</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[
                 { icon: '🔒', title: 'Secure', desc: 'Bank-level encryption' },
@@ -99,7 +99,7 @@ export default function Home() {
         {/* CTA Section */}
         <section className="bg-gradient-to-r from-[#314fa0] to-[#ce1126] text-white py-16 px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-4xl font-black mb-6">Ready to Join?</h2>
+            <h2 className="text-3xl sm:text-4xl font-black mb-6">Ready to Join?</h2>
             <button
               onClick={() => setShowAuthModal(true)}
               className="bg-white text-[#314fa0] px-8 py-4 font-bold text-lg rounded-full"

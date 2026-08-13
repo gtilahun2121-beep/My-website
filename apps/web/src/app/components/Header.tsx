@@ -43,7 +43,7 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
   return (
     <header className="bg-gradient-to-r from-[#314fa0] to-[#ce1126] shadow-2xl sticky top-0 z-50 border-b-4 border-[#d4af37]">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center gap-2 sm:gap-3">
           {/* Left corner: profile + logo */}
           <div className="flex items-center gap-3">
             {/* Profile Avatar */}
@@ -65,13 +65,13 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
                 )}
               </button>
             )}
-            <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 bg-gradient-to-br from-[#d4af37] to-[#ce1126] rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+            <Link href="/" className="flex items-center gap-3 group min-w-0">
+            <div className="w-10 h-10 shrink-0 bg-gradient-to-br from-[#d4af37] to-[#ce1126] rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
               <span className="text-[#314fa0] font-black text-lg">🇪🇹</span>
             </div>
-            <div>
-              <span className="font-black text-2xl text-white drop-shadow-lg">QalNet</span>
-              <p className="text-xs text-white/80 font-semibold -mt-1">Ethiopia&apos;s Digital Equb</p>
+            <div className="min-w-0">
+              <span className="block font-black text-xl sm:text-2xl text-white drop-shadow-lg truncate">QalNet</span>
+              <p className="hidden sm:block text-xs text-white/80 font-semibold -mt-1 truncate">Ethiopia&apos;s Digital Equb</p>
             </div>
           </Link>
           </div>
@@ -117,7 +117,7 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
             <select
               value={lang}
               onChange={(e) => onLanguageChange(e.target.value as Language)}
-              className="px-4 py-2 border-2 border-[#d4af37] rounded-full text-sm bg-white text-[#314fa0] font-bold cursor-pointer"
+              className="hidden sm:block px-4 py-2 border-2 border-[#d4af37] rounded-full text-sm bg-white text-[#314fa0] font-bold cursor-pointer"
             >
               {(Object.keys(languages) as Language[]).map((l) => (
                 <option key={l} value={l}>
@@ -151,6 +151,23 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
           <div className="md:hidden mt-4 space-y-2 bg-white/10 backdrop-blur-md rounded-2xl p-4">
+            {/* Mobile language picker */}
+            <div className="flex flex-wrap gap-2 pb-2 border-b border-white/20">
+              {(Object.keys(languages) as Language[]).map((l) => (
+                <button
+                  key={l}
+                  type="button"
+                  onClick={() => onLanguageChange(l)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${
+                    lang === l
+                      ? 'bg-white text-[#314fa0]'
+                      : 'bg-white/15 text-white hover:bg-white/25'
+                  }`}
+                >
+                  {languages[l]}
+                </button>
+              ))}
+            </div>
             {navItems.map((item) => (
               <Link
                 key={item.href}

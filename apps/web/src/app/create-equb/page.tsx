@@ -95,11 +95,11 @@ export default function CreateEqubPage() {
       <div className="flex-grow py-8 px-4">
         <div className="max-w-2xl mx-auto">
           {isAdmin ? (
-            <h1 className="text-4xl font-black text-gray-900 mb-2">
+            <h1 className="text-3xl sm:text-4xl font-black text-gray-900 mb-2">
               {lang === 'en' ? 'Create an Equb 🆕' : 'እቁብ ይፍጠሩ 🆕'}
             </h1>
           ) : (
-            <h1 className="text-4xl font-black text-gray-900 mb-2">
+            <h1 className="text-3xl sm:text-4xl font-black text-gray-900 mb-2">
               {lang === 'en' ? 'Request an Equb 🙋' : 'እቁብ ይጠይቁ 🙋'}
             </h1>
           )}

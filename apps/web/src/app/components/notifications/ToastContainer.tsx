@@ -95,7 +95,7 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({ toastManager }) 
 
   return (
     <div
-      className="fixed bottom-20 md:bottom-4 right-4 max-w-sm z-40 pointer-events-auto"
+      className="fixed bottom-20 md:bottom-4 right-4 left-4 md:left-auto max-w-sm z-40 pointer-events-auto"
       role="region"
       aria-live="polite"
       aria-atomic="true"

@@ -147,7 +147,7 @@ export class NotificationManager {
       const API_BASE_URL =
         process.env.NEXT_PUBLIC_API_BASE_URL ||
         process.env.NEXT_PUBLIC_API_URL ||
-        'http://localhost:3000/api/v1';
+        'http://localhost:4000/api/v1';
       const API_URL = API_BASE_URL.endsWith('/api/v1')
         ? API_BASE_URL
         : `${API_BASE_URL.replace(/\/$/, '')}/api/v1`;

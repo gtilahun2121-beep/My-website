@@ -116,7 +116,7 @@ export default function HeroAnimation({
 
           {/* Main Headline */}
           <motion.h1
-            className="text-5xl md:text-7xl font-black text-white mb-6 drop-shadow-lg glow-eth-gold"
+            className="text-4xl sm:text-5xl md:text-7xl font-black text-white mb-6 drop-shadow-lg glow-eth-gold"
             variants={itemVariants}
           >
             {heroTitle}

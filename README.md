@@ -7,7 +7,7 @@ Digital Equb Platform — unified monorepo powered by [Turborepo](https://turbo.
 ```
 qalnet/
 ├── apps/
-│   ├── backend/          # NestJS API (port 3000)
+│   ├── backend/          # NestJS API (port 4000)
 │   │   ├── src/          #   app.module, main, common/, config/, modules/
 │   │   ├── database/     #   schema.sql + migrations/
 │   │   └── scripts/      #   seed-admin.cjs
@@ -40,7 +40,7 @@ npm run dev
 ```
 
 > If you hit `localhost refused to connect` / `ERR_CONNECTION_REFUSED`
-> or `EADDRINUSE`, an orphaned dev server is likely holding ports 3000/3001.
+> or `EADDRINUSE`, an orphaned dev server is likely holding ports 4000/3001.
 > Run `npm run dev:restart` once — it kills any process on those ports and
 > starts everything fresh:
 
@@ -64,7 +64,7 @@ npm run type-check
 
 | App | Description | Port | Docs |
 |-----|-------------|------|------|
-| `@qalnet/backend` | NestJS REST API | 3000 | `/api/docs` (dev) |
+| `@qalnet/backend` | NestJS REST API | 4000 | `/api/docs` (dev) |
 | `@qalnet/web` | Next.js frontend | 3001 | — |
 
 ## Packages
@@ -95,7 +95,7 @@ Root-level utilities live in `scripts/`:
 
 | Script | Purpose |
 |--------|---------|
-| `start-ngrok.ps1` | Open an ngrok tunnel to the backend (port 3000) |
+| `start-ngrok.ps1` | Open an ngrok tunnel to the backend (port 4000) |
 | `update-keys.cjs` | Regenerate RSA JWT key pair in the root `.env` |
 | `test-reg.cjs` | Smoke-test `POST /api/v1/auth/register` locally |
 | `db/dbcheck.cjs` | Check DB connectivity, tables, and record counts |

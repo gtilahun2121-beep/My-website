@@ -2,7 +2,7 @@
 // Dev server restart helper
 //
 // Solves the recurring "localhost refused to connect" / EADDRINUSE issue:
-// orphaned dev servers left over from a previous run hold ports 3000/3001,
+// orphaned dev servers left over from a previous run hold ports 4000/3001,
 // so the next `npm run dev` dies instantly. This script kills any process
 // listening on those ports, then starts the full monorepo dev servers.
 //
@@ -12,7 +12,7 @@
 const { execSync, spawn } = require('node:child_process');
 const path = require('node:path');
 
-const PORTS = [3000, 3001];
+const PORTS = [4000, 3001];
 const isWin = process.platform === 'win32';
 
 function pidsOnPort(port) {
@@ -38,7 +38,7 @@ function pidsOnPort(port) {
 function killPid(pid) {
   try {
     if (isWin) {
-      execSync(`taskkill /F /PID ${pid}`, { stdio: 'ignore' });
+      execSync(`taskkill /F /T /PID ${pid}`, { stdio: 'ignore' });
     } else {
       process.kill(Number(pid), 'SIGKILL');
     }
@@ -61,7 +61,7 @@ function clearPorts() {
 
 function main() {
   clearPorts();
-  console.log('[dev] Starting dev servers (backend :3000, web :3001)...');
+  console.log('[dev] Starting dev servers (backend :4000, web :3001)...');
   const root = path.join(__dirname, '..');
   const child = spawn('npm', ['run', 'dev'], {
     cwd: root,
