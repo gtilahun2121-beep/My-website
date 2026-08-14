@@ -41,8 +41,13 @@ import type {
   UserProfileData,
 } from '@qalnet/shared-types';
 
+// In the browser we use a relative base so requests go through the Next.js
+// proxy rewrite (next.config.ts → rewrites → /api/* → backend). This
+// eliminates CORS entirely. On the server (SSR) we need the absolute URL.
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
+  typeof window !== 'undefined'
+    ? '' // relative — browser hits the Next.js proxy at /api/*
+    : (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000');
 const API_VERSION = process.env.NEXT_PUBLIC_API_VERSION || 'v1';
 
 // ---------------------------------------------------------------------------

@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import { Language } from '@/i18n/config';
 import { translations } from '@/i18n/translations';
 import { useAuth } from '@/app/context/AuthContext';
@@ -16,11 +17,22 @@ type LoginStep = 'phone' | 'pin' | 'success';
 
 export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
   const { signin, user } = useAuth();
+  const router = useRouter();
   const [step, setStep] = useState<LoginStep>('phone');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [pin, setPin] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Auto-redirect on success
+  useEffect(() => {
+    if (step === 'success') {
+      const timer = setTimeout(() => {
+        router.push('/');
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [step, router]);
 
   // Step 1: Enter phone number
   const handlePhoneSubmit = () => {
@@ -241,7 +253,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
           </div>
 
           <motion.button
-            onClick={() => window.location.href = '/'}
+            onClick={() => router.push('/')}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="w-full py-3 bg-gradient-to-r from-[#314fa0] to-[#d4af37] text-white font-black rounded-full hover:shadow-lg transition-all duration-300 mb-3"
@@ -250,7 +262,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
           </motion.button>
 
           <motion.button
-            onClick={() => window.location.href = '/'}
+            onClick={() => router.push('/')}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="w-full py-2 border-2 border-[#314fa0] text-[#314fa0] font-bold rounded-full hover:bg-[#314fa0]/10 transition-all"

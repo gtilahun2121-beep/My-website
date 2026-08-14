@@ -103,9 +103,11 @@ export async function initDatabase(): Promise<void> {
     // Cache the URL in process.env so getPool() can access it synchronously
     process.env._DB_URL_CACHE = secrets.DATABASE_URL;
 
-    // Warm the pool with a lightweight probe — retry up to 3 times
+    // Warm the pool with a lightweight probe — retry up to 6 times with
+    // exponential backoff (max 10 s per attempt). This tolerates a transient
+    // DNS blip or a Neon cold-start without crashing the process.
     const sql = getPool();
-    const maxAttempts = 3;
+    const maxAttempts = 6;
     let lastError: unknown;
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -116,7 +118,7 @@ export async function initDatabase(): Promise<void> {
         } catch (err) {
             lastError = err;
             if (attempt < maxAttempts) {
-                const delayMs = attempt * 1500;
+                const delayMs = Math.min(attempt * 2000, 10_000);
                 console.warn(
                     `[DatabaseConfig] Warm-up probe failed (attempt ${attempt}/${maxAttempts}). ` +
                     `Retrying in ${delayMs}ms…`,

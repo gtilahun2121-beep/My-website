@@ -8,7 +8,6 @@
 
 import {
     Injectable,
-    InternalServerErrorException,
     Logger,
 } from '@nestjs/common';
 import { getPool, inTransaction, RlsContext } from '../../config/database.config';
@@ -240,7 +239,7 @@ export class PaymentsRepository {
      */
     async confirmPaymentByReference(
         txRef: string,
-        processor: string,
+        _processor: string,
     ): Promise<PaymentRecord | null> {
         const sql = getPool();
 
