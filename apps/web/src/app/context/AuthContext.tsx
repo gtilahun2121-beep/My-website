@@ -207,14 +207,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (response.refresh_token) {
               localStorage.setItem(STORAGE.REFRESH_TOKEN, response.refresh_token);
             }
-            await syncProfile();
+            // Sync profile in background — don't block isLoading on the network call
+            void syncProfile();
             setIsLoading(false);
             return;
           }
 
           if (tokenValid) {
             setUser(JSON.parse(storedUser) as User);
-            await syncProfile();
+            // Sync profile in background — don't block isLoading on the network call
+            void syncProfile();
             setIsLoading(false);
             return;
           }

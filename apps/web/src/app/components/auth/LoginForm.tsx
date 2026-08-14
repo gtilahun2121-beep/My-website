@@ -24,13 +24,10 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Auto-redirect on success
+  // Auto-redirect on success — immediate, no delay
   useEffect(() => {
     if (step === 'success') {
-      const timer = setTimeout(() => {
-        router.push('/');
-      }, 1500);
-      return () => clearTimeout(timer);
+      router.push('/');
     }
   }, [step, router]);
 
@@ -59,8 +56,10 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
     setLoading(true);
     try {
       await signin(phoneNumber, pin);
-      onSuccess?.('🎉 Welcome Back!', `Hello ${user?.firstName ?? ''}, you're now logged in!`, 5000);
-      setStep('success');
+      // Navigate immediately — don't wait on the success screen.
+      // refreshProfile() fires in the background from AuthContext.signin().
+      onSuccess?.('🎉 Welcome Back!', 'Redirecting to dashboard…', 3000);
+      router.push('/');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
       setLoading(false);
