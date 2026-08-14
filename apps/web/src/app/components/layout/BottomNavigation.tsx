@@ -30,12 +30,15 @@ export const BottomNavigation: React.FC<BottomNavProps> = ({
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center h-20 md:hidden">
+    <nav
+      className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center h-20 md:hidden"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+    >
       {navItems.map((item) => (
         <button
           key={item.id}
           onClick={() => onTabChange(item.id)}
-          className={`flex flex-col items-center justify-center w-full h-full transition-colors ${
+          className={`relative flex flex-col items-center justify-center w-full h-full transition-colors ${
             activeTab === item.id
               ? 'text-emerald-600 bg-emerald-50'
               : 'text-gray-600 hover:bg-gray-50'

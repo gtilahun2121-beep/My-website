@@ -19,7 +19,7 @@
  *   node scripts/e2e/reset-pin.e2e.cjs
  *
  * Env (optional):
- *   BASE_URL        default http://localhost:3000/api/v1
+ *   BASE_URL        default http://localhost:4000/api/v1
  *   E2E_ADMIN_PIN   PIN for the throwaway admin (default 9999)
  */
 'use strict';
@@ -38,7 +38,7 @@ const { Pool } = require('pg');
 
 dotenv.config({ path: path.join(BACKEND, '.env') });
 
-const BASE_URL = process.env.BASE_URL ?? 'http://localhost:3000/api/v1';
+const BASE_URL = process.env.BASE_URL ?? 'http://localhost:4000/api/v1';
 const ARGON2_PEPPER = process.env.ARGON2_PEPPER;
 
 const ARGON2_OPTIONS = {

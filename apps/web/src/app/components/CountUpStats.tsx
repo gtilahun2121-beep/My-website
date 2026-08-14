@@ -47,7 +47,7 @@ const AnimatedCounter = ({ value, suffix }: { value: number; suffix: string }) =
 
   return (
     <div ref={ref}>
-      <div className="text-5xl font-black text-[#d4af37] drop-shadow-lg">
+      <div className="text-3xl sm:text-5xl font-black text-[#d4af37] drop-shadow-lg break-all">
         {displayValue.toLocaleString()}
         {suffix}
       </div>

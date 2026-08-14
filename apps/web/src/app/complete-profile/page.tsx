@@ -95,8 +95,8 @@ export default function CompleteProfilePage() {
       />
 
       <div className="flex-grow py-12 px-4">
-        <div className="max-w-md mx-auto bg-white rounded-2xl shadow-lg p-8">
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">
+        <div className="max-w-md mx-auto bg-white rounded-2xl shadow-lg p-8 border-t-4 border-[#314fa0]">
+          <h1 className="text-2xl font-bold text-[#314fa0] mb-2">
             {lang === 'en' ? 'Complete Your Profile' : lang === 'am' ? 'የእርስዎን መገለጫ ያጠናቅቁ' : 'Madaallii Kee Guuti'}
           </h1>
           <p className="text-gray-600 mb-6">

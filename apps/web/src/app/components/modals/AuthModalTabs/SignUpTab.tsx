@@ -36,6 +36,7 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
     verifying: false,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitError, setSubmitError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
   const handleFieldChange = (field: string, value: string) => {
@@ -311,6 +312,7 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
 
     if (isValid) {
       setStep(step + 1);
+      setSubmitError('');
     }
   };
 
@@ -318,10 +320,12 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
     if (step > 1) {
       setStep(step - 1);
       setErrors({});
+      setSubmitError('');
     }
   };
 
   const handleSubmit = async () => {
+    setSubmitError('');
     if (!validateStep5()) {
       onError?.('Validation Error', 'Please enter a valid PIN');
       return;
@@ -344,9 +348,11 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
               ? 'email address'
               : 'phone number';
 
+          const message = `An account with this ${field} already exists. Please sign in instead, or use a different ${field}.`;
+          setSubmitError(message);
           onError?.(
             'Account Already Exists',
-            `An account with this ${field} already exists. Please sign in instead, or use a different ${field}.`,
+            message,
           );
           return;
         }
@@ -368,6 +374,7 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
       onSuccess?.('🎉 Welcome to QalNet!', 'Your secure account is ready.', 3000);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Registration failed';
+      setSubmitError(message);
       onError?.('Error', message);
     }
   };
@@ -382,9 +389,9 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
           {[1, 2, 3, 4, 5].map((s) => (
-            <div key={s} className="flex flex-col items-center flex-1">
+            <div key={s} className="flex flex-col items-center flex-1 min-w-0">
               <div
-                className={`flex items-center justify-center w-12 h-12 rounded-full font-bold text-sm transition-all mb-2 ${s <= step
+                className={`flex items-center justify-center w-8 h-8 sm:w-12 sm:h-12 rounded-full font-bold text-sm transition-all mb-2 ${s <= step
                   ? 'bg-[#314fa0] text-white shadow-lg'
                   : 'bg-gray-200 text-gray-500'
                   }`}
@@ -669,6 +676,12 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
             error={errors.pin}
             hint={lang === 'en' ? '4 digits' : '4 ዲጂት'}
           />
+
+          {submitError && (
+            <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+              {submitError}
+            </p>
+          )}
 
           <div className="flex gap-3 mt-8">
             <button

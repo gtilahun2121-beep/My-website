@@ -35,7 +35,7 @@ export default function AppShell({ title, subtitle, variant = 'admin', children 
 
   return (
     <div
-      className={`min-h-screen flex text-foreground ${
+      className={`dark-navy min-h-screen flex text-foreground ${
         isAdmin ? 'bg-admin-bg' : 'bg-surface'
       }`}
     >

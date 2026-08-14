@@ -477,14 +477,14 @@ export default function AdminDashboardPage() {
                 ))}
               </div>
               {range === 'custom' && (
-                <div className="inline-flex items-center gap-1.5 rounded-lg border border-admin-border bg-admin-elevated p-1">
+                <div className="grid w-full sm:w-auto grid-cols-[1fr_auto_1fr] items-center gap-1.5 rounded-lg border border-admin-border bg-admin-elevated p-1">
                   <input
                     type="date"
                     aria-label="Start date"
                     value={startDate}
                     max={endDate || todayIso()}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="rounded-md border border-admin-border bg-admin-card px-2 py-1 text-xs font-medium text-admin-text focus:outline-none focus:border-brand-500"
+                    className="w-full min-w-0 rounded-md border border-admin-border bg-admin-card px-2 py-1 text-xs font-medium text-admin-text focus:outline-none focus:border-brand-500"
                   />
                   <span className="text-xs text-admin-muted">→</span>
                   <input
@@ -494,7 +494,7 @@ export default function AdminDashboardPage() {
                     min={startDate || undefined}
                     max={todayIso()}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="rounded-md border border-admin-border bg-admin-card px-2 py-1 text-xs font-medium text-admin-text focus:outline-none focus:border-brand-500"
+                    className="w-full min-w-0 rounded-md border border-admin-border bg-admin-card px-2 py-1 text-xs font-medium text-admin-text focus:outline-none focus:border-brand-500"
                   />
                 </div>
               )}

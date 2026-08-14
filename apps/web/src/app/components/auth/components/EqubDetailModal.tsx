@@ -38,18 +38,18 @@ export default function EqubDetailModal({ equb, onClose, onJoin }: EqubDetailMod
         </div>
 
         {/* Key Info Grid */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           <div className="bg-[#314fa0]/10 rounded-lg p-4">
             <p className="text-xs text-gray-600 mb-1">Monthly Payment</p>
-            <p className="text-2xl font-black text-[#314fa0]">ETB {equb.monthlyPayment.toLocaleString()}</p>
+            <p className="text-xl sm:text-2xl font-black text-[#314fa0] break-all">ETB {equb.monthlyPayment.toLocaleString()}</p>
           </div>
           <div className="bg-[#d4af37]/20 rounded-lg p-4">
             <p className="text-xs text-gray-600 mb-1">Expected Return</p>
-            <p className="text-2xl font-black text-[#d4af37]">ETB {equb.expectedReturn.toLocaleString()}</p>
+            <p className="text-xl sm:text-2xl font-black text-[#d4af37] break-all">ETB {equb.expectedReturn.toLocaleString()}</p>
           </div>
           <div className="bg-blue-100 rounded-lg p-4">
             <p className="text-xs text-gray-600 mb-1">Active Members</p>
-            <p className="text-2xl font-black text-blue-700">{equb.members.toLocaleString()}</p>
+            <p className="text-xl sm:text-2xl font-black text-blue-700 break-all">{equb.members.toLocaleString()}</p>
           </div>
           <div className={`rounded-lg p-4 ${
             equb.incomeLevel === 'low' ? 'bg-yellow-100' :
@@ -57,7 +57,7 @@ export default function EqubDetailModal({ equb, onClose, onJoin }: EqubDetailMod
             'bg-green-100'
           }`}>
             <p className="text-xs text-gray-600 mb-1">Income Level</p>
-            <p className={`text-2xl font-black ${
+            <p className={`text-xl sm:text-2xl font-black ${
               equb.incomeLevel === 'low' ? 'text-yellow-700' :
               equb.incomeLevel === 'medium' ? 'text-blue-700' :
               'text-green-700'

@@ -17,7 +17,7 @@ export function SkeletonTable({ rows = 6, columns = 6, variant = 'light' }: Skel
         {Array.from({ length: rows }).map((_, r) => (
           <div key={r} className="flex items-center gap-6 px-5 py-4">
             {Array.from({ length: columns }).map((__, c) => (
-              <div key={c} className={`h-4 rounded animate-pulse ${barCls} ${c === 0 ? 'w-64' : c === columns - 1 ? 'w-20 ml-auto' : 'flex-1'}`} />
+              <div key={c} className={`h-4 shrink-0 rounded animate-pulse ${barCls} ${c === 0 ? 'w-32 sm:w-64' : c === columns - 1 ? 'w-20 ml-auto' : 'flex-1 shrink-1'}`} />
             ))}
           </div>
         ))}

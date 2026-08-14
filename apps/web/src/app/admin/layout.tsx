@@ -53,7 +53,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const meta = PAGE_META[pathname] ?? { title: 'Admin Console', subtitle: '' };
 
   return (
-    <div className="min-h-screen flex text-foreground bg-admin-bg">
+    <div className="dark-navy min-h-screen flex text-foreground bg-admin-bg">
       <Sidebar
         variant="admin"
         open={sidebarOpen}

@@ -119,19 +119,19 @@ function FeaturesContent() {
       <Header lang={lang} onLanguageChange={handleLanguageChange} />
 
       {/* Hero */}
-      <section className="bg-gradient-to-br from-emerald-50 to-teal-50 py-16">
+      <section className="bg-white/40 backdrop-blur-md py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
             {t.features}
           </h1>
-          <p className="text-xl text-gray-600">
+          <p className="text-xl text-gray-700">
             Comprehensive feature set designed for Ethiopian market
           </p>
         </div>
       </section>
 
       {/* Navigation Tabs */}
-      <section className="py-20 md:py-32 bg-white">
+      <section className="py-20 md:py-32 bg-white/60 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-center mb-16 text-gray-900">
             {t.uxTitle}
@@ -156,7 +156,7 @@ function FeaturesContent() {
       </section>
 
       {/* UX Principles */}
-      <section className="py-20 md:py-32 bg-gray-50">
+      <section className="py-20 md:py-32 bg-white/60 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-center mb-16 text-gray-900">
             {t.uxTitle}
@@ -174,7 +174,7 @@ function FeaturesContent() {
       </section>
 
       {/* Offline Support */}
-      <section className="py-20 md:py-32 bg-white">
+      <section className="py-20 md:py-32 bg-white/60 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
