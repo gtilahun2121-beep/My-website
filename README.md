@@ -34,6 +34,21 @@ qalnet/
 npm install
 ```
 
+### npm install keeps failing on Windows (EPERM / ECONNRESET)?
+The classic Windows failures are fixed by the built-in helper:
+
+```bash
+npm run clean:install        # safe: kills none of your processes
+npm run clean:install -- --kill   # also force-kills all node.exe (dev servers)
+```
+
+It stops orphaned node processes, re-deletes `node_modules` with retries,
+cleans the corrupt npm cache, then reinstalls with fetch retries (configured
+in `.npmrc`). If `--kill` still cannot delete `node_modules`, close:
+
+- your terminal / editor / File Explorer if their current folder is inside `node_modules`
+- then exclude the repo folder from Windows Defender/antivirus real-time scans
+
 ### Run all apps in dev mode (parallel)
 ```bash
 npm run dev

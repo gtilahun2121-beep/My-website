@@ -1,11 +1,41 @@
 {
   "version": 1,
   "skills": {
+    "dependency-management": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "skillPath": "skills/dependency-management/SKILL.md",
+      "computedHash": "046076134b2cdf10c518e3932c4188553f35a3b39169dbc2006008a623453b50"
+    },
+    "dependency-upgrade": {
+      "source": "secondsky/claude-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/dependency-upgrade/skills/dependency-upgrade/SKILL.md",
+      "computedHash": "b3afb2f98e97bd1f5d030971585dc9fd2d4b9ba4b2edc8ff73ba9ceda1a8084e"
+    },
+    "fix-dependabot": {
+      "source": "remotion-dev/remotion",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/fix-dependabot/SKILL.md",
+      "computedHash": "6bb237e1042a65bc2f56c1bf66defd89fed584acbd6d169e4edbd521eb9936c1"
+    },
     "microservices-patterns": {
       "source": "wshobson/agents",
       "sourceType": "github",
       "skillPath": "plugins/backend-development/skills/microservices-patterns/SKILL.md",
       "computedHash": "d0851a64dbe56bef0d80b5f426d58d37e1018e29ed90b1d676e6601d1a23b899"
+    },
+    "project-folder-structure": {
+      "source": "gil-1/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/project-folder-structure/SKILL.md",
+      "computedHash": "61b30a1072aeedf2054d882bf2267bc0aac0327d4d4e7681cfa53cc9fb06d0d0"
+    },
+    "recipe-share-folder-with-team": {
+      "source": "googleworkspace/cli",
+      "sourceType": "github",
+      "skillPath": "skills/recipe-share-folder-with-team/SKILL.md",
+      "computedHash": "7f99afdeafe5e6813056f0ac0a87031303c0f8ad4ac0912f16eeaa8c1855ded5"
     },
     "reddit-automation": {
       "source": "doany-skills/skills",
@@ -24,6 +54,12 @@
       "sourceType": "github",
       "skillPath": "plugins/security-scanning/skills/security-requirement-extraction/SKILL.md",
       "computedHash": "70e17a537800fc5fa01925317093a436edbb98986aaff090ec6ee0cfced9b9fc"
+    },
+    "smart-folder-organizer": {
+      "source": "yuan-93/smart-folder-organizer-skill",
+      "sourceType": "github",
+      "skillPath": "smart-folder-organizer/SKILL.md",
+      "computedHash": "24d23556aacb45f7958e13a4ea6b8daa2fcd7b907e441699796bbb2bfada7e9a"
     },
     "two-factor-authentication-best-practices": {
       "source": "better-auth/skills",

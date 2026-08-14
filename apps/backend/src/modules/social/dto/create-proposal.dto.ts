@@ -11,7 +11,6 @@ import {
     IsNumber,
     IsPositive,
     IsString,
-    IsUUID,
     MaxLength,
     MinLength,
 } from 'class-validator';

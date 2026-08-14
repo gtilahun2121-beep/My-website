@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import { Language } from '@/i18n/config';
 import { translations } from '@/i18n/translations';
 import { useAuth } from '@/app/context/AuthContext';
@@ -16,22 +17,34 @@ type LoginStep = 'phone' | 'pin' | 'success';
 
 export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
   const { signin, user } = useAuth();
+  const router = useRouter();
   const [step, setStep] = useState<LoginStep>('phone');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [pin, setPin] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Step 1: Enter phone number
+  // Auto-redirect on success — immediate, no delay
+  useEffect(() => {
+    if (step === 'success') {
+      router.push('/');
+    }
+  }, [step, router]);
+
+  // Step 1: Enter phone or email
   const handlePhoneSubmit = () => {
     setError('');
-    if (!phoneNumber.match(/^\+?[1-9]\d{1,14}$/)) {
-      setError('Invalid phone number format');
-      onError?.('Invalid Number', 'Please enter a valid phone number', 3000);
+    // Allow basic email formats OR phone numbers (can start with 0 or +)
+    const isPhone = /^\+?[0-9]{9,15}$/.test(phoneNumber.trim());
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(phoneNumber.trim());
+    
+    if (!isPhone && !isEmail) {
+      setError('Invalid phone number or email format');
+      onError?.('Invalid Identifier', 'Please enter a valid phone number or email', 3000);
       return;
     }
 
-    onSuccess?.('Phone Found', 'Enter your PIN to continue', 3000);
+    onSuccess?.('Account Found', 'Enter your PIN to continue', 3000);
     setStep('pin');
   };
 
@@ -47,8 +60,10 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
     setLoading(true);
     try {
       await signin(phoneNumber, pin);
-      onSuccess?.('🎉 Welcome Back!', `Hello ${user?.firstName ?? ''}, you're now logged in!`, 5000);
-      setStep('success');
+      // Navigate immediately — don't wait on the success screen.
+      // refreshProfile() fires in the background from AuthContext.signin().
+      onSuccess?.('🎉 Welcome Back!', 'Redirecting to dashboard…', 3000);
+      router.push('/');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
       setLoading(false);
@@ -78,23 +93,23 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
             🔐 Sign In
           </h3>
           <p className="text-center text-sm text-gray-600 mb-6">
-            Enter your phone and PIN
+            Enter your phone or email and PIN
           </p>
 
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-bold text-[#314fa0] mb-2">
-                Phone Number
+                Phone Number or Email
               </label>
               <input
-                type="tel"
-                placeholder="+251911223344"
+                type="text"
+                placeholder="+251911223344 or email@example.com"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
                 className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-[#314fa0] font-bold text-lg"
               />
               <p className="text-xs text-[#5a5a5a] mt-1">
-                Same number you used to register
+                Same phone or email you used to register
               </p>
             </div>
 
@@ -135,7 +150,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
             🔐 Enter Your PIN
           </h3>
           <p className="text-sm text-center text-[#5a5a5a] mb-6">
-            Phone: {phoneNumber}
+            Account: {phoneNumber}
           </p>
 
           <div className="space-y-4">
@@ -184,7 +199,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
               }}
               className="w-full py-2 text-[#314fa0] font-bold hover:underline"
             >
-              ← Use Different Phone
+              ← Use Different Account
             </button>
           </div>
 
@@ -241,7 +256,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
           </div>
 
           <motion.button
-            onClick={() => window.location.href = '/'}
+            onClick={() => router.push('/')}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="w-full py-3 bg-gradient-to-r from-[#314fa0] to-[#2a4183] text-white font-black rounded-full hover:shadow-lg transition-all duration-300 mb-3"
@@ -250,7 +265,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
           </motion.button>
 
           <motion.button
-            onClick={() => window.location.href = '/'}
+            onClick={() => router.push('/')}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="w-full py-2 border-2 border-[#314fa0] text-[#314fa0] font-bold rounded-full hover:bg-[#314fa0]/10 transition-all"
