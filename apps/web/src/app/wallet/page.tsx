@@ -74,12 +74,12 @@ export default function WalletPage() {
   }, [isAuthenticated]);
 
   const paymentMethods = [
-    { id: 'telebirr', name: 'Telebirr', icon: '📱', color: 'bg-yellow-100 border-yellow-400' },
-    { id: 'cbe', name: 'CBE', icon: '🏦', color: 'bg-green-100 border-green-400' },
-    { id: 'abyssinia', name: 'Abyssinia Bank', icon: '🏛️', color: 'bg-blue-100 border-blue-400' },
-    { id: 'dashen', name: 'Dashen Bank', icon: '🏦', color: 'bg-red-100 border-red-400' },
-    { id: 'awash', name: 'Awash Bank', icon: '🏦', color: 'bg-purple-100 border-purple-400' },
-    { id: 'nib', name: 'NIB', icon: '🏦', color: 'bg-indigo-100 border-indigo-400' },
+    { id: 'telebirr', name: 'Telebirr', icon: '📱', color: 'bg-slate-100 border-slate-300' },
+    { id: 'cbe', name: 'CBE', icon: '🏦', color: 'bg-slate-100 border-slate-300' },
+    { id: 'abyssinia', name: 'Abyssinia Bank', icon: '🏛️', color: 'bg-slate-100 border-slate-300' },
+    { id: 'dashen', name: 'Dashen Bank', icon: '🏦', color: 'bg-slate-100 border-slate-300' },
+    { id: 'awash', name: 'Awash Bank', icon: '🏦', color: 'bg-slate-100 border-slate-300' },
+    { id: 'nib', name: 'NIB', icon: '🏦', color: 'bg-slate-100 border-slate-300' },
   ];
 
   const handleDeposit = async () => {
@@ -146,12 +146,12 @@ export default function WalletPage() {
 
       <div className="flex-grow py-8 px-4">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-3xl sm:text-4xl font-black text-gray-900 mb-8">
+          <h1 className="text-3xl sm:text-4xl font-black text-[#314fa0] mb-8">
             {lang === 'en' ? 'Wallet 💰' : 'ዋሊት 💰'}
           </h1>
 
           {/* Wallet Balance */}
-          <div className="bg-gradient-to-r from-[#314fa0] to-[#d4af37] text-white rounded-2xl shadow-lg p-6 sm:p-8 mb-8">
+          <div className="bg-gradient-to-r from-[#314fa0] to-[#2a4183] text-white rounded-2xl shadow-lg p-6 sm:p-8 mb-8">
             <p className="text-sm opacity-90">{lang === 'en' ? 'Current Balance' : 'አሁን ሚዛን'}</p>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-black mb-4 break-all">
               ETB {balance.toLocaleString()}
@@ -251,8 +251,8 @@ export default function WalletPage() {
                       onClick={() => setSelectedPaymentMethod(method.id)}
                       className={`p-3 rounded-lg border-2 transition-all text-center ${
                         selectedPaymentMethod === method.id
-                          ? `${method.color} border-current font-bold`
-                          : 'bg-gray-50 border-gray-200 hover:border-gray-300'
+                          ? 'bg-[#314fa0]/10 border-[#314fa0] text-[#314fa0] font-bold'
+                          : 'bg-slate-50 border-slate-200 hover:border-slate-300'
                       }`}
                     >
                       <p className="text-2xl mb-1">{method.icon}</p>

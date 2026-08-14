@@ -97,7 +97,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
               placeholder="Search profession or income level..."
               value={searchEqub}
               onChange={(e) => setSearchEqub(e.target.value)}
-              className="w-full px-4 py-3 border-2 border-[#d4af37] rounded-lg focus:outline-none focus:border-[#314fa0] font-bold"
+              className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-[#314fa0] font-bold"
             />
           </div>
 
@@ -110,7 +110,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                 className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
                   selectedEqub?.id === equb.id
                     ? 'border-[#314fa0] bg-[#314fa0]/10'
-                    : 'border-[#d4af37] bg-white hover:shadow-lg'
+                    : 'border-slate-300 bg-white hover:shadow-lg'
                 }`}
               >
                 <div className="flex items-start gap-3">
@@ -160,7 +160,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
             disabled={!selectedEqub}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="w-full py-3 bg-gradient-to-r from-[#314fa0] to-[#d4af37] text-white font-black rounded-lg hover:shadow-lg transition-all duration-300 disabled:opacity-50"
+            className="w-full py-3 bg-gradient-to-r from-[#314fa0] to-[#2a4183] text-white font-black rounded-lg hover:shadow-lg transition-all duration-300 disabled:opacity-50"
           >
             ✓ Continue with Selected Equb
           </motion.button>
@@ -184,7 +184,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                 placeholder="+251911223344"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-[#d4af37] rounded-lg focus:outline-none focus:border-[#314fa0] font-bold text-lg"
+                className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-[#314fa0] font-bold text-lg"
               />
               <p className="text-xs text-[#5a5a5a] mt-1">
                 Include country code (e.g., +251 for Ethiopia)
@@ -210,7 +210,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
               disabled={loading}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="w-full py-3 bg-gradient-to-r from-[#314fa0] to-[#d4af37] text-white font-black rounded-full hover:shadow-lg transition-all duration-300 disabled:opacity-50"
+              className="w-full py-3 bg-gradient-to-r from-[#314fa0] to-[#2a4183] text-white font-black rounded-full hover:shadow-lg transition-all duration-300 disabled:opacity-50"
             >
               {loading ? '⏳ Sending OTP...' : '✓ Continue'}
             </motion.button>
@@ -245,7 +245,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                 placeholder="Aisha Mohammed"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-[#d4af37] rounded-lg focus:outline-none focus:border-[#314fa0] font-bold"
+                className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-[#314fa0] font-bold"
               />
             </div>
 
@@ -259,7 +259,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                 maxLength={4}
                 value={pin}
                 onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
-                className="w-full px-4 py-3 border-2 border-[#d4af37] rounded-lg focus:outline-none focus:border-[#314fa0] font-bold text-2xl text-center tracking-widest"
+                className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-[#314fa0] font-bold text-2xl text-center tracking-widest"
               />
               <p className="text-xs text-[#5a5a5a] mt-1">
                 Remember this PIN - you&apos;ll use it to login
@@ -275,7 +275,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                 placeholder="12345678"
                 value={faydaNumber}
                 onChange={(e) => setFaydaNumber(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-[#d4af37] rounded-lg focus:outline-none focus:border-[#314fa0] font-bold"
+                className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-[#314fa0] font-bold"
               />
               <p className="text-xs text-[#5a5a5a] mt-1">
                 Your Kebele ID for verification
@@ -293,7 +293,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
               disabled={loading}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="w-full py-3 bg-gradient-to-r from-[#ce1126] to-[#d4af37] text-white font-black rounded-full hover:shadow-lg transition-all duration-300 disabled:opacity-50"
+              className="w-full py-3 bg-gradient-to-r from-[#314fa0] to-[#2a4183] text-white font-black rounded-full hover:shadow-lg transition-all duration-300 disabled:opacity-50"
             >
               {loading ? '⏳ Creating Account...' : '🎉 Complete Registration'}
             </motion.button>
@@ -326,7 +326,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
             Welcome to QalNet, {fullName}! Your account has been created successfully.
           </p>
 
-          <div className="bg-[#d4af37]/20 border-2 border-[#d4af37] rounded-lg p-4 mb-6 text-left">
+          <div className="bg-slate-100 border-2 border-slate-300 rounded-lg p-4 mb-6 text-left">
             <p className="text-sm font-bold text-[#314fa0] mb-2">✓ Account Details:</p>
             <p className="text-xs text-gray-600">
               📱 Phone: {phoneNumber}
@@ -339,7 +339,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
             </p>
             {selectedEqub && (
               <>
-                <p className="text-xs text-gray-600 mt-2 pt-2 border-t border-[#d4af37]">
+                <p className="text-xs text-gray-600 mt-2 pt-2 border-t border-slate-200">
                   🏢 Equb: {selectedEqub.name}
                 </p>
                 <p className="text-xs text-gray-600">
@@ -353,7 +353,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
             onClick={() => window.location.href = '/'}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="w-full py-3 bg-gradient-to-r from-[#314fa0] to-[#d4af37] text-white font-black rounded-full hover:shadow-lg transition-all duration-300"
+            className="w-full py-3 bg-gradient-to-r from-[#314fa0] to-[#2a4183] text-white font-black rounded-full hover:shadow-lg transition-all duration-300"
           >
             🏠 Go to Home
           </motion.button>

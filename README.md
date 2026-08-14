@@ -53,6 +53,28 @@ npm run dev --filter=@qalnet/backend
 npm run dev --filter=@qalnet/web
 ```
 
+### Run apps permanently (PM2 — recommended)
+If the API / localhost keeps dying after some hours, run the production
+bundles under PM2 instead. PM2 auto-restarts any crashed process, so a
+Neon blip, Windows sleep, or orphaned port no longer takes the site down:
+
+```bash
+npm run pm2:start     # build once, then start + persist both apps
+npm run pm2:status    # check health (online / restarts / uptime)
+npm run pm2:logs      # tail live logs
+npm run pm2:restart   # restart both apps after a code pull
+npm run pm2:stop      # stop both apps
+```
+
+- `qalnet-backend` runs `apps/backend/dist/.../main.js` on :4000
+  (reads `apps/backend/.env`, same as dev).
+- `qalnet-web` runs `next start` on :3001 (requires a `next build` —
+  `npm run pm2:start` does this automatically).
+- Logs live in `C:\Users\<you>\.pm2\logs\`.
+- To auto-start after a Windows reboot, run `npx pm2 startup` once from an
+  **admin** terminal (on Windows this needs the
+  `pm2-windows-startup` npm package or Task Scheduler entry).
+
 ### Build / test / type-check
 ```bash
 npm run build

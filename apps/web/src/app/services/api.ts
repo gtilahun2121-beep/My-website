@@ -133,8 +133,15 @@ async function request<T = unknown>(
     if (searchParams.toString()) url += `?${searchParams.toString()}`;
   }
 
+  // A 30s cap stops requests from hanging forever when the backend is slow
+  // (e.g. the Neon DB pooler is cold-starting or briefly unreachable).
+  const REQUEST_TIMEOUT_MS = 30_000;
+  const pause = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
   // One silent retry per request after a token refresh.
   let attempts = 0;
+  // One extra retry for transient network/server failures (DB timeouts etc.)
+  let transientRetries = 0;
 
   for (;;) {
     const token =
@@ -145,13 +152,32 @@ async function request<T = unknown>(
     if (token) headers.set('Authorization', `Bearer ${token}`);
 
     let response: Response;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
     try {
-      response = await fetch(url, { ...init, headers, credentials: 'include' });
+      response = await fetch(url, {
+        ...init,
+        headers,
+        credentials: 'include',
+        signal: controller.signal,
+      });
     } catch (error) {
+      clearTimeout(timer);
+      // Transient failure (network drop / timeout / backend unreachable).
+      // Retry once after a short pause — the DB pooler usually recovers.
+      if (transientRetries < 1) {
+        transientRetries += 1;
+        await pause(800);
+        continue;
+      }
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        throw new Error(`API Request Timed Out after ${REQUEST_TIMEOUT_MS / 1000}s`);
+      }
       throw new Error(
         `API Request Failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
+    clearTimeout(timer);
 
     // Only try the silent token-refresh retry on AUTHENTICATED requests
     // (a Bearer token was attached). Public endpoints like /auth/login return
@@ -182,6 +208,12 @@ async function request<T = unknown>(
     if (!response.ok) {
       const errorData =
         typeof data === 'object' && data !== null ? (data as ApiErrorData) : undefined;
+      // Retry once on 5xx — the backend may have hit a transient DB error.
+      if (response.status >= 500 && transientRetries < 1) {
+        transientRetries += 1;
+        await pause(800);
+        continue;
+      }
       throw new APIError(
         response.status,
         errorData,

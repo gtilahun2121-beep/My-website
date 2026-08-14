@@ -41,7 +41,7 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
   };
 
   return (
-    <header className="bg-gradient-to-r from-[#314fa0] to-[#ce1126] shadow-2xl sticky top-0 z-50 border-b-4 border-[#d4af37]">
+    <header className="bg-gradient-to-r from-[#314fa0]/85 to-[#ce1126]/75 backdrop-blur-md shadow-2xl sticky top-0 z-50 border-b-4 border-[#d4af37]">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex justify-between items-center gap-2 sm:gap-3">
           {/* Left corner: profile + logo */}
@@ -130,7 +130,7 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
             {!authenticated && (
               <button
                 onClick={onSignUpClick}
-                className="hidden sm:inline-block px-6 py-2 bg-white text-[#314fa0] font-bold rounded-full hover:shadow-lg transition-all text-sm"
+                className="hidden sm:inline-block px-6 py-2 bg-gradient-to-r from-[#d4af37] via-[#ecc860] to-[#d4af37] text-[#314fa0] font-black rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all text-sm"
               >
                 ✍️ Sign Up
               </button>

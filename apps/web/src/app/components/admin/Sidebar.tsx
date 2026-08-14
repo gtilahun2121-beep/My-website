@@ -171,8 +171,8 @@ export default function Sidebar({
         item.disabled
           ? 'text-admin-nav-muted/50 cursor-not-allowed'
           : active
-            ? 'bg-brand-500/20 text-white'
-            : 'text-admin-nav-muted hover:text-admin-nav-text hover:bg-white/5'
+            ? 'bg-brand-600 text-white'
+            : 'text-admin-nav-muted hover:text-admin-nav-text hover:bg-brand-50'
       }`;
 
       return (
@@ -190,7 +190,7 @@ export default function Sidebar({
                   className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-1 rounded-r-full bg-brand-400"
                 />
               )}
-              <span className={active ? 'text-brand-300' : ''}>{item.icon}</span>
+              <span className={active ? 'text-brand-600' : ''}>{item.icon}</span>
               <span className={labelHidden}>{item.label}</span>
               {badge != null && (
                 <span
@@ -251,7 +251,7 @@ export default function Sidebar({
           ref={closeButtonRef}
           type="button"
           onClick={onClose}
-          className="lg:hidden absolute top-4 right-3 p-1.5 rounded-lg text-admin-nav-muted hover:text-white hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+          className="lg:hidden absolute top-4 right-3 p-1.5 rounded-lg text-admin-nav-muted hover:text-admin-nav-text hover:bg-brand-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
           aria-label="Close admin navigation"
         >
           <svg viewBox="0 0 24 24" className="w-5 h-5" {...stroke}>
@@ -297,7 +297,7 @@ export default function Sidebar({
             <button
               type="button"
               onClick={onToggleCollapsed}
-              className={`flex items-center w-full rounded-lg py-2 text-xs font-bold text-admin-nav-muted hover:text-white hover:bg-white/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 gap-3 ${
+              className={`flex items-center w-full rounded-lg py-2 text-xs font-bold text-admin-nav-muted hover:text-admin-nav-text hover:bg-brand-50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 gap-3 ${
                 collapsed ? 'lg:gap-0 lg:justify-center' : ''
               } px-3 ${collapsed ? 'lg:px-0' : ''}`}
             >
@@ -322,7 +322,7 @@ export default function Sidebar({
                 onClick={() => setProfileOpen((v) => !v)}
                 aria-haspopup="menu"
                 aria-expanded={profileOpen}
-                className={`flex w-full items-center rounded-lg p-2 text-left transition-colors hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 gap-3 ${
+                className={`flex w-full items-center rounded-lg p-2 text-left transition-colors hover:bg-brand-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 gap-3 ${
                   collapsed ? 'lg:gap-0 lg:justify-center' : ''
                 }`}
               >
@@ -366,7 +366,7 @@ export default function Sidebar({
                     type="button"
                     role="menuitem"
                     onClick={handleSignOut}
-                    className="flex w-full items-center gap-3 px-4 py-2.5 text-sm font-semibold text-danger-400 hover:bg-white/5"
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-sm font-semibold text-danger-500 hover:bg-brand-50"
                   >
                     <svg viewBox="0 0 24 24" className="w-4.5 h-4.5" {...stroke}>
                       <path d="M9 21H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3m4 13 5-5m0 0-5-5m5 5H9" />

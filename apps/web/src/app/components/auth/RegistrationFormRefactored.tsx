@@ -198,7 +198,7 @@ export default function RegistrationFormRefactored({
             disabled={!selectedEqub}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="w-full py-3 mt-6 bg-gradient-to-r from-[#314fa0] to-[#d4af37] text-white font-black rounded-full hover:shadow-lg transition-all duration-300 disabled:opacity-50"
+            className="w-full py-3 mt-6 bg-gradient-to-r from-[#314fa0] to-[#2a4183] text-white font-black rounded-full hover:shadow-lg transition-all duration-300 disabled:opacity-50"
           >
             ✓ Continue with Selected Equb
           </motion.button>
@@ -228,7 +228,7 @@ export default function RegistrationFormRefactored({
       {/* Step: OTP Verification */}
       {step === 'otp' && (
         <>
-          <div className="mb-4 bg-[#d4af37]/20 border-2 border-[#d4af37] rounded-lg p-3">
+          <div className="mb-4 bg-slate-100 border-2 border-slate-300 rounded-lg p-3">
             <p className="text-xs text-[#314fa0] font-bold">📱 Phone: {phoneNumber}</p>
           </div>
           <OtpVerificationStep
@@ -246,7 +246,7 @@ export default function RegistrationFormRefactored({
       {/* Step: Details Entry */}
       {step === 'details' && (
         <>
-          <div className="mb-4 bg-[#d4af37]/20 border-2 border-[#d4af37] rounded-lg p-3 space-y-1">
+          <div className="mb-4 bg-slate-100 border-2 border-slate-300 rounded-lg p-3 space-y-1">
             <p className="text-xs text-[#314fa0] font-bold">📱 Phone: {phoneNumber}</p>
             <p className="text-xs text-[#314fa0] font-bold">🏢 Equb: {selectedEqub?.name}</p>
           </div>
@@ -276,7 +276,7 @@ export default function RegistrationFormRefactored({
             message="Your account has been created successfully"
             icon="🎉"
           />
-          <div className="mt-6 bg-[#d4af37]/20 border-2 border-[#d4af37] rounded-lg p-4 space-y-2 text-sm">
+          <div className="mt-6 bg-slate-100 border-2 border-slate-300 rounded-lg p-4 space-y-2 text-sm">
             <p className="font-bold text-[#314fa0] mb-3">Account Summary:</p>
             <p className="text-gray-700">
               <span className="font-bold">👤 Name:</span> {fullName}
@@ -298,7 +298,7 @@ export default function RegistrationFormRefactored({
             onClick={() => window.location.href = '/auth?tab=login'}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="w-full py-3 mt-6 bg-gradient-to-r from-[#314fa0] to-[#d4af37] text-white font-black rounded-full hover:shadow-lg transition-all"
+            className="w-full py-3 mt-6 bg-gradient-to-r from-[#314fa0] to-[#2a4183] text-white font-black rounded-full hover:shadow-lg transition-all"
           >
             🔐 Go to Sign In
           </motion.button>

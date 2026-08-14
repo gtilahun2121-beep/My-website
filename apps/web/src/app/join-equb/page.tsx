@@ -55,7 +55,7 @@ export default function JoinEqubPage() {
 
       <div className="flex-grow py-8 px-4">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-3xl sm:text-4xl font-black text-gray-900 mb-2">
+          <h1 className="text-3xl sm:text-4xl font-black text-[#314fa0] mb-2">
             {lang === 'en' ? 'Join an Equb ➕' : 'Equb ይቀላቀሉ ➕'}
           </h1>
           <p className="text-gray-600 mb-8">
@@ -87,7 +87,7 @@ export default function JoinEqubPage() {
           {/* Equb Listings */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {equbs.length > 0 ? equbs.map((equb, idx) => (
-              <div key={idx} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all border-l-4 border-[#314fa0]">
+              <div key={idx} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all border-t-4 border-[#314fa0]">
                 <h3 className="text-lg font-bold text-gray-900 mb-3">{equb.name || 'Unnamed Equb'}</h3>
                 <div className="space-y-2 text-sm mb-4">
                   <div className="flex justify-between">
