@@ -107,7 +107,7 @@ export default function ProfileMenu({ variant = 'light' }: ProfileMenuProps) {
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-full mt-2 w-72 bg-card rounded-card border border-slate-200 shadow-xl z-50 overflow-hidden"
+          className="absolute right-0 top-full mt-2 w-72 max-w-[calc(100vw-1rem)] bg-card rounded-card border border-slate-200 shadow-xl z-50 overflow-hidden"
         >
           <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-100 bg-slate-50">
             {user.profilePhoto ? (

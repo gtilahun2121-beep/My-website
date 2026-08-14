@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, useInView } from 'framer-motion';
-import { useRef, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 
 interface EqubRotationProps {
   title: string;
@@ -17,11 +17,24 @@ export default function EqubRotation({
   const containerRef = useRef(null);
   const isInView = useInView(containerRef, { once: true, margin: '-100px' });
 
+  // Scale the member orbit radius to fit small viewports (circle is min(24rem, 80vw)).
+  const [radius, setRadius] = useState(120);
+
+  useEffect(() => {
+    const update = () => {
+      const box = Math.min(384, window.innerWidth * 0.8);
+      setRadius(Math.max(88, Math.min(120, box / 2 - 40)));
+    };
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
+
   // Generate circle positions for members
   const members = Array.from({ length: memberCount }, (_, i) => {
     const angle = (i / memberCount) * Math.PI * 2;
-    const x = Math.cos(angle) * 120;
-    const y = Math.sin(angle) * 120;
+    const x = Math.cos(angle) * radius;
+    const y = Math.sin(angle) * radius;
     return { x, y, angle };
   });
 
@@ -71,20 +84,20 @@ export default function EqubRotation({
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-4xl md:text-5xl font-black text-white mb-4 drop-shadow-lg">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-4 drop-shadow-lg">
             💰 {title}
           </h2>
-          <p className="text-xl text-white/90 drop-shadow-md">{description}</p>
+          <p className="text-lg sm:text-xl text-white/90 drop-shadow-md">{description}</p>
         </motion.div>
 
         {/* Equb Circle Animation */}
         <motion.div
           ref={containerRef}
-          className="flex justify-center items-center min-h-96 relative"
+          className="flex justify-center items-center min-h-[min(24rem,80vw)] relative"
         >
           {/* Rotating outer circle */}
           <svg
-            className="absolute w-96 h-96"
+            className="absolute w-[min(24rem,80vw)] h-[min(24rem,80vw)]"
             viewBox="0 0 300 300"
             style={{ filter: 'drop-shadow(0 0 20px rgba(212, 175, 55, 0.3))' }}
           >
@@ -143,7 +156,7 @@ export default function EqubRotation({
 
           {/* Member avatars positioned around circle */}
           <motion.div
-            className="absolute w-96 h-96 flex items-center justify-center"
+            className="absolute w-[min(24rem,80vw)] h-[min(24rem,80vw)] flex items-center justify-center"
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : { opacity: 0 }}
             transition={{ duration: 0.6 }}

@@ -78,7 +78,7 @@ export default function RegisterChoiceModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="bg-gradient-to-r from-[#314fa0] to-[#d4af37] px-8 py-4 text-center">
+        <div className="bg-gradient-to-r from-[#314fa0] to-[#2a4183] px-8 py-4 text-center">
           <h2 className="text-xl font-black text-white mb-1">QalNet</h2>
           <p className="text-white/90 font-semibold text-sm">
             {lang === 'en'
@@ -126,7 +126,7 @@ export default function RegisterChoiceModal({
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={onSignIn}
-              className="w-full bg-white text-blue-600 px-6 py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all duration-300"
+              className="w-full bg-white text-[#314fa0] px-6 py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all duration-300"
             >
               <span>🔐</span>
               <span>{lang === 'en' ? 'I Already Have an Account' : lang === 'am' ? 'ቀድሞ መስተዋወቅ አለብኝ' : 'Akkaunt Jira'}</span>

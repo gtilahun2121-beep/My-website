@@ -165,14 +165,14 @@ export default function Sidebar({
         (item.label === 'Approvals' && pendingCount != null && pendingCount > 0 ? pendingCount : undefined) ??
         (item.label === 'Notifications' && unreadCount > 0 ? unreadCount : undefined);
 
-      const linkCls = `relative flex items-center rounded-lg py-2.5 text-sm font-semibold transition-colors ${
-        collapsed ? 'lg:justify-center' : 'gap-3'
-      } ${collapsed ? 'lg:px-0' : 'px-3'} ${
+      const linkCls = `relative flex items-center rounded-lg py-2.5 text-sm font-semibold transition-colors gap-3 ${
+        collapsed ? 'lg:gap-0 lg:justify-center' : ''
+      } px-3 ${collapsed ? 'lg:px-0' : ''} ${
         item.disabled
           ? 'text-admin-nav-muted/50 cursor-not-allowed'
           : active
-            ? 'bg-brand-500/20 text-white'
-            : 'text-admin-nav-muted hover:text-admin-nav-text hover:bg-white/5'
+            ? 'bg-brand-600 text-white'
+            : 'text-admin-nav-muted hover:text-admin-nav-text hover:bg-brand-50'
       }`;
 
       return (
@@ -190,12 +190,12 @@ export default function Sidebar({
                   className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-1 rounded-r-full bg-brand-400"
                 />
               )}
-              <span className={active ? 'text-brand-300' : ''}>{item.icon}</span>
+              <span className={active ? 'text-brand-600' : ''}>{item.icon}</span>
               <span className={labelHidden}>{item.label}</span>
               {badge != null && (
                 <span
-                  className={`inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-brand-500 text-white text-[11px] font-black ${
-                    collapsed ? 'lg:hidden' : 'ml-auto'
+                  className={`ml-auto inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-brand-500 text-white text-[11px] font-black ${
+                    collapsed ? 'lg:hidden' : ''
                   }`}
                   aria-label={`${badge} pending ${item.label.toLowerCase()} items`}
                 >
@@ -232,8 +232,8 @@ export default function Sidebar({
         <Link
           href="/admin/dashboard"
           onClick={onClose}
-          className={`flex items-center gap-3 h-16 shrink-0 border-b border-admin-nav-border ${
-            collapsed ? 'lg:justify-center lg:px-0' : 'px-5'
+          className={`flex items-center gap-3 h-16 shrink-0 border-b border-admin-nav-border px-5 ${
+            collapsed ? 'lg:px-0 lg:justify-center' : ''
           }`}
           aria-label="QalNet Admin Console — Dashboard"
         >
@@ -251,7 +251,7 @@ export default function Sidebar({
           ref={closeButtonRef}
           type="button"
           onClick={onClose}
-          className="lg:hidden absolute top-4 right-3 p-1.5 rounded-lg text-admin-nav-muted hover:text-white hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+          className="lg:hidden absolute top-4 right-3 p-1.5 rounded-lg text-admin-nav-muted hover:text-admin-nav-text hover:bg-brand-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
           aria-label="Close admin navigation"
         >
           <svg viewBox="0 0 24 24" className="w-5 h-5" {...stroke}>
@@ -297,9 +297,9 @@ export default function Sidebar({
             <button
               type="button"
               onClick={onToggleCollapsed}
-              className={`flex items-center w-full rounded-lg py-2 text-xs font-bold text-admin-nav-muted hover:text-white hover:bg-white/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 ${
-                collapsed ? 'lg:justify-center' : 'gap-3'
-              } ${collapsed ? 'lg:px-0' : 'px-3'}`}
+              className={`flex items-center w-full rounded-lg py-2 text-xs font-bold text-admin-nav-muted hover:text-admin-nav-text hover:bg-brand-50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 gap-3 ${
+                collapsed ? 'lg:gap-0 lg:justify-center' : ''
+              } px-3 ${collapsed ? 'lg:px-0' : ''}`}
             >
               <svg
                 viewBox="0 0 24 24"
@@ -322,8 +322,8 @@ export default function Sidebar({
                 onClick={() => setProfileOpen((v) => !v)}
                 aria-haspopup="menu"
                 aria-expanded={profileOpen}
-                className={`flex w-full items-center rounded-lg p-2 text-left transition-colors hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 ${
-                  collapsed ? 'lg:justify-center' : 'gap-3'
+                className={`flex w-full items-center rounded-lg p-2 text-left transition-colors hover:bg-brand-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 gap-3 ${
+                  collapsed ? 'lg:gap-0 lg:justify-center' : ''
                 }`}
               >
                 {user.profilePhoto ? (
@@ -366,7 +366,7 @@ export default function Sidebar({
                     type="button"
                     role="menuitem"
                     onClick={handleSignOut}
-                    className="flex w-full items-center gap-3 px-4 py-2.5 text-sm font-semibold text-danger-400 hover:bg-white/5"
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-sm font-semibold text-danger-500 hover:bg-brand-50"
                   >
                     <svg viewBox="0 0 24 24" className="w-4.5 h-4.5" {...stroke}>
                       <path d="M9 21H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3m4 13 5-5m0 0-5-5m5 5H9" />

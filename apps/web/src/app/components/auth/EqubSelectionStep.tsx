@@ -37,7 +37,7 @@ export default function EqubSelectionStep({ onSelect, selected }: EqubSelectionS
             placeholder="Search profession or income level..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full px-4 py-3 border-2 border-[#d4af37] rounded-lg focus:outline-none focus:border-[#314fa0] font-bold"
+            className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-[#314fa0] font-bold"
           />
         </div>
 
@@ -51,7 +51,7 @@ export default function EqubSelectionStep({ onSelect, selected }: EqubSelectionS
               className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
                 selected?.id === equb.id
                   ? 'border-[#314fa0] bg-[#314fa0]/10'
-                  : 'border-[#d4af37] bg-white hover:shadow-lg'
+                  : 'border-slate-300 bg-white hover:shadow-lg'
               }`}
             >
               <div className="flex items-start gap-3">

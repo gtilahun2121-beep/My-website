@@ -57,7 +57,9 @@ export function getPool(): Sql {
     _sql = postgres(url, {
         // Neon recommends a modest pool size for serverless workloads
         max: 10,
-        idle_timeout: 20,   // seconds before an idle connection is closed
+        idle_timeout: 300,  // seconds before an idle connection is closed
+                            // (kept high so the pooler stays warm and the
+                            // frequent cold-starts/ETIMEDOUTs are avoided)
         max_lifetime: 1800, // seconds before a connection is recycled (30 min)
         connect_timeout: 60, // raised from 10s — Neon pooler can take up to ~30s on cold start
 

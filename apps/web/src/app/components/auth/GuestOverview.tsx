@@ -99,7 +99,7 @@ export default function GuestOverview({ lang }: GuestOverviewProps) {
           className="bg-[#f5f3f0] border-2 border-[#d4af37] rounded-lg p-4"
         >
           <p className="font-black text-[#314fa0] mb-3">💵 Filter by Income Level</p>
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <motion.button
               onClick={() => setSelectedIncome('all')}
               whileHover={{ scale: 1.05 }}
@@ -210,18 +210,18 @@ export default function GuestOverview({ lang }: GuestOverviewProps) {
         {/* Stats */}
         <motion.div
           variants={itemVariants}
-          className="grid grid-cols-3 gap-3"
+          className="grid grid-cols-1 min-[380px]:grid-cols-3 gap-3"
         >
           <div className="bg-[#314fa0] text-white rounded-lg p-4 text-center">
-            <div className="text-2xl font-black">{equbCategories.length}</div>
+            <div className="text-xl sm:text-2xl font-black break-all">{equbCategories.length}</div>
             <div className="text-xs">Categories</div>
           </div>
           <div className="bg-[#d4af37] text-[#314fa0] rounded-lg p-4 text-center">
-            <div className="text-2xl font-black">{getTotalMembers().toLocaleString()}+</div>
+            <div className="text-xl sm:text-2xl font-black break-all">{getTotalMembers().toLocaleString()}+</div>
             <div className="text-xs">Total Members</div>
           </div>
           <div className="bg-[#ce1126] text-white rounded-lg p-4 text-center">
-            <div className="text-2xl font-black">99%</div>
+            <div className="text-xl sm:text-2xl font-black">99%</div>
             <div className="text-xs">On-Time Payouts</div>
           </div>
         </motion.div>
@@ -270,18 +270,18 @@ export default function GuestOverview({ lang }: GuestOverviewProps) {
               <button onClick={() => setShowModal(false)} className="text-2xl text-gray-400">✕</button>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
               <div className="bg-[#314fa0]/10 rounded-lg p-4">
                 <p className="text-xs text-gray-600 mb-1">Monthly Payment</p>
-                <p className="text-2xl font-black text-[#314fa0]">ETB {selectedEqub.monthlyPayment.toLocaleString()}</p>
+                <p className="text-xl sm:text-2xl font-black text-[#314fa0] break-all">ETB {selectedEqub.monthlyPayment.toLocaleString()}</p>
               </div>
               <div className="bg-[#d4af37]/20 rounded-lg p-4">
                 <p className="text-xs text-gray-600 mb-1">Expected Return</p>
-                <p className="text-2xl font-black text-[#d4af37]">ETB {selectedEqub.expectedReturn.toLocaleString()}</p>
+                <p className="text-xl sm:text-2xl font-black text-[#d4af37] break-all">ETB {selectedEqub.expectedReturn.toLocaleString()}</p>
               </div>
               <div className="bg-blue-100 rounded-lg p-4">
                 <p className="text-xs text-gray-600 mb-1">Active Members</p>
-                <p className="text-2xl font-black text-blue-700">{selectedEqub.members.toLocaleString()}</p>
+                <p className="text-xl sm:text-2xl font-black text-blue-700 break-all">{selectedEqub.members.toLocaleString()}</p>
               </div>
               <div className={`rounded-lg p-4 ${
                 selectedEqub.incomeLevel === 'low' ? 'bg-yellow-100' :

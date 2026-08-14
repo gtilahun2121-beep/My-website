@@ -3,14 +3,14 @@
 // ========================================================================
 
 // NEXT_PUBLIC_API_BASE_URL is the base URL WITHOUT the /api/v1 suffix
-// (e.g. http://localhost:3000). NEXT_PUBLIC_API_URL is the legacy name.
+// (e.g. http://localhost:4000). NEXT_PUBLIC_API_URL is the legacy name.
 // Both are supported for backwards compat.
 function resolveApiUrl(): string {
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
   if (baseUrl) return `${baseUrl.replace(/\/$/, '')}/api/v1`;
   const legacyUrl = process.env.NEXT_PUBLIC_API_URL;
   if (legacyUrl) return legacyUrl.replace(/\/$/, '');
-  return 'http://localhost:3000/api/v1';
+  return 'http://localhost:4000/api/v1';
 }
 
 export interface EnvironmentConfig {

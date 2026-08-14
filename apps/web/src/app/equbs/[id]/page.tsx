@@ -133,12 +133,12 @@ export default function EqubDetailPage() {
                   <p className="text-gray-700 mb-6">{equb.description}</p>
                 )}
 
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
                   <div className="bg-gray-50 rounded-lg p-4">
                     <p className="text-xs text-gray-500 uppercase font-bold mb-1">
                       {lang === 'en' ? 'Contribution' : 'መዋጮ'}
                     </p>
-                    <p className="text-xl font-black text-[#314fa0]">
+                    <p className="text-lg sm:text-xl font-black text-[#314fa0] break-all">
                       ETB {Number(equb.contribution_amount).toLocaleString()}
                     </p>
                   </div>
@@ -146,7 +146,7 @@ export default function EqubDetailPage() {
                     <p className="text-xs text-gray-500 uppercase font-bold mb-1">
                       {lang === 'en' ? 'Total Pot' : 'ጠቅላላ ማሰባሰብያ'}
                     </p>
-                    <p className="text-xl font-black text-gray-900">
+                    <p className="text-lg sm:text-xl font-black text-gray-900 break-all">
                       ETB {Number(equb.total_amount).toLocaleString()}
                     </p>
                   </div>
@@ -154,7 +154,7 @@ export default function EqubDetailPage() {
                     <p className="text-xs text-gray-500 uppercase font-bold mb-1">
                       {lang === 'en' ? 'Members' : 'አባላት'}
                     </p>
-                    <p className="text-xl font-black text-gray-900">
+                    <p className="text-lg sm:text-xl font-black text-gray-900">
                       {equb.member_count} / {equb.total_rounds}
                     </p>
                   </div>
@@ -162,7 +162,7 @@ export default function EqubDetailPage() {
                     <p className="text-xs text-gray-500 uppercase font-bold mb-1">
                       {lang === 'en' ? 'Round' : 'ዙር'}
                     </p>
-                    <p className="text-xl font-black text-gray-900">
+                    <p className="text-lg sm:text-xl font-black text-gray-900">
                       {equb.current_round} / {equb.total_rounds}
                     </p>
                   </div>
@@ -170,7 +170,7 @@ export default function EqubDetailPage() {
                     <p className="text-xs text-gray-500 uppercase font-bold mb-1">
                       {lang === 'en' ? 'Cycle' : 'ዑደት'}
                     </p>
-                    <p className="text-xl font-black text-gray-900">
+                    <p className="text-lg sm:text-xl font-black text-gray-900">
                       {equb.cycle_days} {lang === 'en' ? 'days' : 'ቀናት'}
                     </p>
                   </div>
@@ -178,7 +178,7 @@ export default function EqubDetailPage() {
                     <p className="text-xs text-gray-500 uppercase font-bold mb-1">
                       {lang === 'en' ? 'Open Slots' : 'ክፍት ቦታ'}
                     </p>
-                    <p className="text-xl font-black text-gray-900">{equb.open_slots}</p>
+                    <p className="text-lg sm:text-xl font-black text-gray-900">{equb.open_slots}</p>
                   </div>
                 </div>
 

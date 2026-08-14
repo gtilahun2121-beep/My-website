@@ -79,8 +79,8 @@ export default function TopHeader({ title, subtitle, onMenuClick, variant = 'adm
   const isAdmin = variant === 'admin';
 
   const headerCls = isAdmin
-    ? 'bg-admin-header/95 border-admin-border'
-    : 'bg-card/90 border-slate-200';
+    ? 'bg-admin-header border-admin-border'
+    : 'bg-card border-slate-200';
   const iconBtnCls = isAdmin
     ? 'text-admin-muted hover:bg-admin-card hover:text-admin-text'
     : 'text-slate-500 hover:bg-slate-100';
@@ -92,7 +92,7 @@ export default function TopHeader({ title, subtitle, onMenuClick, variant = 'adm
 
   return (
     <>
-      <header className={`sticky top-0 z-30 backdrop-blur-md border-b ${headerCls}`}>
+      <header className={`sticky top-0 z-30 border-b ${headerCls}`}>
       <div className="flex items-center gap-4 px-4 sm:px-6 h-16">
         {/* Mobile menu toggle */}
         <button

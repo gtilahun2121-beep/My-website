@@ -22,7 +22,7 @@ export default function IncomeFilterButtons({ selectedIncome, onSelect }: Income
       className="bg-[#f5f3f0] border-2 border-[#d4af37] rounded-lg p-4"
     >
       <p className="font-black text-[#314fa0] mb-3">💵 Filter by Income Level</p>
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         {filterOptions.map((option) => (
           <motion.button
             key={option.value}

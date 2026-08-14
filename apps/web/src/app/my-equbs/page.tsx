@@ -45,7 +45,7 @@ export default function MyEqubsPage() {
 
       <div className="flex-grow py-8 px-4">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-4xl font-black text-gray-900 mb-2">
+          <h1 className="text-3xl sm:text-4xl font-black text-gray-900 mb-2">
             {lang === 'en' ? 'My Equbs 👥' : 'ስሌዎ Equbs 👥'}
           </h1>
           <p className="text-gray-600 mb-8">
@@ -60,7 +60,7 @@ export default function MyEqubsPage() {
               <p className="text-sm">{error}</p>
             </div>
           ) : equbs.length === 0 ? (
-            <div className="bg-white rounded-xl shadow-md p-12 text-center">
+            <div className="bg-white rounded-xl shadow-md p-6 sm:p-12 text-center">
               <p className="text-5xl mb-4">👥</p>
               <h3 className="text-xl font-bold text-gray-900 mb-2">
                 {lang === 'en' ? 'No Equbs yet' : 'እስካሁን እቁብ የለም'}
@@ -68,7 +68,7 @@ export default function MyEqubsPage() {
               <p className="text-gray-600 mb-6">
                 {lang === 'en' ? 'Join or create your first Equb group to start saving.' : 'መቆጠብ ለመጀመር የመጀመሪያ እቁብዎን ይቀላቀሉ ወይም ይፍጠሩ።'}
               </p>
-              <div className="flex gap-3 justify-center">
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Link
                   href="/join-equb"
                   className="px-6 py-3 bg-[#314fa0] text-white font-bold rounded-lg hover:bg-[#2a4183] transition-all"
