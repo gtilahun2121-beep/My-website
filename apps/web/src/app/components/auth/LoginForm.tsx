@@ -31,16 +31,20 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
     }
   }, [step, router]);
 
-  // Step 1: Enter phone number
+  // Step 1: Enter phone or email
   const handlePhoneSubmit = () => {
     setError('');
-    if (!phoneNumber.match(/^\+?[1-9]\d{1,14}$/)) {
-      setError('Invalid phone number format');
-      onError?.('Invalid Number', 'Please enter a valid phone number', 3000);
+    // Allow basic email formats OR phone numbers (can start with 0 or +)
+    const isPhone = /^\+?[0-9]{9,15}$/.test(phoneNumber.trim());
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(phoneNumber.trim());
+    
+    if (!isPhone && !isEmail) {
+      setError('Invalid phone number or email format');
+      onError?.('Invalid Identifier', 'Please enter a valid phone number or email', 3000);
       return;
     }
 
-    onSuccess?.('Phone Found', 'Enter your PIN to continue', 3000);
+    onSuccess?.('Account Found', 'Enter your PIN to continue', 3000);
     setStep('pin');
   };
 
@@ -89,23 +93,23 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
             🔐 Sign In
           </h3>
           <p className="text-center text-sm text-gray-600 mb-6">
-            Enter your phone and PIN
+            Enter your phone or email and PIN
           </p>
 
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-bold text-[#314fa0] mb-2">
-                Phone Number
+                Phone Number or Email
               </label>
               <input
-                type="tel"
-                placeholder="+251911223344"
+                type="text"
+                placeholder="+251911223344 or email@example.com"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
                 className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-[#314fa0] font-bold text-lg"
               />
               <p className="text-xs text-[#5a5a5a] mt-1">
-                Same number you used to register
+                Same phone or email you used to register
               </p>
             </div>
 
@@ -146,7 +150,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
             🔐 Enter Your PIN
           </h3>
           <p className="text-sm text-center text-[#5a5a5a] mb-6">
-            Phone: {phoneNumber}
+            Account: {phoneNumber}
           </p>
 
           <div className="space-y-4">
@@ -195,7 +199,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
               }}
               className="w-full py-2 text-[#314fa0] font-bold hover:underline"
             >
-              ← Use Different Phone
+              ← Use Different Account
             </button>
           </div>
 
