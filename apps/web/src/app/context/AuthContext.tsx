@@ -50,7 +50,7 @@ export interface SignupData {
   firstName: string;
   lastName: string;
   email: string;
-  password: string;     // 4-digit PIN — padded by api.ts before sending
+  password: string;     // 6-digit PIN — padded by api.ts before sending
   phoneNumber: string;
   fayda: string;        // 16-digit Fayda national ID
   telegramHandle?: string;

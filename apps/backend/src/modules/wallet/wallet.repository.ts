@@ -10,6 +10,18 @@ export class WalletRepository {
     }
 
     /**
+     * Returns the user's argon2 password/PIN hash so the service can verify
+     * the registered PIN before processing a withdrawal. RLS context is not
+     * used here on purpose — the caller (a logged-in user acting on their own
+     * wallet) needs to read their own hash.
+     */
+    async findPasswordHash(userId: string): Promise<string | null> {
+        const sql = getPool();
+        const rows = await sql`SELECT password_hash FROM users WHERE id = ${userId}`;
+        return rows[0]?.password_hash ?? null;
+    }
+
+    /**
      * Credits the wallet and records a deposit ledger entry atomically.
      * Returns the updated wallet row.
      */

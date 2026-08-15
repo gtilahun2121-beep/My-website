@@ -287,7 +287,7 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <p className="text-sm font-bold text-slate-800">Change PIN</p>
-                    <p className="text-xs text-slate-500">Reset your 4-digit login PIN via SMS OTP</p>
+                    <p className="text-xs text-slate-500">Reset your 6-digit login PIN via SMS OTP</p>
                   </div>
                 </div>
                 <button

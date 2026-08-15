@@ -21,6 +21,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
   const [step, setStep] = useState<LoginStep>('phone');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [pin, setPin] = useState('');
+  const [showPin, setShowPin] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -51,9 +52,9 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
   // Step 2: Verify PIN against the real backend
   const handlePinSubmit = async () => {
     setError('');
-    if (pin.length !== 4 || !/^\d+$/.test(pin)) {
-      setError('PIN must be exactly 4 digits');
-      onError?.('Invalid PIN', 'PIN must be exactly 4 digits', 3000);
+    if (pin.length !== 6 || !/^\d+$/.test(pin)) {
+      setError('PIN must be exactly 6 digits');
+      onError?.('Invalid PIN', 'PIN must be exactly 6 digits', 3000);
       return;
     }
 
@@ -156,16 +157,38 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-bold text-[#314fa0] mb-2">
-                4-Digit Security PIN
+                6-Digit Security PIN
               </label>
-              <input
-                type="password"
-                placeholder="••••"
-                maxLength={4}
-                value={pin}
-                onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
-                className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-[#314fa0] font-bold text-3xl text-center tracking-widest"
-              />
+              <div className="relative">
+                <input
+                  type={showPin ? 'text' : 'password'}
+                  placeholder="••••"
+                  maxLength={6}
+                  value={pin}
+                  onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
+                  className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-[#314fa0] font-bold text-3xl text-center tracking-widest pr-12"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPin((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full text-gray-400 hover:text-[#314fa0] hover:bg-gray-100 transition-colors"
+                  aria-label={showPin ? 'Hide PIN' : 'Show PIN'}
+                >
+                  {showPin ? (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                      <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24" />
+                      <line x1="1" y1="1" x2="23" y2="23" />
+                    </svg>
+                  ) : (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  )}
+                </button>
+              </div>
               <p className="text-xs text-[#5a5a5a] mt-1">
                 Enter the PIN you set during registration
               </p>

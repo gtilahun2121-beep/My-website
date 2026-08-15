@@ -41,17 +41,17 @@ export default function NewPinStep({
           🔑 Create New Access Code
         </h3>
         <p className="text-center text-sm text-gray-600 mb-4">
-          Set a new 4-digit PIN to secure your account
+          Set a new 6-digit PIN to secure your account
         </p>
       </div>
 
       <FormInput
-        label="New 4-Digit PIN"
+        label="New 6-Digit PIN"
         type="password"
         placeholder="••••"
         value={newPin}
         onChange={(val) => onNewPinChange(val.replace(/\D/g, ''))}
-        maxLength={4}
+        maxLength={6}
         icon="🔐"
         hint="You'll use this to sign in"
         error={!pinValidation.valid && newPin ? pinValidation.error : undefined}
@@ -63,7 +63,7 @@ export default function NewPinStep({
         placeholder="••••"
         value={confirmPin}
         onChange={(val) => onConfirmPinChange(val.replace(/\D/g, ''))}
-        maxLength={4}
+        maxLength={6}
         icon="🔑"
         hint="Must match the new PIN above"
         error={!confirmValidation.valid && confirmPin ? confirmValidation.error : undefined}

@@ -62,6 +62,8 @@ function ResetPinModal({
 }) {
   const [pin, setPin] = useState('');
   const [confirm, setConfirm] = useState('');
+  const [showPin, setShowPin] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
@@ -81,8 +83,8 @@ function ResetPinModal({
 
   const submit = async () => {
     setError(null);
-    if (!/^\d{4}$/.test(pin)) {
-      setError('Enter a new 4-digit PIN.');
+    if (!/^\d{6}$/.test(pin)) {
+      setError('Enter a new 6-digit PIN.');
       return;
     }
     if (pin !== confirm) {
@@ -115,7 +117,7 @@ function ResetPinModal({
       <div className="w-full max-w-sm bg-admin-card rounded-card border border-admin-border shadow-xl p-6">
         <h2 className="text-lg font-extrabold text-admin-text">Reset PIN</h2>
         <p className="mt-1 text-sm text-admin-muted">
-          Set a new 4-digit PIN for <span className="font-bold text-admin-text">{fullName}</span>. Their account will be
+          Set a new 6-digit PIN for <span className="font-bold text-admin-text">{fullName}</span>. Their account will be
           unlocked immediately.
         </p>
 
@@ -127,17 +129,31 @@ function ResetPinModal({
             >
               New PIN
             </label>
-            <input
-              id="reset-pin"
-              type="password"
-              inputMode="numeric"
-              autoComplete="new-password"
-              maxLength={4}
-              value={pin}
-              onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
-              placeholder="••••"
-              className="w-full py-2.5 px-3 rounded-lg bg-admin-elevated border border-admin-border text-sm text-admin-text text-center tracking-widest placeholder:text-admin-disabled focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500"
-            />
+            <div className="relative">
+              <input
+                id="reset-pin"
+                type={showPin ? 'text' : 'password'}
+                inputMode="numeric"
+                autoComplete="new-password"
+                maxLength={6}
+                value={pin}
+                onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                placeholder="••••"
+                className="w-full py-2.5 px-3 pr-11 rounded-lg bg-admin-elevated border border-admin-border text-sm text-admin-text text-center tracking-widest placeholder:text-admin-disabled focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPin((v) => !v)}
+                aria-label="Show/Hide PIN"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:text-[#314fa0] hover:bg-gray-100 transition-colors"
+              >
+                {!showPin ? (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                ) : (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                )}
+              </button>
+            </div>
           </div>
           <div>
             <label
@@ -146,17 +162,31 @@ function ResetPinModal({
             >
               Confirm new PIN
             </label>
-            <input
-              id="confirm-pin"
-              type="password"
-              inputMode="numeric"
-              autoComplete="new-password"
-              maxLength={4}
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value.replace(/\D/g, '').slice(0, 4))}
-              placeholder="••••"
-              className="w-full py-2.5 px-3 rounded-lg bg-admin-elevated border border-admin-border text-sm text-admin-text text-center tracking-widest placeholder:text-admin-disabled focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500"
-            />
+            <div className="relative">
+              <input
+                id="confirm-pin"
+                type={showConfirm ? 'text' : 'password'}
+                inputMode="numeric"
+                autoComplete="new-password"
+                maxLength={6}
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                placeholder="••••"
+                className="w-full py-2.5 px-3 pr-11 rounded-lg bg-admin-elevated border border-admin-border text-sm text-admin-text text-center tracking-widest placeholder:text-admin-disabled focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirm((v) => !v)}
+                aria-label="Show/Hide PIN"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:text-[#314fa0] hover:bg-gray-100 transition-colors"
+              >
+                {!showConfirm ? (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                ) : (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                )}
+              </button>
+            </div>
           </div>
         </div>
 

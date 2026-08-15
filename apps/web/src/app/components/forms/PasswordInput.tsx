@@ -2,9 +2,8 @@
 
 import { useState } from 'react';
 
-interface FormInputProps {
+interface PasswordInputProps {
     label: string;
-    type?: string;
     value: string;
     onChange: (value: string) => void;
     placeholder?: string;
@@ -14,6 +13,7 @@ interface FormInputProps {
     maxLength?: number;
     disabled?: boolean;
     autoComplete?: string;
+    name?: string;
 }
 
 const EyeIcon: React.FC<{ open: boolean; className?: string }> = ({ open, className }) =>
@@ -51,9 +51,8 @@ const EyeIcon: React.FC<{ open: boolean; className?: string }> = ({ open, classN
     </svg>
   );
 
-export default function FormInput({
+export default function PasswordInput({
     label,
-    type = 'text',
     value,
     onChange,
     placeholder,
@@ -63,16 +62,13 @@ export default function FormInput({
     maxLength,
     disabled = false,
     autoComplete,
-}: FormInputProps) {
+    name,
+}: PasswordInputProps) {
     const [showPassword, setShowPassword] = useState(false);
-    const isPassword = type === 'password';
-    const effectiveType = isPassword && showPassword ? 'text' : type;
 
     return (
         <div className="flex flex-col gap-1">
-            <label className="block text-sm font-bold text-gray-700">
-                {label}
-            </label>
+            {label && <label className="block text-sm font-bold text-gray-700">{label}</label>}
 
             <div className="relative flex items-center">
                 {icon && (
@@ -81,44 +77,38 @@ export default function FormInput({
                     </span>
                 )}
                 <input
-                    type={effectiveType}
+                    type={showPassword ? 'text' : 'password'}
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
                     placeholder={placeholder}
                     maxLength={maxLength}
                     disabled={disabled}
                     autoComplete={autoComplete}
+                    name={name}
                     className={[
                         'w-full py-2.5 rounded-lg border text-sm transition-colors duration-150',
                         'focus:outline-none focus:ring-2',
                         icon ? 'pl-10' : 'px-4',
-                        isPassword ? 'pr-11' : 'pr-4',
+                        'pr-11',
                         disabled ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white',
                         error
                             ? 'border-red-400 focus:ring-red-300'
                             : 'border-gray-300 focus:ring-[#314fa0] focus:border-[#314fa0]',
                     ].join(' ')}
                 />
-                {isPassword && (
-                    <button
-                        type="button"
-                        onClick={() => setShowPassword((v) => !v)}
-                        className="absolute right-3 p-1 rounded-full text-gray-400 hover:text-[#314fa0] hover:bg-gray-100 transition-colors"
-                        aria-label={showPassword ? 'Hide password' : 'Show password'}
-                        tabIndex={-1}
-                    >
-                        <EyeIcon open={showPassword} />
-                    </button>
-                )}
+                <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    className="absolute right-3 p-1 rounded-full text-gray-400 hover:text-[#314fa0] hover:bg-gray-100 transition-colors"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    tabIndex={-1}
+                >
+                    <EyeIcon open={showPassword} />
+                </button>
             </div>
 
-            {hint && !error && (
-                <p className="text-xs text-gray-400">{hint}</p>
-            )}
-
-            {error && (
-                <p className="text-xs text-red-500 font-medium">{error}</p>
-            )}
+            {hint && !error && <p className="text-xs text-gray-400">{hint}</p>}
+            {error && <p className="text-xs text-red-500 font-medium">{error}</p>}
         </div>
     );
 }

@@ -16,3 +16,6 @@ export { PaymentFlow } from './payment/PaymentFlow';
 
 // Notification Components
 export { ToastContainer } from './notifications/ToastContainer';
+
+// Withdrawal Components
+export { Withdrawal } from './withdrawal/Withdrawal';
