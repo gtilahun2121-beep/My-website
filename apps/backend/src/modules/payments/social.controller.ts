@@ -33,7 +33,6 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtPayload } from '../auth/auth.service';
 import { getPool } from '../../config/database.config';
-import { v4 as uuidv4 } from 'uuid';
 
 // ---------------------------------------------------------------------------
 // DTOs (inline — small enough to not warrant separate files)
@@ -88,7 +87,7 @@ export class SocialController {
         @CurrentUser() user: JwtPayload,
         @Param('id') payoutId: string,
         @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
-        dto: MultisigApprovalDto,
+        _dto: MultisigApprovalDto,
     ) {
         const sql = getPool();
 

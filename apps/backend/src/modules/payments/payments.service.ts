@@ -12,9 +12,11 @@ import {
     BadRequestException,
     ConflictException,
     Injectable,
+    InternalServerErrorException,
     Logger,
     NotFoundException,
     OnModuleInit,
+    Optional,
     UnprocessableEntityException,
 } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
@@ -26,6 +28,7 @@ import {
     PaymentsRepository,
     PaymentRecord,
     FeeConfigRecord,
+    LotteryCandidate,
 } from './payments.repository';
 import { CheckoutDto, PaymentMethod } from './dto/checkout.dto';
 import { WebhookDto, WebhookStatus } from './dto/webhook.dto';
@@ -50,7 +53,7 @@ interface FeeSplit {
     netAmount: number;
 }
 
-function calculateFees(amount: number, config: FeeConfigRecord): FeeSplit {
+export function calculateFees(amount: number, config: FeeConfigRecord): FeeSplit {
     const hostCommissionDeducted = parseFloat(
         (amount * config.host_commission_rate).toFixed(2),
     );
@@ -72,9 +75,17 @@ export class PaymentsService implements OnModuleInit {
     private readonly logger = new Logger(PaymentsService.name);
     private redlock!: Redlock;
 
-    constructor(private readonly repo: PaymentsRepository) { }
+    constructor(
+        private readonly repo: PaymentsRepository,
+        @Optional() injectedRedlock?: Redlock,
+    ) {
+        if (injectedRedlock) {
+            this.redlock = injectedRedlock;
+        }
+    }
 
     onModuleInit(): void {
+        if (this.redlock) return; // test seam — a redlock was injected
         const redisUrl = process.env.REDIS_URL ?? 'redis://localhost:6379';
         const isTls = redisUrl.startsWith('rediss://');
 
@@ -122,6 +133,11 @@ export class PaymentsService implements OnModuleInit {
         if (!membership) {
             throw new BadRequestException('You are not a member of this Equb group.');
         }
+        if (membership.status !== 'approved') {
+            throw new BadRequestException(
+                'Your membership is not approved yet — only approved members can contribute.',
+            );
+        }
 
         const feeConfig = await this.repo.getActiveFeeConfig();
         const { feeDeducted, hostCommissionDeducted } = calculateFees(
@@ -137,7 +153,6 @@ export class PaymentsService implements OnModuleInit {
                 dto.round_number,
                 feeDeducted,
                 hostCommissionDeducted,
-                feeConfig,
             );
         }
 
@@ -159,7 +174,6 @@ export class PaymentsService implements OnModuleInit {
         roundNumber: number,
         feeDeducted: number,
         hostCommissionDeducted: number,
-        feeConfig: FeeConfigRecord,
     ): Promise<{ payment_id: string; status: string; message: string }> {
 
         // (1) Acquire Redlock
@@ -338,7 +352,10 @@ export class PaymentsService implements OnModuleInit {
         ctx: RlsContext,
     ): Promise<{
         bid_recorded: boolean;
+        bid_id: string;
+        round_number: number;
         potential_payout: number;
+        updated: boolean;
         message: string;
     }> {
         const equb = await this.repo.findEqubById(dto.equb_id);
@@ -350,41 +367,175 @@ export class PaymentsService implements OnModuleInit {
             );
         }
 
+        if (equb.current_round < 1) {
+            throw new BadRequestException(
+                'This Equb has not started any rounds yet. Activate it first.',
+            );
+        }
+
         if (dto.bid_amount >= equb.total_amount) {
             throw new UnprocessableEntityException(
                 `Bid (${dto.bid_amount} ETB) must be less than pot (${equb.total_amount} ETB).`,
             );
         }
 
+        const roundNumber = equb.current_round;
         const potentialPayout = parseFloat(
             (equb.total_amount - dto.bid_amount).toFixed(2),
         );
 
-        // Store bid in audit_logs for Admin review
-        const sql = getPool();
-        await sql`
-      INSERT INTO audit_logs (table_name, action, row_id, new_values, performed_by)
-      VALUES (
-        'equb_bids',
-        'BID_SUBMITTED',
-        gen_random_uuid(),
-        ${JSON.stringify({
-            equb_id: dto.equb_id,
-            user_id: ctx.userId,
-            bid_amount: dto.bid_amount,
-            pot_value: equb.total_amount,
-        })}::jsonb,
-        ${ctx.userId}::uuid
-      )
-    `;
+        const bid = await this.repo.createBid(
+            dto.equb_id,
+            ctx.userId,
+            roundNumber,
+            dto.bid_amount,
+            potentialPayout,
+            ctx,
+        );
 
         return {
             bid_recorded: true,
+            bid_id: bid.id,
+            round_number: roundNumber,
             potential_payout: potentialPayout,
-            message:
-                `Bid of ${dto.bid_amount} ETB recorded. ` +
-                `If you win, you receive ${potentialPayout} ETB.`,
+            updated: !bid.inserted,
+            message: bid.inserted
+                ? `Bid of ${dto.bid_amount} ETB recorded for Round ${roundNumber}. ` +
+                  `If you win, you receive ${potentialPayout} ETB.`
+                : `Your Round ${roundNumber} bid was raised to ${dto.bid_amount} ETB. ` +
+                  `If you win, you receive ${potentialPayout} ETB.`,
         };
+    }
+
+    /**
+     * Lists every bid for a round, highest first — the auction leaderboard.
+     */
+    async listRoundBids(
+        equbId: string,
+        roundNumber: number,
+    ): Promise<{ items: any[]; total: number; round_number: number }> {
+        const items = await this.repo.getRoundBids(equbId, roundNumber);
+        return { items, total: items.length, round_number: roundNumber };
+    }
+
+    /**
+     * Resolves the current round's auction: the highest bidder wins the pot
+     * minus their bid (P_winner = V_base − B_r), and the bid is marked for
+     * redistribution. Idempotent per round — a second call replays the
+     * existing winner instead of resolving twice.
+     */
+    async resolveRoundAuction(
+        equbId: string,
+        ctx: RlsContext,
+    ): Promise<{
+        round_number: number;
+        winner: any;
+        bid_amount: number;
+        payout_amount: number;
+        redistributed_share: number;
+        total_bids: number;
+        already_resolved: boolean;
+        message: string;
+    }> {
+        const equb = await this.repo.getEqubRoundInfo(equbId);
+        if (!equb) throw new NotFoundException('Equb group not found.');
+
+        if (equb.status === 'cancelled') {
+            throw new BadRequestException('This Equb has been cancelled.');
+        }
+        if (equb.status === 'completed') {
+            throw new BadRequestException('This Equb has already completed all rounds.');
+        }
+
+        const roundNumber = equb.current_round;
+        if (roundNumber < 1) {
+            throw new BadRequestException(
+                'This Equb has not started any rounds yet. Activate it first.',
+            );
+        }
+
+        // Idempotency — if this round already has a winner, replay the result.
+        const existingWinner = await this.repo.getWinningBid(equbId, roundNumber);
+        if (existingWinner) {
+            return {
+                round_number: roundNumber,
+                winner: {
+                    id: existingWinner.user_id,
+                    first_name: existingWinner.first_name ?? 'Unknown',
+                    last_name: existingWinner.last_name ?? '',
+                    phone: existingWinner.phone ?? '',
+                },
+                bid_amount: existingWinner.bid_amount,
+                payout_amount: existingWinner.potential_payout,
+                redistributed_share: parseFloat(
+                    (
+                        existingWinner.bid_amount / Math.max(1, await this.countBidders(equbId, roundNumber) - 1)
+                    ).toFixed(2),
+                ),
+                total_bids: await this.countBidders(equbId, roundNumber),
+                already_resolved: true,
+                message:
+                    `Round ${roundNumber} was already resolved. Winner: ` +
+                    `${existingWinner.first_name ?? 'Unknown'} ${existingWinner.last_name ?? ''}.`,
+            };
+        }
+
+        // Eligible bidder set = bids placed for this round (highest first).
+        const bids = await this.repo.getRoundBids(equbId, roundNumber);
+        if (bids.length === 0) {
+            throw new UnprocessableEntityException(
+                'No bids have been placed for this round — run a lottery draw instead.',
+            );
+        }
+
+        // Highest bid wins; ties are broken by earliest submission.
+        const winner = bids[0];
+        const payoutAmount = parseFloat(
+            (equb.total_amount - winner.bid_amount).toFixed(2),
+        );
+
+        await this.repo.resolveAuction(
+            equbId,
+            roundNumber,
+            winner.user_id,
+            payoutAmount,
+            ctx,
+        );
+
+        // Advance to the next round (completes after the final round).
+        await this.repo.advanceEqubRound(equbId, ctx);
+
+        const redistributedShare = parseFloat(
+            (winner.bid_amount / Math.max(1, bids.length - 1)).toFixed(2),
+        );
+
+        this.logger.log(
+            `Auction resolved: equb=${equbId} round=${roundNumber} winner=${winner.user_id} bid=${winner.bid_amount}`,
+        );
+
+        return {
+            round_number: roundNumber,
+            winner: {
+                id: winner.user_id,
+                first_name: winner.first_name ?? 'Unknown',
+                last_name: winner.last_name ?? '',
+                phone: winner.phone ?? '',
+            },
+            bid_amount: winner.bid_amount,
+            payout_amount: payoutAmount,
+            redistributed_share: redistributedShare,
+            total_bids: bids.length,
+            already_resolved: false,
+            message:
+                `${winner.first_name ?? 'Unknown'} ${winner.last_name ?? ''} won the ` +
+                `Round ${roundNumber} auction with a bid of ${winner.bid_amount} ETB ` +
+                `and receives ${payoutAmount} ETB.`,
+        };
+    }
+
+    private async countBidders(equbId: string, roundNumber: number): Promise<number> {
+        const bids = await this.repo.getRoundBids(equbId, roundNumber);
+        return bids.length;
     }
 
     // ── Get Pending Payments ──────────────────────────────────────────────────
@@ -394,6 +545,178 @@ export class PaymentsService implements OnModuleInit {
         roundNumber: number,
     ): Promise<PaymentRecord[]> {
         return this.repo.getPendingPaymentsForRound(equbId, roundNumber);
+    }
+
+    // ── Lottery Draw (spec §4) ────────────────────────────────────────────────
+
+    /**
+     * Runs a lottery draw for the equb's CURRENT round using Node's OS-level
+     * CSPRNG. Idempotent per (equb, round) — a second call returns the
+     * existing result instead of drawing twice.
+     *
+     * Returns the winner + the full candidate list so the client can animate
+     * a transparent spinning wheel that lands on the actual winner.
+     */
+    async runLotteryDraw(
+        equbId: string,
+        ctx: RlsContext,
+    ): Promise<{
+        draw: { id: string; equb_id: string; round_number: number; winner_id: string; draw_timestamp: string };
+        winner: LotteryCandidate;
+        candidates: LotteryCandidate[];
+        message: string;
+    }> {
+        const equb = await this.repo.getEqubRoundInfo(equbId);
+        if (!equb) throw new NotFoundException('Equb group not found.');
+
+        if (equb.status === 'cancelled') {
+            throw new BadRequestException('This Equb has been cancelled.');
+        }
+        if (equb.status === 'completed') {
+            throw new BadRequestException('This Equb has already completed all rounds.');
+        }
+
+        const roundNumber = equb.current_round;
+        if (roundNumber < 1) {
+            throw new BadRequestException(
+                'This Equb has not started any rounds yet. Activate it first.',
+            );
+        }
+
+        // Idempotency — if this round was already drawn, replay the result.
+        const existing = await this.repo.getLotteryDraw(equbId, roundNumber);
+        if (existing) {
+            const winner = await this.getCandidateById(equbId, roundNumber, existing.winner_id);
+            const candidates = await this.repo.getEligibleMembersForDraw(equbId, roundNumber);
+            return {
+                draw: {
+                    id: existing.id,
+                    equb_id: existing.equb_id,
+                    round_number: existing.round_number,
+                    winner_id: existing.winner_id,
+                    draw_timestamp: existing.draw_timestamp.toISOString(),
+                },
+                winner,
+                candidates,
+                message: `Round ${roundNumber} was already drawn. Winner: ${winner?.first_name ?? 'Unknown'} ${winner?.last_name ?? ''}.`,
+            };
+        }
+
+        // Eligible set = approved members who paid this round.
+        const candidates = await this.repo.getEligibleMembersForDraw(equbId, roundNumber);
+        if (candidates.length === 0) {
+            throw new UnprocessableEntityException(
+                'No eligible members for this round — nobody has paid yet.',
+            );
+        }
+
+        // CSPRNG winner selection (crypto.randomInt is OS-level random).
+        const winnerIndex = crypto.randomInt(0, candidates.length);
+        const winner = candidates[winnerIndex];
+
+        const created = await this.repo.createLotteryDraw(
+            equbId,
+            roundNumber,
+            winner.id,
+            null,
+            ctx,
+        );
+
+        // If the draw already existed (race condition), return the existing.
+        const draw = created ?? (await this.repo.getLotteryDraw(equbId, roundNumber));
+        if (!draw) {
+            throw new InternalServerErrorException('Failed to persist lottery draw.');
+        }
+
+        // Record the payout so the finance pipeline can release the pot.
+        await this.repo.createPayout(
+            equbId,
+            roundNumber,
+            winner.id,
+            equb.contribution_amount * Math.max(1, candidates.length),
+            ctx,
+        );
+
+        // Advance to the next round (completes after the final round).
+        await this.repo.advanceEqubRound(equbId, ctx);
+
+        this.logger.log(
+            `Lottery draw committed: equb=${equbId} round=${roundNumber} winner=${winner.id}`,
+        );
+
+        return {
+            draw: {
+                id: draw.id,
+                equb_id: draw.equb_id,
+                round_number: draw.round_number,
+                winner_id: draw.winner_id,
+                draw_timestamp: draw.draw_timestamp.toISOString(),
+            },
+            winner,
+            candidates,
+            message: `🎉 ${winner.first_name} ${winner.last_name} won the Round ${roundNumber} pot!`,
+        };
+    }
+
+    /** Lists all draws for an equb with winner details. */
+    async listLotteryDraws(equbId: string) {
+        const equb = await this.repo.getEqubRoundInfo(equbId);
+        if (!equb) throw new NotFoundException('Equb group not found.');
+
+        const items = await this.repo.getLotteryDraws(equbId);
+        const latest = items[0] ?? null;
+
+        let latest_draw: {
+            draw: { id: string; equb_id: string; round_number: number; winner_id: string; draw_timestamp: string };
+            winner: LotteryCandidate;
+            candidates: LotteryCandidate[];
+        } | null = null;
+        if (latest) {
+            const winner = await this.getCandidateById(equbId, latest.round_number, latest.winner_id);
+            latest_draw = {
+                draw: {
+                    id: latest.id,
+                    equb_id: equbId,
+                    round_number: latest.round_number,
+                    winner_id: latest.winner_id,
+                    draw_timestamp: latest.draw_timestamp.toISOString(),
+                },
+                winner,
+                candidates: await this.repo.getEligibleMembersForDraw(equbId, latest.round_number),
+            };
+        }
+
+        return {
+            items,
+            total: items.length,
+            current_round: equb.current_round,
+            total_rounds: equb.total_rounds,
+            latest_draw,
+        };
+    }
+
+    private async getCandidateById(
+        equbId: string,
+        roundNumber: number,
+        winnerId: string,
+    ): Promise<LotteryCandidate> {
+        const candidates = await this.repo.getEligibleMembersForDraw(equbId, roundNumber);
+        const found = candidates.find((c) => c.id === winnerId);
+        if (found) return found;
+
+        // Winner was eligible at draw time but may no longer be in the current
+        // eligible set (e.g. membership revoked later) — still resolve their name.
+        const sql = getPool();
+        const rows = await sql<LotteryCandidate[]>`
+      SELECT id, first_name, last_name, phone
+      FROM users
+      WHERE id = ${winnerId}
+      LIMIT 1
+    `;
+        if (!rows[0]) {
+            throw new InternalServerErrorException('Winner record not found.');
+        }
+        return rows[0];
     }
 
     // ── Private Helpers ───────────────────────────────────────────────────────

@@ -393,18 +393,18 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
               <div
                 className={`flex items-center justify-center w-8 h-8 sm:w-12 sm:h-12 rounded-full font-bold text-sm transition-all mb-2 ${s <= step
                   ? 'bg-[#314fa0] text-white shadow-lg'
-                  : 'bg-gray-200 text-gray-500'
+                  : 'bg-white/40 text-gray-900 border border-white/60'
                   }`}
               >
                 {s < step ? '✓' : s}
               </div>
-              <p className="text-xs text-gray-600 text-center">
+              <p className="text-xs text-gray-800 font-semibold text-center">
                 {s === 1 ? 'Personal' : s === 2 ? 'Contact' : s === 3 ? 'Fayda' : s === 4 ? 'OTP' : 'PIN'}
               </p>
             </div>
           ))}
         </div>
-        <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+        <div className="w-full bg-white/40 border border-white/50 h-2 rounded-full overflow-hidden">
           <div
             className="bg-[#314fa0] h-full transition-all duration-300"
             style={{ width: `${(step / 5) * 100}%` }}
@@ -584,8 +584,8 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
           exit={{ opacity: 0, y: -10 }}
           className="space-y-5"
         >
-          <div className="bg-blue-50 border border-blue-300 rounded-lg p-4">
-            <p className="text-sm text-blue-900">
+          <div className="bg-white/35 border border-white/60 rounded-lg p-4">
+            <p className="text-sm text-gray-900">
               {lang === 'en'
                 ? `Enter the 6-digit code sent to ${formData.phoneNumber}.`
                 : `ወደ ${formData.phoneNumber} የተላከውን 6-አሃዝ ኮድ ያስገቡ።`}
@@ -593,7 +593,7 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
           </div>
 
           {/* Temporary universal dev OTP — shown until government SMS approval */}
-          <div className="bg-amber-50 border border-amber-300 rounded-lg p-3">
+          <div className="bg-amber-50/70 border border-amber-300 rounded-lg p-3">
             <p className="text-xs text-amber-900 font-semibold">
               {lang === 'en'
                 ? '🟡 Testing only: enter code 818959 for any phone number (valid until SMS delivery is approved).'
@@ -658,8 +658,8 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
           exit={{ opacity: 0, y: -10 }}
           className="space-y-5"
         >
-          <div className="bg-blue-50 border border-blue-300 rounded-lg p-4">
-            <p className="text-sm text-blue-900">
+          <div className="bg-white/35 border border-white/60 rounded-lg p-4">
+            <p className="text-sm text-gray-900">
               {lang === 'en'
                 ? 'Create a 4-digit PIN for your account security'
                 : 'ሂሳብ ደህንነት ለ 4-ዲጂት PIN ይሰሩ'}

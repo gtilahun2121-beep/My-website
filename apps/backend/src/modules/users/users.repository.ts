@@ -11,6 +11,7 @@ export interface CustomerRow {
     profile_photo: string | null;
     role: 'participant' | 'host' | 'admin';
     is_active: boolean;
+    verification_status: 'pending' | 'verified' | 'rejected';
     created_at: Date;
 }
 
@@ -28,6 +29,7 @@ export interface ListCustomersOptions {
     search?: string;
     role?: string;
     status?: 'active' | 'inactive';
+    kyc?: 'pending' | 'verified' | 'rejected';
 }
 
 @Injectable()
@@ -39,7 +41,7 @@ export class UsersRepository {
      * Returns a safe projection: never exposes password_hash or fayda_id.
      */
     async listCustomers(opts: ListCustomersOptions) {
-        const { adminId, page, limit, search, role, status } = opts;
+        const { adminId, page, limit, search, role, status, kyc } = opts;
         const offset = (page - 1) * limit;
 
         const where: string[] = [];
@@ -62,6 +64,10 @@ export class UsersRepository {
         } else if (status === 'inactive') {
             where.push('is_active = FALSE');
         }
+        if (kyc) {
+            params.push(kyc);
+            where.push(`verification_status = $${params.length}::verification_status`);
+        }
 
         const whereSql = where.length > 0 ? `WHERE ${where.join(' AND ')}` : '';
 
@@ -73,7 +79,7 @@ export class UsersRepository {
 
             const items = await sql.unsafe<CustomerRow[]>(`
                 SELECT id, first_name, last_name, phone, email, telegram_handle,
-                       profile_photo, role, is_active, created_at
+                       profile_photo, role, is_active, verification_status, created_at
                 FROM users
                 ${whereSql}
                 ORDER BY created_at DESC
@@ -107,7 +113,7 @@ export class UsersRepository {
     async findById(id: string) {
         const sql = getPool();
         const rows = await sql`
-            SELECT id, first_name, last_name, phone, email, telegram_handle, profile_photo, role, is_active, created_at
+            SELECT id, first_name, last_name, phone, email, telegram_handle, profile_photo, role, is_active, verification_status, created_at
             FROM users WHERE id = ${id}
         `;
         return rows[0];
@@ -135,7 +141,7 @@ export class UsersRepository {
             UPDATE users
             SET ${sets.join(', ')}, updated_at = NOW()
             WHERE id = $${values.length}
-            RETURNING id, first_name, last_name, phone, email, telegram_handle, profile_photo, role, is_active, created_at
+            RETURNING id, first_name, last_name, phone, email, telegram_handle, profile_photo, role, is_active, verification_status, created_at
         `, values);
         return rows[0];
     }
@@ -176,6 +182,29 @@ export class UsersRepository {
                     updated_at = NOW()
                 WHERE id = ${userId}
                 RETURNING id, first_name, last_name, phone, email, role, is_active, created_at
+            `;
+            return rows[0] ?? null;
+        });
+    }
+
+    /**
+     * Admin reviews a member's KYC submission and sets the verification
+     * state. Runs inside an admin RLS context so the users UPDATE policy
+     * (which requires current_user_role() = 'admin') is satisfied.
+     */
+    async setKycStatus(adminId: string, userId: string, status: 'verified' | 'rejected') {
+        return withAdminContext(adminId, async (sql) => {
+            const rows = await sql`
+                UPDATE users
+                SET verification_status = ${status}::verification_status,
+                    verified_at         = CASE
+                                            WHEN ${status} = 'verified' THEN NOW()
+                                            ELSE NULL
+                                          END,
+                    updated_at          = NOW()
+                WHERE id = ${userId}
+                RETURNING id, first_name, last_name, phone, email, role,
+                          is_active, verification_status, created_at
             `;
             return rows[0] ?? null;
         });

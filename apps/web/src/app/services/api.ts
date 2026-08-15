@@ -39,6 +39,11 @@ import type {
   ReconciliationTicket,
   Notification,
   UserProfileData,
+  LotteryDrawResponse,
+  LotteryDrawListResponse,
+  SubmitBidResponse,
+  RoundBidListResponse,
+  AuctionResolutionResponse,
 } from '@qalnet/shared-types';
 
 const API_BASE_URL =
@@ -431,11 +436,30 @@ export const paymentsAPI = {
    */
   submitBid: (equbId: string, bid_amount: number) => {
     const payload: Omit<BidRequest, 'equb_id'> = { bid_amount };
-    return request<unknown>(`/equbs/${equbId}/bid`, {
+    return request<SubmitBidResponse>(`/equbs/${equbId}/bid`, {
       method: 'POST',
       body: JSON.stringify(payload),
     });
   },
+
+  /**
+   * GET /api/v1/equbs/:id/bids?round=N
+   * Lists the auction leaderboard for a round, highest bid first.
+   */
+  listRoundBids: (equbId: string, round: number) =>
+    request<RoundBidListResponse>(`/equbs/${equbId}/bids`, {
+      method: 'GET',
+      params: { round },
+    }),
+
+  /**
+   * POST /api/v1/equbs/:id/auction/resolve
+   * Resolves the current round auction — the highest bidder wins (host/admin).
+   */
+  resolveAuction: (equbId: string) =>
+    request<AuctionResolutionResponse>(`/equbs/${equbId}/auction/resolve`, {
+      method: 'POST',
+    }),
 
   // NOTE: /payments/:id/verify and /payments/:id/status do NOT exist in the backend.
   // Payment status updates are handled via the webhook endpoint.
@@ -556,6 +580,7 @@ export interface AdminCustomer {
   profile_photo: string | null;
   role: 'participant' | 'host' | 'admin';
   is_active: boolean;
+  verification_status: 'pending' | 'verified' | 'rejected';
   created_at: string;
 }
 
@@ -580,6 +605,7 @@ export interface ListUsersParams {
   search?: string;
   role?: 'participant' | 'host' | 'admin';
   status?: 'active' | 'inactive';
+  kyc?: 'pending' | 'verified' | 'rejected';
 }
 
 export interface AdminStatsKpis {
@@ -819,6 +845,16 @@ export const adminAPI = {
     }),
 
   /**
+   * PATCH /api/v1/admin/users/:id/kyc
+   * Verifies or rejects a member identity (KYC) submission. Admin only.
+   */
+  updateKycStatus: (userId: string, status: 'verified' | 'rejected') =>
+    request<unknown>(`/admin/users/${userId}/kyc`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    }),
+
+  /**
    * GET /api/v1/admin/finance/overview
    * Finance KPIs — wallet balance, transaction volume, fees, payout and
    * withdrawal aggregates (admin only).
@@ -899,6 +935,29 @@ export const equbAPI = {
    */
   getMyRequests: () =>
     request<EqubCreationRequest[]>('/equbs/requests/mine', { method: 'GET' }),
+
+  /**
+   * POST /api/v1/equbs/:id/activate
+   * Starts the first round of an 'open' Equb (status → 'active', round → 1).
+   * HOST/ADMIN ONLY (enforced by RolesGuard on the backend).
+   */
+  activateEqub: (id: string) =>
+    request<EqubGroup>(`/equbs/${id}/activate`, { method: 'POST' }),
+
+  /**
+   * GET /api/v1/equbs/:id/draws
+   * Lists the lottery draw history for an Equb, newest round first.
+   */
+  getDraws: (id: string) =>
+    request<LotteryDrawListResponse>(`/equbs/${id}/draws`, { method: 'GET' }),
+
+  /**
+   * POST /api/v1/equbs/:id/draws
+   * Runs the lottery draw for the current round — HOST/ADMIN ONLY.
+   * Returns the winner + candidates so the wheel can animate to the winner.
+   */
+  runDraw: (id: string) =>
+    request<LotteryDrawResponse>(`/equbs/${id}/draws`, { method: 'POST' }),
 };
 
 // ---------------------------------------------------------------------------

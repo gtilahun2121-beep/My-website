@@ -53,6 +53,7 @@
         "@qalnet/typescript-config": "*",
         "@types/cookie-parser": "^1.4.7",
         "@types/express": "^5.0.6",
+        "@types/jest": "^29.5.14",
         "@types/node": "^20.11.30",
         "@types/otplib": "^7.0.0",
         "@types/passport-jwt": "^4.0.1",

@@ -29,7 +29,7 @@ export default function FormInput({
 }: FormInputProps) {
     return (
         <div className="flex flex-col gap-1">
-            <label className="block text-sm font-bold text-gray-700">
+            <label className="block text-sm font-bold text-gray-900">
                 {label}
             </label>
 
@@ -51,10 +51,10 @@ export default function FormInput({
                         'w-full py-2.5 rounded-lg border text-sm transition-colors duration-150',
                         'focus:outline-none focus:ring-2',
                         icon ? 'pl-10 pr-4' : 'px-4',
-                        disabled ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white',
+                        disabled ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white/40 text-gray-900',
                         error
                             ? 'border-red-400 focus:ring-red-300'
-                            : 'border-gray-300 focus:ring-[#314fa0] focus:border-[#314fa0]',
+                            : 'border-gray-400 focus:ring-[#314fa0] focus:border-[#314fa0]',
                     ].join(' ')}
                 />
             </div>

@@ -266,6 +266,18 @@ body {
   box-shadow: 0 4px 15px rgba(49, 79, 160, 0.12);
 }
 
+/* Water-transparent form surface — background image shows through clearly */
+.glass-form {
+  background: rgba(255, 255, 255, 0.30);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow: 0 8px 32px rgba(49, 79, 160, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+/* Darker overlay helper so page background stays visible behind modals */
+.glass-backdrop {
+  background: rgba(10, 15, 30, 0.35);
+}
+
 /* Financial image backdrop for the home page (clear, no overlay) */
 .home-bg {
   background-color: transparent;

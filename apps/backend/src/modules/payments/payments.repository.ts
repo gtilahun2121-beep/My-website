@@ -8,7 +8,6 @@
 
 import {
     Injectable,
-    InternalServerErrorException,
     Logger,
 } from '@nestjs/common';
 import { getPool, inTransaction, RlsContext } from '../../config/database.config';
@@ -61,6 +60,7 @@ export interface MembershipRecord {
     id: string;
     user_id: string;
     equb_id: string;
+    status: 'pending' | 'approved' | 'rejected';
     auto_debit_token: string | null;
     consent_granted_at: Date | null;
 }
@@ -72,6 +72,61 @@ export interface PayoutRecord {
     winner_id: string;
     total_pot_amount: number;
     status: 'pending' | 'approved' | 'batched' | 'completed' | 'failed';
+}
+
+export interface LotteryCandidate {
+    id: string;
+    first_name: string;
+    last_name: string;
+    phone: string;
+}
+
+export interface LotteryDrawRecord {
+    id: string;
+    equb_id: string;
+    round_number: number;
+    winner_id: string;
+    draw_timestamp: Date;
+    video_url: string | null;
+    svg_canvas_data: string | null;
+    is_purged: boolean;
+}
+
+export interface LotteryDrawListItem {
+    id: string;
+    round_number: number;
+    winner_id: string;
+    draw_timestamp: Date;
+    winner_first_name: string;
+    winner_last_name: string;
+    winner_phone: string;
+}
+
+export interface EqubRoundInfo {
+    id: string;
+    host_id: string;
+    name: string;
+    total_amount: number;
+    contribution_amount: number;
+    total_rounds: number;
+    current_round: number;
+    status: 'open' | 'active' | 'completed' | 'cancelled';
+}
+
+export type BidStatus = 'open' | 'winning' | 'outbid' | 'settled';
+
+export interface BidRecord {
+    id: string;
+    equb_id: string;
+    user_id: string;
+    round_number: number;
+    bid_amount: number;
+    potential_payout: number;
+    status: BidStatus;
+    created_at: Date;
+    first_name?: string;
+    last_name?: string;
+    phone?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -240,7 +295,7 @@ export class PaymentsRepository {
      */
     async confirmPaymentByReference(
         txRef: string,
-        processor: string,
+        _processor: string,
     ): Promise<PaymentRecord | null> {
         const sql = getPool();
 
@@ -318,7 +373,7 @@ export class PaymentsRepository {
         const sql = getPool();
 
         const rows = await sql<MembershipRecord[]>`
-      SELECT id, user_id, equb_id, auto_debit_token, consent_granted_at
+      SELECT id, user_id, equb_id, status, auto_debit_token, consent_granted_at
       FROM memberships
       WHERE user_id = ${userId}
         AND equb_id = ${equbId}
@@ -393,6 +448,141 @@ export class PaymentsRepository {
     `;
     }
 
+    // ── Bidding Auction (spec §3.4) ────────────────────────────────────────
+
+    /**
+     * Records a member's discount bid for a round. One standing bid per
+     * (equb, round, member) — a later bid raises the previous one. The
+     * `inserted` flag distinguishes a fresh bid from a raise (xmax = 0
+     * means the row was inserted, not updated).
+     */
+    async createBid(
+        equbId: string,
+        userId: string,
+        roundNumber: number,
+        bidAmount: number,
+        potentialPayout: number,
+        ctx: RlsContext,
+    ): Promise<{ id: string; bid_amount: number; potential_payout: number; status: BidStatus; inserted: boolean }> {
+        return inTransaction(ctx, async (tx) => {
+            const [row] = await tx<{
+                id: string;
+                bid_amount: number;
+                potential_payout: number;
+                status: BidStatus;
+                inserted: boolean;
+            }[]>`
+        INSERT INTO equb_bids (equb_id, user_id, round_number, bid_amount, potential_payout)
+        VALUES (${equbId}, ${userId}, ${roundNumber}, ${bidAmount}, ${potentialPayout})
+        ON CONFLICT (equb_id, round_number, user_id) DO UPDATE
+          SET bid_amount       = EXCLUDED.bid_amount,
+              potential_payout = EXCLUDED.potential_payout,
+              status           = 'open',
+              updated_at       = NOW()
+        RETURNING id, bid_amount, potential_payout, status, (xmax = 0) AS inserted
+      `;
+            return row;
+        });
+    }
+
+    /**
+     * Lists every bid for a round, highest first. Used for the auction
+     * leaderboard and by the resolution logic.
+     */
+    async getRoundBids(
+        equbId: string,
+        roundNumber: number,
+    ): Promise<BidRecord[]> {
+        const sql = getPool();
+
+        return sql<BidRecord[]>`
+      SELECT b.id, b.equb_id, b.user_id, b.round_number, b.bid_amount,
+             b.potential_payout, b.status, b.created_at,
+             u.first_name, u.last_name, u.phone
+      FROM equb_bids b
+      JOIN users u ON u.id = b.user_id
+      WHERE b.equb_id      = ${equbId}
+        AND b.round_number = ${roundNumber}
+      ORDER BY b.bid_amount DESC, b.created_at ASC
+    `;
+    }
+
+    /** Returns the winning bid for a round (null if the auction is open). */
+    async getWinningBid(
+        equbId: string,
+        roundNumber: number,
+    ): Promise<BidRecord | null> {
+        const sql = getPool();
+
+        const rows = await sql<BidRecord[]>`
+      SELECT b.id, b.equb_id, b.user_id, b.round_number, b.bid_amount,
+             b.potential_payout, b.status, b.created_at,
+             u.first_name, u.last_name, u.phone
+      FROM equb_bids b
+      JOIN users u ON u.id = b.user_id
+      WHERE b.equb_id      = ${equbId}
+        AND b.round_number = ${roundNumber}
+        AND b.status       = 'winning'
+      LIMIT 1
+    `;
+
+        return rows[0] ?? null;
+    }
+
+    /**
+     * Resolves an auction for a round in a single ACID transaction:
+     * marks the highest bidder as winning, everyone else as outbid, and
+     * records the winner's payout. Idempotent per round — a second call
+     * returns the existing winning bid without re-marking anything.
+     */
+    async resolveAuction(
+        equbId: string,
+        roundNumber: number,
+        winnerId: string,
+        payoutAmount: number,
+        ctx: RlsContext,
+    ): Promise<{ bidId: string; inserted: boolean }> {
+        return inTransaction(ctx, async (tx) => {
+            const [existing] = await tx<{ id: string }[]>`
+        SELECT id FROM equb_bids
+        WHERE equb_id      = ${equbId}
+          AND round_number = ${roundNumber}
+          AND status       = 'winning'
+        LIMIT 1
+      `;
+            if (existing) {
+                return { bidId: existing.id, inserted: false };
+            }
+
+            const [winner] = await tx<{ id: string }[]>`
+        UPDATE equb_bids
+        SET status     = 'winning',
+            updated_at = NOW()
+        WHERE equb_id      = ${equbId}
+          AND round_number = ${roundNumber}
+          AND user_id      = ${winnerId}
+        RETURNING id
+      `;
+
+            await tx`
+        UPDATE equb_bids
+        SET status     = 'outbid',
+            updated_at = NOW()
+        WHERE equb_id      = ${equbId}
+          AND round_number = ${roundNumber}
+          AND user_id      <> ${winnerId}
+      `;
+
+            await tx`
+        INSERT INTO payouts (equb_id, round_number, winner_id, total_pot_amount)
+        VALUES (${equbId}, ${roundNumber}, ${winnerId}, ${payoutAmount})
+        ON CONFLICT (equb_id, round_number) DO NOTHING
+      `;
+
+            return { bidId: winner.id, inserted: true };
+        });
+    }
+
     // ── Admin wallet ID ────────────────────────────────────────────────────
 
     async getAdminWalletUserId(): Promise<string | null> {
@@ -403,5 +593,135 @@ export class PaymentsRepository {
     `;
 
         return rows[0]?.id ?? null;
+    }
+
+    // ── Lottery ────────────────────────────────────────────────────────────
+
+    /**
+     * Returns the lottery-eligible member set for a given round:
+     * memberships approved AND a payment recorded as paid / auto_debited
+     * for that round. Only paying members can win (spec §4.2).
+     */
+    async getEligibleMembersForDraw(
+        equbId: string,
+        roundNumber: number,
+    ): Promise<LotteryCandidate[]> {
+        const sql = getPool();
+
+        return sql<LotteryCandidate[]>`
+      SELECT DISTINCT u.id,
+                      u.first_name,
+                      u.last_name,
+                      u.phone
+      FROM memberships m
+      JOIN users       u ON u.id = m.user_id
+      JOIN payments    p ON p.user_id  = m.user_id
+                        AND p.equb_id  = m.equb_id
+                        AND p.round_number = ${roundNumber}
+      WHERE m.equb_id  = ${equbId}
+        AND m.status   = 'approved'
+        AND p.payment_status IN ('paid', 'auto_debited')
+      ORDER BY u.first_name, u.last_name
+    `;
+    }
+
+    /**
+     * Returns the existing draw for a round (null if none yet).
+     * Used for idempotency — one draw per (equb, round).
+     */
+    async getLotteryDraw(
+        equbId: string,
+        roundNumber: number,
+    ): Promise<LotteryDrawRecord | null> {
+        const sql = getPool();
+
+        const rows = await sql<LotteryDrawRecord[]>`
+      SELECT id, equb_id, round_number, winner_id,
+             draw_timestamp, video_url, svg_canvas_data, is_purged
+      FROM lottery_draws
+      WHERE equb_id      = ${equbId}
+        AND round_number = ${roundNumber}
+      LIMIT 1
+    `;
+
+        return rows[0] ?? null;
+    }
+
+    /**
+     * Inserts a lottery draw row. One draw per (equb, round) — enforced by a
+     * UNIQUE constraint, so concurrent double-clicks are safe.
+     * Returns null when a draw already exists for that round.
+     */
+    async createLotteryDraw(
+        equbId: string,
+        roundNumber: number,
+        winnerId: string,
+        svgCanvasData: string | null,
+        ctx: RlsContext,
+    ): Promise<LotteryDrawRecord | null> {
+        return inTransaction(ctx, async (tx) => {
+            const rows = await tx<LotteryDrawRecord[]>`
+        INSERT INTO lottery_draws (equb_id, round_number, winner_id, svg_canvas_data)
+        VALUES (${equbId}, ${roundNumber}, ${winnerId}, ${svgCanvasData})
+        ON CONFLICT (equb_id, round_number) DO NOTHING
+        RETURNING id, equb_id, round_number, winner_id,
+                  draw_timestamp, video_url, svg_canvas_data, is_purged
+      `;
+            return rows[0] ?? null;
+        });
+    }
+
+    /**
+     * Lists every draw for an equb, newest first, joined with winner names
+     * so the UI can render a history of winners.
+     */
+    async getLotteryDraws(equbId: string): Promise<LotteryDrawListItem[]> {
+        const sql = getPool();
+
+        return sql<LotteryDrawListItem[]>`
+      SELECT d.id, d.round_number, d.winner_id, d.draw_timestamp,
+             u.first_name AS winner_first_name,
+             u.last_name  AS winner_last_name,
+             u.phone      AS winner_phone
+      FROM lottery_draws d
+      JOIN users u ON u.id = d.winner_id
+      WHERE d.equb_id = ${equbId}
+        AND d.is_purged = FALSE
+      ORDER BY d.round_number DESC
+    `;
+    }
+
+    /**
+     * Advances the equb's current round (and marks it completed once the
+     * final round has been paid out). Call after a successful draw.
+     */
+    async advanceEqubRound(equbId: string, ctx: RlsContext): Promise<void> {
+        await inTransaction(ctx, async (tx) => {
+            await tx`
+        UPDATE equb_groups
+        SET current_round = LEAST(current_round + 1, total_rounds),
+            status        = CASE
+                              WHEN current_round + 1 >= total_rounds THEN 'completed'::equb_status
+                              ELSE status
+                            END,
+            updated_at    = NOW()
+        WHERE id = ${equbId}
+      `;
+        });
+    }
+
+    /** Returns the group's basic round metadata for a draw. */
+    async getEqubRoundInfo(equbId: string): Promise<EqubRoundInfo | null> {
+        const sql = getPool();
+
+        const rows = await sql<EqubRoundInfo[]>`
+      SELECT id, host_id, name, total_amount, contribution_amount,
+             total_rounds, current_round, status
+      FROM equb_groups
+      WHERE id = ${equbId}
+      LIMIT 1
+    `;
+
+        return rows[0] ?? null;
     }
 }

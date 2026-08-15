@@ -9,7 +9,7 @@
  *   - apps/backend/src/modules/wallet/wallet.repository.ts
  */
 
-import { UserRole, TrustTier } from './common';
+import { UserRole } from './common';
 
 // ── Equb groups ─────────────────────────────────────────────────────────────
 

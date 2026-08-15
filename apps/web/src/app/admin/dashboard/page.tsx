@@ -841,21 +841,26 @@ function TopEqubsCard({ loading, equbs }: { loading: boolean; equbs: AdminTopEqu
       ) : (
         <ul className="space-y-3 mt-4">
           {equbs.map((e) => (
-            <li key={e.id} className="flex items-center gap-3 p-3 rounded-xl border border-admin-border hover:border-brand-500/40 hover:bg-admin-elevated transition-colors">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-600 to-brand-800 text-white flex items-center justify-center font-black shrink-0">
-                {e.name?.[0]?.toUpperCase() ?? 'E'}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="font-bold text-admin-text truncate">{e.name}</p>
-                  <StatusBadge tone={EQUB_TONE[e.status] ?? 'neutral'} variant="dark">
-                    {statusLabel(e.status)}
-                  </StatusBadge>
+            <li key={e.id}>
+              <Link
+                href={`/equbs/${e.id}`}
+                className="flex items-center gap-3 p-3 rounded-xl border border-admin-border hover:border-brand-500/40 hover:bg-admin-elevated transition-colors"
+              >
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-600 to-brand-800 text-white flex items-center justify-center font-black shrink-0">
+                  {e.name?.[0]?.toUpperCase() ?? 'E'}
                 </div>
-                <p className="text-xs text-admin-muted mt-0.5">
-                  {e.member_count} member{e.member_count !== 1 ? 's' : ''} · round {e.current_round}/{e.total_rounds} · ETB {money(e.total_amount)}
-                </p>
-              </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-bold text-admin-text truncate">{e.name}</p>
+                    <StatusBadge tone={EQUB_TONE[e.status] ?? 'neutral'} variant="dark">
+                      {statusLabel(e.status)}
+                    </StatusBadge>
+                  </div>
+                  <p className="text-xs text-admin-muted mt-0.5">
+                    {e.member_count} member{e.member_count !== 1 ? 's' : ''} · round {e.current_round}/{e.total_rounds} · ETB {money(e.total_amount)}
+                  </p>
+                </div>
+              </Link>
             </li>
           ))}
         </ul>

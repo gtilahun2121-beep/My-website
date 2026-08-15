@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import api from '@/app/services/api';
 import type { EqubGroup, WalletTransaction } from '@qalnet/shared-types';
 
@@ -42,6 +43,7 @@ export default function MemberDashboard({
   const [activeEqubs, setActiveEqubs] = useState<ActiveEqub[]>([]);
   const [pastPayouts, setPastPayouts] = useState<PastPayout[]>([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     let cancelled = false;
@@ -171,7 +173,8 @@ export default function MemberDashboard({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.1 }}
-                className="bg-white border-2 border-[#d4af37] rounded-2xl p-4 hover:shadow-lg transition-all"
+                onClick={() => router.push(`/equbs/${equb.id}`)}
+                className="bg-white border-2 border-[#d4af37] rounded-2xl p-4 hover:shadow-lg transition-all cursor-pointer"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="text-3xl">{equb.icon}</div>
@@ -215,6 +218,7 @@ export default function MemberDashboard({
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
+                  onClick={() => router.push(`/equbs/${equb.id}`)}
                   className="w-full py-2 bg-gradient-to-r from-[#314fa0] to-[#d4af37] text-white font-bold rounded-lg text-sm hover:shadow-md transition-all"
                 >
                   📋 View Details

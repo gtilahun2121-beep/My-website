@@ -13,6 +13,7 @@ import { AdminStatsService } from './admin-stats.service';
 import { AdminFinanceService } from './admin-finance.service';
 import { ResetPinDto } from './dto/reset-pin.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
+import { UpdateKycDto } from './dto/update-kyc.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -65,6 +66,7 @@ export class AdminController {
         @Query('search') search?: string,
         @Query('role') role?: string,
         @Query('status') status?: string,
+        @Query('kyc') kyc?: string,
     ) {
         const parsedPage = Math.max(1, parseInt(page ?? '1', 10) || 1);
         const parsedLimit = Math.min(100, Math.max(1, parseInt(limit ?? '20', 10) || 20));
@@ -76,6 +78,7 @@ export class AdminController {
             search,
             role,
             status: status === 'active' || status === 'inactive' ? status : undefined,
+            kyc: kyc === 'pending' || kyc === 'verified' || kyc === 'rejected' ? kyc : undefined,
         });
     }
 
@@ -110,6 +113,23 @@ export class AdminController {
         @Body() dto: UpdateRoleDto,
     ) {
         return this.usersService.setUserRole(user.sub, userId, dto.role);
+    }
+
+    @Patch('users/:id/kyc')
+    @UseGuards(RolesGuard)
+    @Roles('admin')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Verify or reject a member identity (KYC) submission' })
+    @ApiResponse({ status: 200, description: 'Verification status updated.' })
+    @ApiResponse({ status: 400, description: 'Invalid status.' })
+    @ApiResponse({ status: 403, description: 'Forbidden — requires role admin.' })
+    @ApiResponse({ status: 404, description: 'User not found.' })
+    async updateKycStatus(
+        @CurrentUser() user: JwtPayload,
+        @Param('id') userId: string,
+        @Body() dto: UpdateKycDto,
+    ) {
+        return this.usersService.setKycStatus(user.sub, userId, dto.status);
     }
 
     @Get('finance/overview')

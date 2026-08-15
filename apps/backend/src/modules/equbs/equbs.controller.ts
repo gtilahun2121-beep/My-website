@@ -57,4 +57,15 @@ export class EqubsController {
     async joinEqub(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
         return this.equbsService.join(id, user.sub, user.role);
     }
+
+    /**
+     * Starts the first round of an 'open' Equb (status → 'active',
+     * current_round → 1). Host/admin only — enforced by RolesGuard.
+     */
+    @Post(':id/activate')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles('host', 'admin')
+    async activateEqub(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
+        return this.equbsService.activate(id, user.sub, user.role);
+    }
 }

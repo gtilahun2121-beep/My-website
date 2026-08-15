@@ -220,6 +220,51 @@ export class EqubsRepository {
         });
     }
 
+    // ── Activate ────────────────────────────────────────────────────────────────
+
+    /**
+     * Starts the Equb's first round: flips an 'open' equb to 'active' and
+     * sets current_round to 1. Idempotent — returns an explicit error when
+     * the equb is not in the 'open' state (already active/completed/cancelled).
+     * Only the host or an admin may activate (role enforced at the controller).
+     */
+    async activateEqub(equbId: string, ctx: RlsContext): Promise<any> {
+        return inTransaction(ctx, async (tx) => {
+            const rows = await tx`
+                UPDATE equb_groups
+                SET status       = 'active',
+                    current_round = 1,
+                    updated_at   = NOW()
+                WHERE id = ${equbId}
+                  AND status = 'open'
+                  AND current_round = 0
+                RETURNING
+                    id, host_id, name, description, telegram_group_id,
+                    total_amount, contribution_amount, cycle_days,
+                    total_rounds, current_round, status, social_fund_balance,
+                    created_at, updated_at
+            `;
+
+            if (rows.length > 0) {
+                return { success: true, equb: rows[0] };
+            }
+
+            const [existing] = await tx`
+                SELECT id, status, current_round
+                FROM equb_groups
+                WHERE id = ${equbId}
+            `;
+            if (!existing) {
+                return { success: false, error: 'EQUB_NOT_FOUND', message: 'Equb not found' };
+            }
+            return {
+                success: false,
+                error: 'EQUB_ALREADY_STARTED',
+                message: `This Equb is already ${existing.status}.`,
+            };
+        });
+    }
+
     // ── Equb creation requests (member asks admin) ─────────────────────────────
 
     async createCreationRequest(input: CreateRequestInput, requesterId: string): Promise<any> {

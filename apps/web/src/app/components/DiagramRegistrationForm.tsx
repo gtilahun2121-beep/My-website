@@ -125,7 +125,7 @@ export default function DiagramRegistrationForm({
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto p-8 bg-white rounded-2xl shadow-2xl">
+    <div className="w-full max-w-2xl mx-auto p-8 glass-form rounded-2xl">
       {/* Progress Bar */}
       <div className="mb-8">
         <div className="flex justify-between mb-4">
