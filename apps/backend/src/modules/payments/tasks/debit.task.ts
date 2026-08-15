@@ -16,11 +16,11 @@
 
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { v4 as uuidv4 } from 'uuid';
 import Redlock from 'redlock';
 import Redis from 'ioredis';
 
 import { PaymentsRepository } from '../payments.repository';
+import { buildTransactionReference } from '../reference';
 import { inTransaction, getPool } from '../../../config/database.config';
 
 const LOCK_PREFIX = 'lock:payment:';
@@ -144,7 +144,12 @@ export class DebitTask implements OnModuleInit {
                         );
 
                         if (walletDeducted) {
-                            const txRef = `AUTODEBIT-WLT-${uuidv4()}`;
+                            const txRef = buildTransactionReference(
+                                'AUTODEBIT-WLT',
+                                equb.id,
+                                equb.current_round,
+                                member.user_id,
+                            );
                             await this.repo.markPaymentAutoDebited(pendingPayment.id, txRef, tx);
 
                             // Route fees
@@ -174,6 +179,8 @@ export class DebitTask implements OnModuleInit {
                                 member.auto_debit_token,
                                 equb.contribution_amount,
                                 member.user_id,
+                                equb.id,
+                                equb.current_round,
                             );
 
                             if (txRef) {
@@ -212,24 +219,29 @@ export class DebitTask implements OnModuleInit {
         }
     }
 
-    // ── Bank API stub ─────────────────────────────────────────────────────────
+    // ── Bank B2C debit stub (Tier 3, Phase 3.3) ─────────────────────────────
 
     /**
-     * Calls Telebirr / CBE Birr B2C API using the member's stored consent token.
+     * Initiates a B2C debit using the member's stored consent token.
      * Returns a transaction reference on success, null on failure.
      *
-     * TODO: Replace stub with real B2C API implementation.
+     * TODO: Replace with a real B2C provider implementation once QAL signs a
+     * banking/B2C provider agreement and receives production credentials.
+     * The provider abstraction mirrors PayoutProviderService — a sandbox
+     * stub today, real bank API later. Never couple QAL to one bank.
      */
     private async triggerBankAutoDebit(
         autoDebitToken: string,
         amount: number,
         userId: string,
+        equbId: string,
+        round: number,
     ): Promise<string | null> {
         try {
             this.logger.debug(
                 `[STUB] Bank auto-debit: token=${autoDebitToken} amount=${amount} user=${userId}`,
             );
-            return `BANK-${uuidv4()}`;
+            return buildTransactionReference('BANK', equbId, round, userId);
         } catch (err: unknown) {
             this.logger.error('Bank auto-debit API error:', err);
             return null;

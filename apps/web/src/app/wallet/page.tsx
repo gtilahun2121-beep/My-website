@@ -6,7 +6,7 @@ import { translations } from '@/i18n/translations';
 import { useAuth } from '@/app/context/AuthContext';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
-import api from '@/app/services/api';
+import api, { APIError } from '@/app/services/api';
 import { useEffect } from 'react';
 import type { WalletTransaction } from '@qalnet/shared-types';
 
@@ -29,6 +29,8 @@ export default function WalletPage() {
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('telebirr');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [depositPin, setDepositPin] = useState('');
+  const [withdrawPin, setWithdrawPin] = useState('');
   const [transactions, setTransactions] = useState<TxnRow[]>([]);
 
   const refreshTransactions = () => {
@@ -88,16 +90,22 @@ export default function WalletPage() {
       alert('Please enter a valid amount');
       return;
     }
+    if (!depositPin) {
+      alert('Please enter your PIN');
+      return;
+    }
     
     try {
-      const res = await api.walletAPI.deposit(amount);
+      const res = await api.walletAPI.deposit(amount, depositPin);
       setBalance(res.balance);
       setShowDepositModal(false);
       setDepositAmount('');
+      setDepositPin('');
       refreshTransactions();
-    } catch (error) {
+    } catch (error: unknown) {
       console.error(error);
-      alert('Deposit failed');
+      const message = error instanceof APIError ? error.data?.message : undefined;
+      alert(message === 'Invalid PIN.' ? 'Invalid PIN' : 'Deposit failed');
     }
   };
 
@@ -115,20 +123,26 @@ export default function WalletPage() {
       alert('Please enter phone number');
       return;
     }
+    if (!withdrawPin) {
+      alert('Please enter your PIN');
+      return;
+    }
 
-    const methodName = paymentMethods.find(m => m.id === selectedPaymentMethod)?.name || 'Bank Transfer';
+    const methodName = paymentMethods.find(m => m.id === selectedPaymentMethod)?.id || 'bank_transfer';
 
     try {
-      const res = await api.walletAPI.withdraw(amount, methodName, phoneNumber);
+      const res = await api.walletAPI.withdraw(amount, methodName, phoneNumber, withdrawPin);
       setBalance(res.balance);
       setShowWithdrawModal(false);
       setWithdrawAmount('');
       setPhoneNumber('');
+      setWithdrawPin('');
       setSelectedPaymentMethod('telebirr');
       refreshTransactions();
-    } catch (error) {
+    } catch (error: unknown) {
       console.error(error);
-      alert('Withdrawal failed');
+      const message = error instanceof APIError ? error.data?.message : undefined;
+      alert(message === 'Invalid PIN.' ? 'Invalid PIN' : 'Withdrawal failed');
     }
   };
 
@@ -213,11 +227,23 @@ export default function WalletPage() {
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#314fa0]"
                 />
               </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">PIN</label>
+                <input
+                  type="password"
+                  inputMode="numeric"
+                  value={depositPin}
+                  onChange={(e) => setDepositPin(e.target.value)}
+                  placeholder="Enter your PIN"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#314fa0]"
+                />
+              </div>
               <div className="flex gap-3">
                 <button
                   onClick={() => {
                     setShowDepositModal(false);
                     setDepositAmount('');
+                    setDepositPin('');
                   }}
                   className="flex-1 px-4 py-3 bg-gray-200 text-gray-800 font-bold rounded-lg hover:bg-gray-300 transition-all"
                 >
@@ -289,6 +315,19 @@ export default function WalletPage() {
                 />
               </div>
 
+              {/* PIN */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">PIN</label>
+                <input
+                  type="password"
+                  inputMode="numeric"
+                  value={withdrawPin}
+                  onChange={(e) => setWithdrawPin(e.target.value)}
+                  placeholder="Enter your PIN"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#314fa0]"
+                />
+              </div>
+
               {/* Buttons */}
               <div className="flex gap-3 pt-4">
                 <button
@@ -296,6 +335,7 @@ export default function WalletPage() {
                     setShowWithdrawModal(false);
                     setWithdrawAmount('');
                     setPhoneNumber('');
+                    setWithdrawPin('');
                   }}
                   className="flex-1 px-4 py-3 bg-gray-200 text-gray-800 font-bold rounded-lg hover:bg-gray-300 transition-all"
                 >

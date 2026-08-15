@@ -65,6 +65,17 @@ export interface MembershipRecord {
     consent_granted_at: Date | null;
 }
 
+export interface WebhookEventRecord {
+    id: string;
+    provider: string;
+    tx_ref: string;
+    status: string;
+    payload: any;
+    processed: boolean;
+    processed_at: Date | null;
+    created_at: Date;
+}
+
 export interface PayoutRecord {
     id: string;
     equb_id: string;
@@ -230,14 +241,15 @@ export class PaymentsRepository {
         amount: number,
         feeDeducted: number,
         hostCommissionDeducted: number,
+        provider: string = 'wallet',
         ctx: RlsContext,
     ): Promise<PaymentRecord> {
         return inTransaction(ctx, async (tx) => {
             const [payment] = await tx<PaymentRecord[]>`
         INSERT INTO payments
-          (user_id, equb_id, round_number, amount, fee_deducted, host_commission_deducted)
+          (user_id, equb_id, round_number, amount, fee_deducted, host_commission_deducted, provider)
         VALUES
-          (${userId}, ${equbId}, ${roundNumber}, ${amount}, ${feeDeducted}, ${hostCommissionDeducted})
+          (${userId}, ${equbId}, ${roundNumber}, ${amount}, ${feeDeducted}, ${hostCommissionDeducted}, ${provider})
         RETURNING *
       `;
             return payment;
@@ -310,6 +322,44 @@ export class PaymentsRepository {
     `;
 
         return rows[0] ?? null;
+    }
+
+    // ── Webhook idempotency (Tier 3 duplicate-event protection) ────────────
+
+    /**
+     * Records an incoming webhook event. Returns null when an identical
+     * (provider, tx_ref, status) event has already been recorded — the caller
+     * then skips processing (idempotent webhooks).
+     */
+    async recordWebhookEvent(
+        provider: string,
+        txRef: string,
+        status: string,
+        payload: unknown,
+        processed: boolean,
+    ): Promise<WebhookEventRecord | null> {
+        const sql = getPool();
+
+        const rows = await sql<WebhookEventRecord[]>`
+      INSERT INTO webhook_events (provider, tx_ref, status, payload, processed)
+      VALUES (${provider}, ${txRef}, ${status}, ${JSON.stringify(payload)}, ${processed})
+      ON CONFLICT (provider, tx_ref, status) DO NOTHING
+      RETURNING id, provider, tx_ref, status, payload, processed, processed_at, created_at
+    `;
+
+        return rows[0] ?? null;
+    }
+
+    /** Marks a recorded webhook event as fully processed. */
+    async markWebhookEventProcessed(eventId: string): Promise<void> {
+        const sql = getPool();
+
+        await sql`
+      UPDATE webhook_events
+      SET processed    = TRUE,
+          processed_at = NOW()
+      WHERE id = ${eventId}
+    `;
     }
 
     // ── Wallet ─────────────────────────────────────────────────────────────

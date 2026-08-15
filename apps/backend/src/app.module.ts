@@ -11,11 +11,13 @@ import { ScheduleModule } from '@nestjs/schedule';
 
 import { AuthModule } from './modules/auth/auth.module';
 import { PaymentsModule } from './modules/payments/payments.module';
+import { PayoutsModule } from './modules/payouts/payouts.module';
 import { SocialModule } from './modules/social/social.module';
 import { UsersModule } from './modules/users/users.module';
 import { EqubsModule } from './modules/equbs/equbs.module';
 import { WalletModule } from './modules/wallet/wallet.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { ReconciliationModule } from './modules/reconciliation/reconciliation.module';
 
 @Module({
     imports: [
@@ -34,11 +36,13 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
         ScheduleModule.forRoot(),
         AuthModule,
         PaymentsModule,
+        PayoutsModule,
         SocialModule,
         UsersModule,
         EqubsModule,
         WalletModule,
         NotificationsModule,
+        ReconciliationModule,
     ],
 })
 export class AppModule { }

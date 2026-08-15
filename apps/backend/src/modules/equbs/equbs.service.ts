@@ -16,8 +16,8 @@ export class EqubsService {
         private readonly notifications: NotificationsRepository,
     ) {}
 
-    async findAll() {
-        return this.repo.findAll();
+    async findAll(limit?: number, offset?: number) {
+        return this.repo.findAll(limit, offset);
     }
 
     async findById(id: string, userId?: string) {
@@ -26,8 +26,8 @@ export class EqubsService {
         return equb;
     }
 
-    async findMine(userId: string) {
-        return this.repo.findMine(userId);
+    async findMine(userId: string, limit?: number, offset?: number) {
+        return this.repo.findMine(userId, limit, offset);
     }
 
     validateCreatePayload(data: any): CreateEqubInput {

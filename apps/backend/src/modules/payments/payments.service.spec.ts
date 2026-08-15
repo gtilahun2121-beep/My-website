@@ -95,6 +95,8 @@ function makeRepoMock() {
         creditWalletBalance: jest.fn(),
         getAdminWalletUserId: jest.fn(),
         confirmPaymentByReference: jest.fn(),
+        recordWebhookEvent: jest.fn(),
+        markWebhookEventProcessed: jest.fn(),
         getPendingPaymentsForRound: jest.fn(),
         getEqubRoundInfo: jest.fn(),
         getLotteryDraw: jest.fn(),
@@ -207,7 +209,7 @@ describe('PaymentsService.checkout', () => {
             expect(result.payment_id).toBe('pay-1');
             expect(repo.markPaymentPaid).toHaveBeenCalledWith(
                 'pay-1',
-                expect.stringMatching(/^WLT-/),
+                expect.stringMatching(/^QAL-WLT-/),
                 expect.anything(),
             );
             expect(repo.creditWalletBalance).toHaveBeenCalledWith(
@@ -280,7 +282,7 @@ describe('PaymentsService.checkout', () => {
             );
             expect(result.status).toBe('pending');
             expect(result.payment_id).toBe('pay-2');
-            expect(result.checkout_url).toMatch(/^https:\/\/checkout\.chapa\.co\/checkout\/payment\/CHAPA-/);
+            expect(result.checkout_url).toMatch(/^https:\/\/checkout\.chapa\.co\/checkout\/payment\/QAL-CHAPA-/);
             expect(getPool).toHaveBeenCalled();
         });
 
@@ -289,7 +291,7 @@ describe('PaymentsService.checkout', () => {
                 { equb_id: 'equb-1', round_number: 1, payment_method: PaymentMethod.TELEBIRR },
                 CONTEXT,
             );
-            expect(result.checkout_url).toMatch(/^https:\/\/telebirr\.et\/checkout\/TELEBIRR-/);
+            expect(result.checkout_url).toMatch(/^https:\/\/telebirr\.et\/checkout\/QAL-TELEBIRR-/);
         });
     });
 });

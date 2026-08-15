@@ -30,8 +30,40 @@ export type EqubRequestStatus = 'pending' | 'approved' | 'rejected';
 /** Matches Postgres `payment_status` enum. */
 export type PaymentStatus = 'pending' | 'paid' | 'auto_debited' | 'failed';
 
-/** Matches Postgres `payout_status` enum. */
-export type PayoutStatus = 'pending' | 'approved' | 'batched' | 'completed' | 'failed';
+/**
+ * Matches Postgres `payout_status` enum.
+ * Tier 3 state machine: pending → queued → processing → success | failed →
+ * retry | manual_review. Legacy states (approved/batched/completed) are kept
+ * for pre-Tier-3 rows.
+ */
+export type PayoutStatus =
+    | 'pending'
+    | 'approved'
+    | 'batched'
+    | 'queued'
+    | 'processing'
+    | 'success'
+    | 'completed'
+    | 'failed'
+    | 'retry'
+    | 'manual_review';
+
+/** A payout record as returned by GET /api/v1/payouts. */
+export interface PayoutRecord {
+    id: string;
+    equb_id: string;
+    round_number: number;
+    winner_id: string;
+    total_pot_amount: number;
+    status: PayoutStatus;
+    provider: string | null;
+    transaction_reference: string | null;
+    requested_at: string | null;
+    completed_at: string | null;
+    failure_reason: string | null;
+    created_at: string;
+    updated_at: string;
+}
 
 /**
  * An Equb group as returned by GET /api/v1/equbs.

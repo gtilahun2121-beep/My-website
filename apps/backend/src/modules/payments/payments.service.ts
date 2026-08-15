@@ -19,7 +19,6 @@ import {
     Optional,
     UnprocessableEntityException,
 } from '@nestjs/common';
-import { v4 as uuidv4 } from 'uuid';
 import Redlock from 'redlock';
 import Redis from 'ioredis';
 import * as crypto from 'crypto';
@@ -35,6 +34,9 @@ import { WebhookDto, WebhookStatus } from './dto/webhook.dto';
 import { BidDto } from './dto/bid.dto';
 import { RlsContext, inTransaction, getPool } from '../../config/database.config';
 import { VaultConfig } from '../../config/vault.config';
+import { buildTransactionReference } from './reference';
+import { PaymentProviderService } from './providers/payment-provider.service';
+import { PaymentProvider } from './providers/payment-provider.interface';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -78,6 +80,7 @@ export class PaymentsService implements OnModuleInit {
     constructor(
         private readonly repo: PaymentsRepository,
         @Optional() injectedRedlock?: Redlock,
+        @Optional() private readonly providerService?: PaymentProviderService,
     ) {
         if (injectedRedlock) {
             this.redlock = injectedRedlock;
@@ -194,7 +197,7 @@ export class PaymentsService implements OnModuleInit {
 
                 const paymentId = await this.getOrCreatePendingPaymentId(
                     ctx.userId, equbId, roundNumber,
-                    equb.contribution_amount, feeDeducted, hostCommissionDeducted, ctx,
+                    equb.contribution_amount, feeDeducted, hostCommissionDeducted, 'wallet', ctx,
                 );
 
                 // (3) SELECT ... FOR UPDATE
@@ -219,7 +222,7 @@ export class PaymentsService implements OnModuleInit {
 
                 if (deducted) {
                     // (6) Sufficient — commit
-                    const txRef = `WLT-${uuidv4()}`;
+                    const txRef = buildTransactionReference('WLT', equbId, roundNumber, ctx.userId);
                     await this.repo.markPaymentPaid(payment.id, txRef, tx);
                     await this.repo.creditWalletBalance(equb.host_id, hostCommissionDeducted, tx);
 
@@ -252,7 +255,7 @@ export class PaymentsService implements OnModuleInit {
         }
     }
 
-    // ── External Payment Init ─────────────────────────────────────────────────
+    // ── External Payment Init (Tier 3 provider abstraction) ───────────────────
 
     private async initExternalPayment(
         ctx: RlsContext,
@@ -268,22 +271,52 @@ export class PaymentsService implements OnModuleInit {
     }> {
         const paymentId = await this.getOrCreatePendingPaymentId(
             ctx.userId, dto.equb_id, dto.round_number,
-            equb.contribution_amount, feeDeducted, hostCommissionDeducted, ctx,
+            equb.contribution_amount, feeDeducted, hostCommissionDeducted,
+            dto.payment_method, ctx,
         );
 
-        const txRef = `${dto.payment_method.toUpperCase()}-${uuidv4()}`;
+        // Unique reference: QAL-<PROVIDER>-<EQUB>-R<ROUND>-<MEMBER>-<UNIQUE>
+        const txRef = buildTransactionReference(
+            dto.payment_method.toUpperCase(),
+            dto.equb_id,
+            dto.round_number,
+            ctx.userId,
+        );
 
         const sql = getPool();
         await sql`
       UPDATE payments
       SET transaction_reference = ${txRef},
-          updated_at             = NOW()
+          provider             = ${dto.payment_method},
+          updated_at            = NOW()
       WHERE id = ${paymentId}
     `;
 
-        const checkoutUrl = dto.payment_method === PaymentMethod.CHAPA
-            ? `https://checkout.chapa.co/checkout/payment/${txRef}`
-            : `https://telebirr.et/checkout/${txRef}`;
+        // Resolve the gateway through the provider abstraction. In sandbox mode
+        // this is the mock provider; in live mode the real Chapa/Telebirr API.
+        let checkoutUrl: string;
+        if (this.providerService) {
+            const provider = this.providerService.resolve(
+                dto.payment_method as 'chapa' | 'telebirr',
+            );
+            const checkout = await provider.createCheckout({
+                amount: equb.contribution_amount,
+                currency: 'ETB',
+                txRef,
+                callbackUrl: dto.callback_url,
+                metadata: {
+                    equb_id: dto.equb_id,
+                    round_number: dto.round_number,
+                    member_id: ctx.userId,
+                },
+            });
+            checkoutUrl = checkout.checkoutUrl;
+        } else {
+            // Test seam — no provider service injected (unit tests).
+            checkoutUrl = dto.payment_method === PaymentMethod.CHAPA
+                ? `https://checkout.chapa.co/checkout/payment/${txRef}`
+                : `https://telebirr.et/checkout/${txRef}`;
+        }
 
         return {
             payment_id: paymentId,
@@ -293,7 +326,14 @@ export class PaymentsService implements OnModuleInit {
         };
     }
 
-    // ── Webhook Ingestion (spec §2.1) ─────────────────────────────────────────
+    // ── Webhook Ingestion (spec §2.1 + Tier 3 verification) ────────────────
+    //
+    // Idempotent, verified ingestion pipeline:
+    //   (1) HMAC signature   → provider.verifyWebhookSignature
+    //   (2) Duplicate guard  → webhook_events unique (provider, tx_ref, status)
+    //   (3) Provider verify  → provider.verifyTransaction (authoritative)
+    //   (4) Amount verify    → match against the DB payment row
+    //   (5) DB update        → confirmPaymentByReference (pending→paid)
 
     async handleWebhook(
         dto: WebhookDto,
@@ -303,11 +343,45 @@ export class PaymentsService implements OnModuleInit {
 
         await this.verifyWebhookSignature(dto.processor, rawBody, signature);
 
+        // (2) Duplicate-event protection — identical events are ignored.
+        const event = await this.repo.recordWebhookEvent(
+            dto.processor,
+            dto.tx_ref,
+            dto.status,
+            dto,
+            false,
+        );
+
+        if (!event) {
+            this.logger.log(`Webhook duplicate event ignored: ${dto.tx_ref}/${dto.status}`);
+            return { received: true };
+        }
+
         if (dto.status !== WebhookStatus.SUCCESS) {
             this.logger.warn(
                 `Webhook non-success: ${dto.status} for ${dto.tx_ref}`,
             );
+            await this.repo.markWebhookEventProcessed(event.id);
             return { received: true };
+        }
+
+        // (3) Authoritative verification against the gateway.
+        if (this.providerService) {
+            const provider = this.providerService.resolve(dto.processor);
+            const verification = await provider.verifyTransaction({
+                txRef: dto.tx_ref,
+                expectedAmount: dto.amount,
+                providerReference: dto.tx_ref,
+            });
+
+            if (!verification.verified) {
+                this.logger.warn(
+                    `Webhook verification failed for ${dto.tx_ref}: ` +
+                    `${verification.failureReason ?? 'provider did not confirm.'}`,
+                );
+                await this.repo.markWebhookEventProcessed(event.id);
+                return { received: true };
+            }
         }
 
         const payment = await this.repo.confirmPaymentByReference(
@@ -317,7 +391,16 @@ export class PaymentsService implements OnModuleInit {
 
         if (!payment) {
             this.logger.log(`Webhook duplicate/unknown txRef: ${dto.tx_ref}`);
+            await this.repo.markWebhookEventProcessed(event.id);
             return { received: true };
+        }
+
+        // (4) Amount verification against the DB record — surface to logs so
+        // the reconciliation run can investigate mismatches.
+        if (dto.amount !== undefined && Math.abs(dto.amount - payment.amount) > 0.01) {
+            this.logger.warn(
+                `Webhook amount mismatch: payment=${payment.id} expected=${payment.amount} got=${dto.amount}`,
+            );
         }
 
         const equb = await this.repo.findEqubById(payment.equb_id);
@@ -341,6 +424,7 @@ export class PaymentsService implements OnModuleInit {
             });
         }
 
+        await this.repo.markWebhookEventProcessed(event.id);
         this.logger.log(`Webhook confirmed: ${payment.id} via ${dto.processor}`);
         return { received: true };
     }
@@ -728,6 +812,7 @@ export class PaymentsService implements OnModuleInit {
         amount: number,
         feeDeducted: number,
         hostCommissionDeducted: number,
+        provider: string,
         ctx: RlsContext,
     ): Promise<string> {
         const existing = await this.repo.findPendingPayment(userId, equbId, round);
@@ -735,7 +820,7 @@ export class PaymentsService implements OnModuleInit {
 
         const created = await this.repo.createPendingPayment(
             userId, equbId, round, amount,
-            feeDeducted, hostCommissionDeducted, ctx,
+            feeDeducted, hostCommissionDeducted, provider, ctx,
         );
         return created.id;
     }
@@ -745,6 +830,14 @@ export class PaymentsService implements OnModuleInit {
         rawBody: Buffer,
         signature: string,
     ): Promise<void> {
+        if (this.providerService) {
+            const provider: PaymentProvider = this.providerService.resolve(
+                processor as 'chapa' | 'telebirr',
+            );
+            await provider.verifyWebhookSignature(rawBody, signature);
+            return;
+        }
+
         const secrets = await VaultConfig.load();
 
         if (processor === 'chapa') {

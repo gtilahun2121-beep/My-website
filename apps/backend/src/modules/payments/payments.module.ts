@@ -15,10 +15,22 @@ import { AuctionController } from './auction.controller';
 import { PaymentsService } from './payments.service';
 import { PaymentsRepository } from './payments.repository';
 import { DebitTask } from './tasks/debit.task';
+import { PaymentProviderService } from './providers/payment-provider.service';
+import { ChapaPaymentProvider } from './providers/chapa.provider';
+import { TelebirrPaymentProvider } from './providers/telebirr.provider';
+import { SandboxPaymentProvider } from './providers/sandbox.provider';
 
 @Module({
     controllers: [PaymentsController, LotteryController, AuctionController],
-    providers: [PaymentsService, PaymentsRepository, DebitTask],
-    exports: [PaymentsService, PaymentsRepository],
+    providers: [
+        PaymentsService,
+        PaymentsRepository,
+        DebitTask,
+        PaymentProviderService,
+        ChapaPaymentProvider,
+        TelebirrPaymentProvider,
+        SandboxPaymentProvider,
+    ],
+    exports: [PaymentsService, PaymentsRepository, PaymentProviderService],
 })
 export class PaymentsModule { }

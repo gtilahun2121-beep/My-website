@@ -11,9 +11,15 @@ export interface DispatchInput {
 
 @Injectable()
 export class NotificationsRepository {
-    async findByUserId(userId: string) {
+    async findByUserId(userId: string, limit = 50) {
         const sql = getPool();
-        return sql`SELECT * FROM notifications WHERE user_id = ${userId} ORDER BY created_at DESC`;
+        const safeLimit = Math.min(Math.max(Math.trunc(limit), 1), 100);
+        return sql`
+            SELECT * FROM notifications
+            WHERE user_id = ${userId}
+            ORDER BY created_at DESC
+            LIMIT ${safeLimit}
+        `;
     }
 
     async markAsRead(id: string, userId: string) {

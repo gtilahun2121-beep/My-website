@@ -968,15 +968,15 @@ export const walletAPI = {
   getBalance: () => request<Wallet>('/wallets/me', { method: 'GET' }),
   getTransactions: () =>
     request<WalletTransaction[]>('/wallets/me/transactions', { method: 'GET' }),
-  deposit: (amount: number) =>
+  deposit: (amount: number, pin: string) =>
     request<{ balance: number }>('/wallets/deposit', {
       method: 'POST',
-      body: JSON.stringify({ amount }),
+      body: JSON.stringify({ amount, pin: padPin(pin) }),
     }),
-  withdraw: (amount: number, method?: string, phone?: string) =>
+  withdraw: (amount: number, method?: string, phone?: string, pin?: string) =>
     request<{ balance: number }>('/wallets/withdraw', {
       method: 'POST',
-      body: JSON.stringify({ amount, method, phone }),
+      body: JSON.stringify({ amount, method, phone, pin: pin ? padPin(pin) : undefined }),
     }),
 };
 
