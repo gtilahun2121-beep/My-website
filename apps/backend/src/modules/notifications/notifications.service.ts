@@ -12,4 +12,12 @@ export class NotificationsService {
     async markAsRead(id: string, userId: string) {
         return this.repo.markAsRead(id, userId);
     }
+
+    async delete(id: string, userId: string) {
+        return this.repo.deleteById(id, userId);
+    }
+
+    async cleanupExpiredUnread() {
+        return this.repo.deleteExpiredUnreadForNonAdmins();
+    }
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, Param, UseGuards } from '@nestjs/common';
+import { Controller, Delete, Get, Patch, Param, UseGuards } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -17,5 +17,17 @@ export class NotificationsController {
     @Patch(':id/read')
     async markAsRead(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
         return this.notificationsService.markAsRead(id, user.sub);
+    }
+
+    /**
+     * Permanently deletes a notification. Users delete after reading/doing;
+     * admins delete after completing the pending task the notification flags.
+     */
+    @Delete(':id')
+    async deleteNotification(
+        @CurrentUser() user: JwtPayload,
+        @Param('id') id: string,
+    ) {
+        return this.notificationsService.delete(id, user.sub);
     }
 }

@@ -35,7 +35,7 @@ export default function NotificationsDrawer({
   onClose,
   language,
 }: NotificationsDrawerProps) {
-  const { notifications, unreadCount, loading, markAllRead } =
+  const { notifications, unreadCount, loading, markAllRead, remove } =
     useNotifications(isOpen);
 
   const isAmharic = language === 'am';
@@ -45,6 +45,7 @@ export default function NotificationsDrawer({
     markAllRead: isAmharic ? 'ሁሉንም እንደተነበበ ምልክት' : 'Mark all as read',
     empty: isAmharic ? 'ምንም ማስታወቂያ የለም' : 'No notifications yet',
     unread: (count: number) => `${count} ${isAmharic ? 'ያልተነበቡ' : 'unread'}`,
+    delete: isAmharic ? 'ሰርዝ' : 'Delete',
   };
 
   return (
@@ -139,6 +140,26 @@ export default function NotificationsDrawer({
                           )}
                         </p>
                       </div>
+                      <button
+                        onClick={() => void remove(notif.id)}
+                        className="shrink-0 p-1.5 rounded-lg text-gray-400 hover:text-[#ce1126] hover:bg-[#ce1126]/10 transition-colors"
+                        aria-label={t.delete}
+                        title={t.delete}
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
+                        </svg>
+                      </button>
                     </li>
                   ))}
                 </ul>
