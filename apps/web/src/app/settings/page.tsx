@@ -293,7 +293,7 @@ export default function SettingsPage() {
                 <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
                   <div>
                     <p className="text-sm font-bold text-slate-800">Change PIN</p>
-                    <p className="text-xs text-slate-500">Reset your 4-digit login PIN via SMS OTP</p>
+                    <p className="text-xs text-slate-500">Reset your 6-digit login PIN via SMS OTP</p>
                   </div>
                   <Link
                     href="/profile"

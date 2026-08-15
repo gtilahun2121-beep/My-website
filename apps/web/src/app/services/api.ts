@@ -6,11 +6,11 @@
  * Version:   NEXT_PUBLIC_API_VERSION   (default: v1)
  *
  * PIN padding:
- *   The frontend collects a 4-digit PIN as the user's credential.
+ *   The frontend collects a 6-digit PIN as the user's credential.
  *   The backend RegisterDto requires min 8 chars + letter + number.
  *   We pad short PINs with a deterministic suffix before sending so the
  *   DTO validates, Argon2id hashes it, and the same padding on login
- *   produces an identical hash.  e.g. "1234" → "1234QN1234!"
+ *   produces an identical hash.  e.g. "123456" → "123456QN123456!"
  *
  * Naming convention:
  *   All payloads sent to the backend use snake_case to match the backend DTOs.
@@ -207,7 +207,7 @@ async function request<T = unknown>(
  *   - Minimum 8 characters
  *   - Must contain at least one letter and one number
  *
- * "1234" → "1234QN1234!"  (12 chars, letters + numbers ✓)
+ * "123456" → "123456QN123456!"  (15 chars, letters + numbers ✓)
  *
  * If the input is already a compliant password (≥8 chars with a letter),
  * it is passed through unchanged.
@@ -235,7 +235,7 @@ export const authAPI = {
     lastName: string;
     email: string;
     phoneNumber: string;
-    password: string;   // 4-digit PIN from UI — will be padded
+    password: string;   // 6-digit PIN from UI — will be padded
     fayda: string;      // 16-digit Fayda national ID number
     telegramHandle?: string;
   }) => {
@@ -887,10 +887,15 @@ export const walletAPI = {
       method: 'POST',
       body: JSON.stringify({ amount }),
     }),
-  withdraw: (amount: number, method?: string, phone?: string) =>
+  withdraw: (amount: number, method?: string, phone?: string, pin?: string) =>
     request<{ balance: number }>('/wallets/withdraw', {
       method: 'POST',
-      body: JSON.stringify({ amount, method, phone }),
+      body: JSON.stringify({ amount, method, phone, pin: pin ? padPin(pin) : undefined }),
+    }),
+  verifyPin: (pin: string) =>
+    request<{ verified: boolean }>('/wallets/verify-pin', {
+      method: 'POST',
+      body: JSON.stringify({ pin: padPin(pin) }),
     }),
 };
 

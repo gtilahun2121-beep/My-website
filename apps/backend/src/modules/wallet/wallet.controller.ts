@@ -27,14 +27,25 @@ export class WalletController {
         return this.walletService.deposit(user.sub, dto.amount);
     }
 
+    @Post('verify-pin')
+    async verifyPin(@CurrentUser() user: JwtPayload, @Body() dto: { pin: string }) {
+        if (!dto || !dto.pin) {
+            throw new BadRequestException('PIN is required');
+        }
+        return this.walletService.verifyPin(user.sub, dto.pin);
+    }
+
     @Post('withdraw')
     async withdraw(
         @CurrentUser() user: JwtPayload,
-        @Body() dto: { amount: number; method?: string; phone?: string },
+        @Body() dto: { amount: number; method: string; phone?: string; pin: string },
     ) {
         if (!dto || typeof dto.amount !== 'number' || dto.amount <= 0) {
             throw new BadRequestException('A positive numeric amount is required');
         }
-        return this.walletService.withdraw(user.sub, dto.amount, dto.method);
+        if (!dto.pin) {
+            throw new BadRequestException('PIN is required');
+        }
+        return this.walletService.withdraw(user.sub, dto.amount, dto.method, dto.phone, dto.pin);
     }
 }

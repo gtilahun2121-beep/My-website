@@ -17,7 +17,7 @@ export default function DashboardHeader({ firstName, isNewUser }: DashboardHeade
         </h1>
         <p className="mt-1 text-sm text-slate-500">
           {isNewUser
-            ? 'Welcome to QalNet. Join your first Equb to start saving with your community.'
+            ? 'Good morning, Welcome to QalNet. Join your first Equb to start saving with your community.'
             : "Here's what's happening with your Equbs today."}
         </p>
       </div>

@@ -71,12 +71,12 @@ export default function DetailsEntryStep({
       />
 
       <FormInput
-        label="4-Digit Security PIN"
+        label="6-Digit Security PIN"
         type="password"
         placeholder="••••"
         value={pin}
         onChange={(val) => onPinChange(val.replace(/\D/g, ''))}
-        maxLength={4}
+        maxLength={6}
         icon="🔐"
         hint="You'll use this to log in"
         error={!pinValidation.valid && pin ? pinValidation.error : undefined}
@@ -88,7 +88,7 @@ export default function DetailsEntryStep({
         placeholder="••••"
         value={confirmPin}
         onChange={(val) => onConfirmPinChange(val.replace(/\D/g, ''))}
-        maxLength={4}
+        maxLength={6}
         icon="🔑"
         hint="Must match your PIN above"
         error={!confirmValidation.valid && confirmPin ? confirmValidation.error : undefined}

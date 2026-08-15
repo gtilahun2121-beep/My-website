@@ -9,6 +9,7 @@ import Footer from '@/app/components/Footer';
 import api from '@/app/services/api';
 import { useEffect } from 'react';
 import type { WalletTransaction } from '@qalnet/shared-types';
+import Withdrawal from '@/app/components/withdrawal/Withdrawal';
 
 interface TxnRow {
   id: string;
@@ -111,24 +112,18 @@ export default function WalletPage() {
       alert('Insufficient balance');
       return;
     }
-    if (!phoneNumber) {
-      alert('Please enter phone number');
-      return;
-    }
 
-    const methodName = paymentMethods.find(m => m.id === selectedPaymentMethod)?.name || 'Bank Transfer';
+    setWithdrawAmount('');
+    setShowWithdrawModal(false);
+  };
 
+  const handleWithdrawSuccess = async () => {
     try {
-      const res = await api.walletAPI.withdraw(amount, methodName, phoneNumber);
+      const res = await api.walletAPI.getBalance();
       setBalance(res.balance);
-      setShowWithdrawModal(false);
-      setWithdrawAmount('');
-      setPhoneNumber('');
-      setSelectedPaymentMethod('telebirr');
       refreshTransactions();
     } catch (error) {
       console.error(error);
-      alert('Withdrawal failed');
     }
   };
 
@@ -194,6 +189,19 @@ export default function WalletPage() {
               ))}
             </div>
           </div>
+          {/* Withdraw Section — inline within the wallet interface */}
+          {showWithdrawModal && (
+            <div className="py-6">
+              <Withdrawal
+                balance={balance}
+                onSuccess={handleWithdrawSuccess}
+                onCancel={() => {
+                  setShowWithdrawModal(false);
+                  setWithdrawAmount('');
+                }}
+              />
+            </div>
+          )}
         </div>
       </div>
 
@@ -228,84 +236,6 @@ export default function WalletPage() {
                   className="flex-1 px-4 py-3 bg-[#314fa0] text-white font-bold rounded-lg hover:bg-[#2a4183] transition-all"
                 >
                   Deposit
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Withdraw Modal */}
-      {showWithdrawModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-2xl font-bold mb-6 text-gray-900">Withdraw Funds</h3>
-            <div className="space-y-4">
-              {/* Payment Method Selection */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">Payment Method</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {paymentMethods.map((method) => (
-                    <button
-                      key={method.id}
-                      onClick={() => setSelectedPaymentMethod(method.id)}
-                      className={`p-3 rounded-lg border-2 transition-all text-center ${
-                        selectedPaymentMethod === method.id
-                          ? 'bg-[#314fa0]/10 border-[#314fa0] text-[#314fa0] font-bold'
-                          : 'bg-slate-50 border-slate-200 hover:border-slate-300'
-                      }`}
-                    >
-                      <p className="text-2xl mb-1">{method.icon}</p>
-                      <p className="text-xs font-semibold">{method.name}</p>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Phone Number */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  {selectedPaymentMethod === 'telebirr' ? 'Telebirr Phone' : 'Account Phone Number'}
-                </label>
-                <input
-                  type="tel"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  placeholder="+2519xxxxxxxx"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#314fa0]"
-                />
-              </div>
-
-              {/* Amount */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Amount (ETB)</label>
-                <p className="text-xs text-gray-500 mb-2">Available: ETB {balance.toLocaleString()}</p>
-                <input
-                  type="number"
-                  value={withdrawAmount}
-                  onChange={(e) => setWithdrawAmount(e.target.value)}
-                  placeholder="Enter amount"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#314fa0]"
-                />
-              </div>
-
-              {/* Buttons */}
-              <div className="flex gap-3 pt-4">
-                <button
-                  onClick={() => {
-                    setShowWithdrawModal(false);
-                    setWithdrawAmount('');
-                    setPhoneNumber('');
-                  }}
-                  className="flex-1 px-4 py-3 bg-gray-200 text-gray-800 font-bold rounded-lg hover:bg-gray-300 transition-all"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleWithdraw}
-                  className="flex-1 px-4 py-3 bg-[#314fa0] text-white font-bold rounded-lg hover:bg-[#2a4183] transition-all"
-                >
-                  Withdraw
                 </button>
               </div>
             </div>
