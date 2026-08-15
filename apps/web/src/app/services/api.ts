@@ -907,6 +907,8 @@ export const notificationsAPI = {
   getNotifications: () => request<Notification[]>('/notifications', { method: 'GET' }),
   markAsRead: (id: string) =>
     request<Notification>(`/notifications/${id}/read`, { method: 'PATCH' }),
+  deleteNotification: (id: string) =>
+    request<Notification>(`/notifications/${id}`, { method: 'DELETE' }),
 };
 
 // ---------------------------------------------------------------------------
