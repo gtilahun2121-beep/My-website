@@ -3,7 +3,7 @@ import * as argon2 from 'argon2';
 import { UsersRepository, ListCustomersOptions } from './users.repository';
 import { VaultConfig } from '../../config/vault.config';
 
-const ARGON2_OPTIONS: argon2.Options & { raw: false } = {
+const ARGON2_OPTIONS: argon2.HashOptions & { raw: false } = {
     type: argon2.argon2id,
     memoryCost: 65536,
     timeCost: 3,

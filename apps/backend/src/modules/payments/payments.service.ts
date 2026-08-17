@@ -177,7 +177,6 @@ export class PaymentsService implements OnModuleInit {
         roundNumber: number,
         feeDeducted: number,
         hostCommissionDeducted: number,
-        _feeConfig: FeeConfigRecord,
     ): Promise<{ payment_id: string; status: string; message: string }> {
 
         // (1) Acquire Redlock

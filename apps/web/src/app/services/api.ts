@@ -2,7 +2,7 @@
  * api.ts
  * Centralised HTTP client for all backend API calls.
  *
- * Base URL:  NEXT_PUBLIC_API_BASE_URL  (default: http://localhost:3000)
+ * Base URL:  NEXT_PUBLIC_API_BASE_URL  (default: http://localhost:4000)
  * Version:   NEXT_PUBLIC_API_VERSION   (default: v1)
  *
  * PIN padding:
@@ -22,6 +22,11 @@ import type {
   RegisterRequest,
   LoginRequest,
   AuthTokenResponse,
+  LoginResponse,
+  TwoFactorSetupResponse,
+  TwoFactorVerifyResponse,
+  TwoFactorDisableResponse,
+  TwoFactorStatusResponse,
   RefreshTokenRequest,
   CheckoutRequest,
   BidRequest,
@@ -52,7 +57,7 @@ import type {
 const API_BASE_URL =
   typeof window !== 'undefined'
     ? '' // relative — browser hits the Next.js proxy at /api/*
-    : (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000');
+    : (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000');
 const API_VERSION = process.env.NEXT_PUBLIC_API_VERSION || 'v1';
 
 // ---------------------------------------------------------------------------
@@ -287,11 +292,59 @@ export const authAPI = {
       identifier,
       password: padPin(pin),
     };
-    return request<AuthTokenResponse>('/auth/login', {
+    return request<LoginResponse>('/auth/login', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
   },
+
+  // ── Two-factor authentication (TOTP) ─────────────────────────────────────
+
+  /**
+   * POST /api/v1/auth/2fa/setup
+   * Generates a TOTP secret + otpauth URL for the authenticator app QR code.
+   * Requires an authenticated session.
+   */
+  setup2FA: () =>
+    request<TwoFactorSetupResponse>('/auth/2fa/setup', { method: 'POST' }),
+
+  /**
+   * POST /api/v1/auth/2fa/verify
+   * Verifies the setup code and enables 2FA, returning one-time backup codes.
+   */
+  verify2FASetup: (code: string) =>
+    request<TwoFactorVerifyResponse>('/auth/2fa/verify', {
+      method: 'POST',
+      body: JSON.stringify({ code }),
+    }),
+
+  /**
+   * POST /api/v1/auth/2fa/disable
+   * Disables 2FA after verifying a current code.
+   */
+  disable2FA: (code: string) =>
+    request<TwoFactorDisableResponse>('/auth/2fa/disable', {
+      method: 'POST',
+      body: JSON.stringify({ code }),
+    }),
+
+  /**
+   * GET /api/v1/auth/2fa/status
+   * Current 2FA status for the signed-in user.
+   */
+  get2FAStatus: () =>
+    request<TwoFactorStatusResponse>('/auth/2fa/status', { method: 'GET' }),
+
+  /**
+   * POST /api/v1/auth/verify-2fa
+   * Completes login with a TOTP/backup code after /auth/login returned
+   * two_factor_required. Returns the real access + refresh tokens.
+   */
+  verify2FALogin: (mfa_token: string, code: string) =>
+    request<AuthTokenResponse>('/auth/verify-2fa', {
+      method: 'POST',
+      body: JSON.stringify({ mfa_token, code }),
+    }),
 
   /**
    * POST /api/v1/auth/refresh
@@ -700,6 +753,71 @@ export interface AdminFinancePayoutListResponse {
   limit: number;
 }
 
+export interface AdminWallet {
+  id: string;
+  user_id: string;
+  balance: string;
+  currency: string;
+  updated_at: string | null;
+  user_first_name: string;
+  user_last_name: string;
+  user_phone: string;
+  user_email: string;
+}
+
+export interface AdminWalletListResponse {
+  items: AdminWallet[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface AdminEqub {
+  id: string;
+  host_id: string;
+  name: string;
+  description: string | null;
+  total_amount: string;
+  contribution_amount: string;
+  cycle_days: number;
+  total_rounds: number;
+  current_round: number;
+  status: string;
+  social_fund_balance: string;
+  created_at: string;
+  updated_at: string;
+  host_first_name: string;
+  host_last_name: string;
+  host_phone: string;
+  member_count: number;
+}
+
+export interface AdminEqubListResponse {
+  items: AdminEqub[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface AdminSystemLog {
+  id: string;
+  table_name: string;
+  action: string;
+  row_id: string;
+  old_values: Record<string, unknown> | null;
+  new_values: Record<string, unknown> | null;
+  performed_by: string | null;
+  performed_by_name: string | null;
+  performed_at: string;
+}
+
+export interface AdminSystemLogListResponse {
+  items: AdminSystemLog[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
 export interface AdminFinanceTransactionParams {
   page?: number;
   limit?: number;
@@ -856,6 +974,39 @@ export const adminAPI = {
     request<AdminFinancePayoutListResponse>('/admin/finance/payouts', {
       method: 'GET',
       params: params && (params.page || params.limit || params.status) ? params : undefined,
+    }),
+
+  /**
+   * GET /api/v1/admin/wallets
+   * Lists member wallets (paged, searchable). Admin only.
+   */
+  listWallets: (params: { page?: number; limit?: number; search?: string } = {}) =>
+    request<AdminWalletListResponse>('/admin/wallets', {
+      method: 'GET',
+      params: params && (params.page || params.limit || params.search) ? params : undefined,
+    }),
+
+  /**
+   * GET /api/v1/admin/equbs
+   * Lists all Equb groups (paged, searchable). Admin only.
+   */
+  listAdminEqubs: (params: { page?: number; limit?: number; search?: string } = {}) =>
+    request<AdminEqubListResponse>('/admin/equbs', {
+      method: 'GET',
+      params: params && (params.page || params.limit || params.search) ? params : undefined,
+    }),
+
+  /**
+   * GET /api/v1/admin/system-logs
+   * Lists security/audit log entries (paged, filterable). Admin only.
+   */
+  listSystemLogs: (params: { page?: number; limit?: number; table?: string; action?: string } = {}) =>
+    request<AdminSystemLogListResponse>('/admin/system-logs', {
+      method: 'GET',
+      params:
+        params && (params.page || params.limit || params.table || params.action)
+          ? params
+          : undefined,
     }),
 };
 

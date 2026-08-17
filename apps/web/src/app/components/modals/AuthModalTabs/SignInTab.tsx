@@ -6,7 +6,7 @@ import { Language, defaultLanguage } from '@/i18n/config';
 import FormInput from '@/app/components/forms/FormInput';
 import FormButton from '@/app/components/forms/FormButton';
 import FormSuccess from '@/app/components/forms/FormSuccess';
-import { useAuth } from '@/app/context/AuthContext';
+import { useAuth, TwoFactorRequiredError } from '@/app/context/AuthContext';
 import { ValidationSchema } from '@/app/utils/validation';
 
 interface SignInTabProps {
@@ -16,10 +16,14 @@ interface SignInTabProps {
 }
 
 export default function SignInTab({ lang = defaultLanguage, onSuccess, onError }: SignInTabProps) {
-  const { signin, isLoading } = useAuth();
+  const { signin, verify2FALogin, isLoading } = useAuth();
   const [formData, setFormData] = useState({ phoneNumber: '', pin: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [successMessage, setSuccessMessage] = useState('');
+  const [mfaToken, setMfaToken] = useState<string | null>(null);
+  const [otpCode, setOtpCode] = useState('');
+  const [twoFactorLoading, setTwoFactorLoading] = useState(false);
+  const [twoFactorError, setTwoFactorError] = useState('');
 
   const handleFieldChange = (field: string, value: string) => {
     let finalValue = value;
@@ -71,13 +75,77 @@ export default function SignInTab({ lang = defaultLanguage, onSuccess, onError }
       setSuccessMessage('✓ Signed in successfully!');
       onSuccess?.('Sign In Successful', 'Welcome back to QalNet!', 3000);
     } catch (error) {
+      if (error instanceof TwoFactorRequiredError) {
+        setMfaToken(error.mfaToken);
+        setOtpCode('');
+        setTwoFactorError('');
+        onSuccess?.('Two-Factor Authentication', 'Enter the code from your authenticator app', 3000);
+        return;
+      }
       const message = error instanceof Error ? error.message : 'Sign in failed';
       onError?.('Error', message);
     }
   };
 
+  const handle2FASubmit = async () => {
+    setTwoFactorError('');
+    const code = otpCode.trim();
+    if (code.length < 6 || code.length > 20) {
+      setTwoFactorError('Enter the 6-digit code from your authenticator app, or a backup code');
+      return;
+    }
+    setTwoFactorLoading(true);
+    try {
+      if (!mfaToken) throw new Error('Missing MFA token');
+      await verify2FALogin(mfaToken, code);
+      setSuccessMessage('✓ Signed in successfully!');
+      onSuccess?.('Sign In Successful', 'Welcome back to QalNet!', 3000);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Verification failed';
+      setTwoFactorError(message);
+    } finally {
+      setTwoFactorLoading(false);
+    }
+  };
+
   if (successMessage) {
     return <FormSuccess title="✓ Welcome Back" message={successMessage} />;
+  }
+
+  if (mfaToken) {
+    return (
+      <div className="space-y-4">
+        <h3 className="text-lg font-bold text-gray-800 mb-4">
+          {lang === 'en' ? 'Two-Factor Authentication' : lang === 'am' ? 'የሁለት-ደረጃ ማረጋገጫ' : 'Iggantoota Lama'} 
+        </h3>
+
+        <FormInput
+          label={lang === 'en' ? 'Authentication Code' : lang === 'am' ? 'የማረጋገጫ ኮድ' : 'Koodii Mirkaneessaa'}
+          type="text"
+          value={otpCode}
+          onChange={(value) => setOtpCode(value.replace(/[^A-Za-z0-9-]/g, '').slice(0, 20))}
+          placeholder="000000"
+          error={twoFactorError}
+        />
+
+        <FormButton
+          onClick={handle2FASubmit}
+          loading={twoFactorLoading}
+          disabled={twoFactorLoading}
+          variant="primary"
+        >
+          {twoFactorLoading ? '⏳ Verifying...' : lang === 'en' ? 'Verify & Sign In' : lang === 'am' ? 'አረጋግጥ እና ግባ' : 'Mirkaneessi & Seeni'}
+        </FormButton>
+
+        <button
+          type="button"
+          onClick={() => setMfaToken(null)}
+          className="w-full text-xs text-gray-500 text-center hover:text-gray-700"
+        >
+          ← Back to PIN
+        </button>
+      </div>
+    );
   }
 
   return (

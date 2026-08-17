@@ -11,9 +11,6 @@
 
 import { UserRole } from './common';
 
-// Re-export for consumers who import from this module
-export type { TrustTier };
-
 // ── Equb groups ─────────────────────────────────────────────────────────────
 
 /** Matches Postgres `equb_status` enum. */

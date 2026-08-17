@@ -40,7 +40,7 @@ import { SmsService } from '../sms/sms.service';
 // ---------------------------------------------------------------------------
 // Argon2id parameters — from spec §1.3
 // ---------------------------------------------------------------------------
-const ARGON2_OPTIONS: argon2.Options & { raw: false } = {
+const ARGON2_OPTIONS: argon2.HashOptions & { raw: false } = {
     type: argon2.argon2id,
     memoryCost: 65536,  // 64 MB
     timeCost: 3,      // 3 iterations

@@ -122,7 +122,7 @@ async function bootstrap() {
     });
 
     // ── 7. Listen ─────────────────────────────────────────────────────────────
-    const port = parseInt(process.env.PORT ?? '3000', 10);
+    const port = parseInt(process.env.PORT ?? '4000', 10);
     await app.listen(port);
     console.log(`[Bootstrap] QalNet API running on port ${port}`);
 }

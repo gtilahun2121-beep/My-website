@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { Language, defaultLanguage } from '@/i18n/config';
-import { translations } from '@/i18n/translations';
 import { useAuth } from '@/app/context/AuthContext';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
@@ -27,11 +26,7 @@ export default function WalletPage() {
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [depositAmount, setDepositAmount] = useState('');
-  const [withdrawAmount, setWithdrawAmount] = useState('');
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('telebirr');
-  const [phoneNumber, setPhoneNumber] = useState('');
   const [depositPin, setDepositPin] = useState('');
-  const [withdrawPin, setWithdrawPin] = useState('');
   const [transactions, setTransactions] = useState<TxnRow[]>([]);
 
   const refreshTransactions = () => {
@@ -76,15 +71,6 @@ export default function WalletPage() {
     }
   }, [isAuthenticated]);
 
-  const paymentMethods = [
-    { id: 'telebirr', name: 'Telebirr', icon: '📱', color: 'bg-slate-100 border-slate-300' },
-    { id: 'cbe', name: 'CBE', icon: '🏦', color: 'bg-slate-100 border-slate-300' },
-    { id: 'abyssinia', name: 'Abyssinia Bank', icon: '🏛️', color: 'bg-slate-100 border-slate-300' },
-    { id: 'dashen', name: 'Dashen Bank', icon: '🏦', color: 'bg-slate-100 border-slate-300' },
-    { id: 'awash', name: 'Awash Bank', icon: '🏦', color: 'bg-slate-100 border-slate-300' },
-    { id: 'nib', name: 'NIB', icon: '🏦', color: 'bg-slate-100 border-slate-300' },
-  ];
-
   const handleDeposit = async () => {
     const amount = parseFloat(depositAmount);
     if (!depositAmount || amount <= 0) {
@@ -110,36 +96,9 @@ export default function WalletPage() {
     }
   };
 
-  const handleWithdraw = async () => {
-    const amount = parseFloat(withdrawAmount);
-    if (!withdrawAmount || amount <= 0) {
-      alert('Please enter a valid amount');
-      return;
-    }
-    if (amount > balance) {
-      alert('Insufficient balance');
-      return;
-    }
-    if (!phoneNumber) {
-      alert('Please enter phone number');
-      return;
-    }
-
-    const methodName = paymentMethods.find(m => m.id === selectedPaymentMethod)?.name || 'Bank Transfer';
-
-  const handleWithdrawSuccess = async () => {
-    try {
-      const res = await api.walletAPI.withdraw(amount, methodName, phoneNumber);
-      setBalance(res.balance);
-      setShowWithdrawModal(false);
-      setWithdrawAmount('');
-      setPhoneNumber('');
-      setSelectedPaymentMethod('telebirr');
-      refreshTransactions();
-    } catch (error: unknown) {
-      console.error(error);
-      alert('Withdrawal failed');
-    }
+  const handleWithdrawSuccess = () => {
+    setShowWithdrawModal(false);
+    refreshTransactions();
   };
 
   if (!isAuthenticated) {
@@ -212,7 +171,6 @@ export default function WalletPage() {
                 onSuccess={handleWithdrawSuccess}
                 onCancel={() => {
                   setShowWithdrawModal(false);
-                  setWithdrawAmount('');
                 }}
               />
             </div>
@@ -263,84 +221,6 @@ export default function WalletPage() {
                   className="flex-1 px-4 py-3 bg-[#314fa0] text-white font-bold rounded-lg hover:bg-[#2a4183] transition-all"
                 >
                   Deposit
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Withdraw Modal */}
-      {showWithdrawModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-2xl font-bold mb-6 text-gray-900">Withdraw Funds</h3>
-            <div className="space-y-4">
-              {/* Payment Method Selection */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">Payment Method</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {paymentMethods.map((method) => (
-                    <button
-                      key={method.id}
-                      onClick={() => setSelectedPaymentMethod(method.id)}
-                      className={`p-3 rounded-lg border-2 transition-all text-center ${
-                        selectedPaymentMethod === method.id
-                          ? 'bg-[#314fa0]/10 border-[#314fa0] text-[#314fa0] font-bold'
-                          : 'bg-slate-50 border-slate-200 hover:border-slate-300'
-                      }`}
-                    >
-                      <p className="text-2xl mb-1">{method.icon}</p>
-                      <p className="text-xs font-semibold">{method.name}</p>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Phone Number */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  {selectedPaymentMethod === 'telebirr' ? 'Telebirr Phone' : 'Account Phone Number'}
-                </label>
-                <input
-                  type="tel"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  placeholder="+2519xxxxxxxx"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#314fa0]"
-                />
-              </div>
-
-              {/* Amount */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Amount (ETB)</label>
-                <p className="text-xs text-gray-500 mb-2">Available: ETB {balance.toLocaleString()}</p>
-                <input
-                  type="number"
-                  value={withdrawAmount}
-                  onChange={(e) => setWithdrawAmount(e.target.value)}
-                  placeholder="Enter amount"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#314fa0]"
-                />
-              </div>
-
-              {/* Buttons */}
-              <div className="flex gap-3 pt-4">
-                <button
-                  onClick={() => {
-                    setShowWithdrawModal(false);
-                    setWithdrawAmount('');
-                    setPhoneNumber('');
-                  }}
-                  className="flex-1 px-4 py-3 bg-gray-200 text-gray-800 font-bold rounded-lg hover:bg-gray-300 transition-all"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleWithdraw}
-                  className="flex-1 px-4 py-3 bg-[#314fa0] text-white font-bold rounded-lg hover:bg-[#2a4183] transition-all"
-                >
-                  Withdraw
                 </button>
               </div>
             </div>

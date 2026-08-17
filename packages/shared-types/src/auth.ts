@@ -61,6 +61,54 @@ export interface AuthTokenResponse {
     token_type: 'Bearer';
 }
 
+/**
+ * Response from /login when the account has 2FA enabled.
+ * The caller must complete /verify-2fa with the returned mfa_token.
+ */
+export interface TwoFactorRequiredResponse {
+    two_factor_required: true;
+    mfa_token: string;
+}
+
+/** Union of the two possible /login responses. */
+export type LoginResponse = AuthTokenResponse | TwoFactorRequiredResponse;
+
+// ── Two-factor authentication (TOTP) ────────────────────────────────────────────
+
+/** Response from POST /api/v1/auth/2fa/setup */
+export interface TwoFactorSetupResponse {
+    secret: string;
+    otpauth_url: string;
+}
+
+/** Response from POST /api/v1/auth/2fa/verify */
+export interface TwoFactorVerifyResponse {
+    enabled: boolean;
+    backup_codes: string[];
+}
+
+/** Response from POST /api/v1/auth/2fa/disable */
+export interface TwoFactorDisableResponse {
+    enabled: boolean;
+}
+
+/** Response from GET /api/v1/auth/2fa/status */
+export interface TwoFactorStatusResponse {
+    enabled: boolean;
+    backup_codes_count: number;
+}
+
+/** Payload for POST /api/v1/auth/2fa/verify and /api/v1/auth/2fa/disable */
+export interface TwoFactorCodeRequest {
+    code: string;
+}
+
+/** Payload for POST /api/v1/auth/verify-2fa */
+export interface TwoFactorLoginRequest {
+    mfa_token: string;
+    code: string;
+}
+
 // ── Refresh ───────────────────────────────────────────────────────────────────
 
 /**
