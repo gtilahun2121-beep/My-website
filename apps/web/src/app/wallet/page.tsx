@@ -9,6 +9,7 @@ import Footer from '@/app/components/Footer';
 import api, { APIError } from '@/app/services/api';
 import { useEffect } from 'react';
 import type { WalletTransaction } from '@qalnet/shared-types';
+import Withdrawal from '@/app/components/withdrawal/Withdrawal';
 
 interface TxnRow {
   id: string;
@@ -123,26 +124,21 @@ export default function WalletPage() {
       alert('Please enter phone number');
       return;
     }
-    if (!withdrawPin) {
-      alert('Please enter your PIN');
-      return;
-    }
 
-    const methodName = paymentMethods.find(m => m.id === selectedPaymentMethod)?.id || 'bank_transfer';
+    const methodName = paymentMethods.find(m => m.id === selectedPaymentMethod)?.name || 'Bank Transfer';
 
+  const handleWithdrawSuccess = async () => {
     try {
-      const res = await api.walletAPI.withdraw(amount, methodName, phoneNumber, withdrawPin);
+      const res = await api.walletAPI.withdraw(amount, methodName, phoneNumber);
       setBalance(res.balance);
       setShowWithdrawModal(false);
       setWithdrawAmount('');
       setPhoneNumber('');
-      setWithdrawPin('');
       setSelectedPaymentMethod('telebirr');
       refreshTransactions();
     } catch (error: unknown) {
       console.error(error);
-      const message = error instanceof APIError ? error.data?.message : undefined;
-      alert(message === 'Invalid PIN.' ? 'Invalid PIN' : 'Withdrawal failed');
+      alert('Withdrawal failed');
     }
   };
 
@@ -208,6 +204,19 @@ export default function WalletPage() {
               ))}
             </div>
           </div>
+          {/* Withdraw Section — inline within the wallet interface */}
+          {showWithdrawModal && (
+            <div className="py-6">
+              <Withdrawal
+                balance={balance}
+                onSuccess={handleWithdrawSuccess}
+                onCancel={() => {
+                  setShowWithdrawModal(false);
+                  setWithdrawAmount('');
+                }}
+              />
+            </div>
+          )}
         </div>
       </div>
 
@@ -264,7 +273,7 @@ export default function WalletPage() {
       {/* Withdraw Modal */}
       {showWithdrawModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="glass-form rounded-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-2xl font-bold mb-6 text-gray-900">Withdraw Funds</h3>
             <div className="space-y-4">
               {/* Payment Method Selection */}
@@ -315,19 +324,6 @@ export default function WalletPage() {
                 />
               </div>
 
-              {/* PIN */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">PIN</label>
-                <input
-                  type="password"
-                  inputMode="numeric"
-                  value={withdrawPin}
-                  onChange={(e) => setWithdrawPin(e.target.value)}
-                  placeholder="Enter your PIN"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#314fa0]"
-                />
-              </div>
-
               {/* Buttons */}
               <div className="flex gap-3 pt-4">
                 <button
@@ -335,7 +331,6 @@ export default function WalletPage() {
                     setShowWithdrawModal(false);
                     setWithdrawAmount('');
                     setPhoneNumber('');
-                    setWithdrawPin('');
                   }}
                   className="flex-1 px-4 py-3 bg-gray-200 text-gray-800 font-bold rounded-lg hover:bg-gray-300 transition-all"
                 >

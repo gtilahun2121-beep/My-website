@@ -2,15 +2,15 @@
  * api.ts
  * Centralised HTTP client for all backend API calls.
  *
- * Base URL:  NEXT_PUBLIC_API_BASE_URL  (default: http://localhost:4000)
+ * Base URL:  NEXT_PUBLIC_API_BASE_URL  (default: http://localhost:3000)
  * Version:   NEXT_PUBLIC_API_VERSION   (default: v1)
  *
  * PIN padding:
- *   The frontend collects a 4-digit PIN as the user's credential.
+ *   The frontend collects a 6-digit PIN as the user's credential.
  *   The backend RegisterDto requires min 8 chars + letter + number.
  *   We pad short PINs with a deterministic suffix before sending so the
  *   DTO validates, Argon2id hashes it, and the same padding on login
- *   produces an identical hash.  e.g. "1234" → "1234QN1234!"
+ *   produces an identical hash.  e.g. "123456" → "123456QN123456!"
  *
  * Naming convention:
  *   All payloads sent to the backend use snake_case to match the backend DTOs.
@@ -46,8 +46,13 @@ import type {
   AuctionResolutionResponse,
 } from '@qalnet/shared-types';
 
+// In the browser we use a relative base so requests go through the Next.js
+// proxy rewrite (next.config.ts → rewrites → /api/* → backend). This
+// eliminates CORS entirely. On the server (SSR) we need the absolute URL.
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000';
+  typeof window !== 'undefined'
+    ? '' // relative — browser hits the Next.js proxy at /api/*
+    : (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000');
 const API_VERSION = process.env.NEXT_PUBLIC_API_VERSION || 'v1';
 
 // ---------------------------------------------------------------------------
@@ -138,15 +143,8 @@ async function request<T = unknown>(
     if (searchParams.toString()) url += `?${searchParams.toString()}`;
   }
 
-  // A 30s cap stops requests from hanging forever when the backend is slow
-  // (e.g. the Neon DB pooler is cold-starting or briefly unreachable).
-  const REQUEST_TIMEOUT_MS = 30_000;
-  const pause = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
   // One silent retry per request after a token refresh.
   let attempts = 0;
-  // One extra retry for transient network/server failures (DB timeouts etc.)
-  let transientRetries = 0;
 
   for (;;) {
     const token =
@@ -157,32 +155,13 @@ async function request<T = unknown>(
     if (token) headers.set('Authorization', `Bearer ${token}`);
 
     let response: Response;
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
     try {
-      response = await fetch(url, {
-        ...init,
-        headers,
-        credentials: 'include',
-        signal: controller.signal,
-      });
+      response = await fetch(url, { ...init, headers, credentials: 'include' });
     } catch (error) {
-      clearTimeout(timer);
-      // Transient failure (network drop / timeout / backend unreachable).
-      // Retry once after a short pause — the DB pooler usually recovers.
-      if (transientRetries < 1) {
-        transientRetries += 1;
-        await pause(800);
-        continue;
-      }
-      if (error instanceof DOMException && error.name === 'AbortError') {
-        throw new Error(`API Request Timed Out after ${REQUEST_TIMEOUT_MS / 1000}s`);
-      }
       throw new Error(
         `API Request Failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
-    clearTimeout(timer);
 
     // Only try the silent token-refresh retry on AUTHENTICATED requests
     // (a Bearer token was attached). Public endpoints like /auth/login return
@@ -213,12 +192,6 @@ async function request<T = unknown>(
     if (!response.ok) {
       const errorData =
         typeof data === 'object' && data !== null ? (data as ApiErrorData) : undefined;
-      // Retry once on 5xx — the backend may have hit a transient DB error.
-      if (response.status >= 500 && transientRetries < 1) {
-        transientRetries += 1;
-        await pause(800);
-        continue;
-      }
       throw new APIError(
         response.status,
         errorData,
@@ -239,7 +212,7 @@ async function request<T = unknown>(
  *   - Minimum 8 characters
  *   - Must contain at least one letter and one number
  *
- * "1234" → "1234QN1234!"  (12 chars, letters + numbers ✓)
+ * "123456" → "123456QN123456!"  (15 chars, letters + numbers ✓)
  *
  * If the input is already a compliant password (≥8 chars with a letter),
  * it is passed through unchanged.
@@ -267,7 +240,7 @@ export const authAPI = {
     lastName: string;
     email: string;
     phoneNumber: string;
-    password: string;   // 4-digit PIN from UI — will be padded
+    password: string;   // 6-digit PIN from UI — will be padded
     fayda: string;      // 16-digit Fayda national ID number
     telegramHandle?: string;
   }) => {
@@ -978,6 +951,11 @@ export const walletAPI = {
       method: 'POST',
       body: JSON.stringify({ amount, method, phone, pin: pin ? padPin(pin) : undefined }),
     }),
+  verifyPin: (pin: string) =>
+    request<{ verified: boolean }>('/wallets/verify-pin', {
+      method: 'POST',
+      body: JSON.stringify({ pin: padPin(pin) }),
+    }),
 };
 
 // ---------------------------------------------------------------------------
@@ -988,6 +966,8 @@ export const notificationsAPI = {
   getNotifications: () => request<Notification[]>('/notifications', { method: 'GET' }),
   markAsRead: (id: string) =>
     request<Notification>(`/notifications/${id}/read`, { method: 'PATCH' }),
+  deleteNotification: (id: string) =>
+    request<Notification>(`/notifications/${id}`, { method: 'DELETE' }),
 };
 
 // ---------------------------------------------------------------------------

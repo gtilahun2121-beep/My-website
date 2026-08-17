@@ -17,6 +17,8 @@ export default function ForgotPinForm({ onSuccess, onError }: ForgotPinFormProps
   const [otp, setOtp] = useState('');
   const [newPin, setNewPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
+  const [showNewPin, setShowNewPin] = useState(false);
+  const [showConfirmPin, setShowConfirmPin] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -78,9 +80,9 @@ export default function ForgotPinForm({ onSuccess, onError }: ForgotPinFormProps
   // Step 3: Set new PIN
   const handleSetNewPin = async () => {
     setError('');
-    if (newPin.length !== 4 || !/^\d+$/.test(newPin)) {
-      setError('PIN must be exactly 4 digits');
-      onError?.('Invalid PIN', 'PIN must be 4 digits', 3000);
+    if (newPin.length !== 6 || !/^\d+$/.test(newPin)) {
+      setError('PIN must be exactly 6 digits');
+      onError?.('Invalid PIN', 'PIN must be 6 digits', 3000);
       return;
     }
 
@@ -229,22 +231,36 @@ export default function ForgotPinForm({ onSuccess, onError }: ForgotPinFormProps
             🔑 Create New Access Code
           </h3>
           <p className="text-center text-sm text-gray-600 mb-6">
-            Set a new 4-digit PIN to secure your account
+            Set a new 6-digit PIN to secure your account
           </p>
 
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-bold text-[#314fa0] mb-2">
-                New 4-Digit PIN
+                New 6-Digit PIN
               </label>
-              <input
-                type="password"
-                placeholder="••••"
-                maxLength={4}
-                value={newPin}
-                onChange={(e) => setNewPin(e.target.value.replace(/\D/g, ''))}
-                className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-[#314fa0] font-bold text-2xl text-center tracking-widest"
-              />
+              <div className="relative">
+                <input
+                  type={showNewPin ? 'text' : 'password'}
+                  placeholder="••••"
+                  maxLength={6}
+                  value={newPin}
+                  onChange={(e) => setNewPin(e.target.value.replace(/\D/g, ''))}
+                  className="w-full px-4 pr-11 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-[#314fa0] font-bold text-2xl text-center tracking-widest"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPin((v) => !v)}
+                  aria-label="Show/Hide PIN"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:text-[#314fa0] hover:bg-gray-100 transition-colors"
+                >
+                  {!showNewPin ? (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  ) : (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                  )}
+                </button>
+              </div>
               <p className="text-xs text-[#5a5a5a] mt-1">
                 You&apos;ll use this to sign in
               </p>
@@ -254,14 +270,28 @@ export default function ForgotPinForm({ onSuccess, onError }: ForgotPinFormProps
               <label className="block text-sm font-bold text-[#314fa0] mb-2">
                 Confirm PIN
               </label>
-              <input
-                type="password"
-                placeholder="••••"
-                maxLength={4}
-                value={confirmPin}
-                onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, ''))}
-                className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-[#314fa0] font-bold text-2xl text-center tracking-widest"
-              />
+              <div className="relative">
+                <input
+                  type={showConfirmPin ? 'text' : 'password'}
+                  placeholder="••••"
+                  maxLength={6}
+                  value={confirmPin}
+                  onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, ''))}
+                  className="w-full px-4 pr-11 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-[#314fa0] font-bold text-2xl text-center tracking-widest"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPin((v) => !v)}
+                  aria-label="Show/Hide PIN"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:text-[#314fa0] hover:bg-gray-100 transition-colors"
+                >
+                  {!showConfirmPin ? (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  ) : (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                  )}
+                </button>
+              </div>
               <p className="text-xs text-[#5a5a5a] mt-1">
                 Must match the new PIN above
               </p>
@@ -321,7 +351,7 @@ export default function ForgotPinForm({ onSuccess, onError }: ForgotPinFormProps
             <p className="text-sm font-bold text-green-900 mb-2">✓ What&apos;s Next:</p>
             <ul className="space-y-1 text-xs text-green-800">
               <li>✓ Use your phone number to sign in</li>
-              <li>✓ Enter your new 4-digit PIN</li>
+              <li>✓ Enter your new 6-digit PIN</li>
               <li>✓ Access your Equb account</li>
             </ul>
           </div>

@@ -41,6 +41,7 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
   };
 
   return (
+    <>
     <header className="bg-gradient-to-r from-[#314fa0]/85 to-[#ce1126]/75 backdrop-blur-md shadow-2xl sticky top-0 z-50 border-b-4 border-[#d4af37]">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex justify-between items-center gap-2 sm:gap-3">
@@ -192,18 +193,19 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
           </div>
         )}
       </nav>
-
-      {/* Drawers */}
-      <ProfileDrawer
-        isOpen={profileOpen && authenticated}
-        onClose={() => setProfileOpen(false)}
-        language={lang}
-      />
-      <NotificationsDrawer
-        isOpen={notificationsOpen && authenticated}
-        onClose={() => setNotificationsOpen(false)}
-        language={lang}
-      />
     </header>
+
+    {/* Drawers (Rendered outside the header to avoid backdrop-blur containing block breaking fixed positioning) */}
+    <ProfileDrawer
+      isOpen={profileOpen && authenticated}
+      onClose={() => setProfileOpen(false)}
+      language={lang}
+    />
+    <NotificationsDrawer
+      isOpen={notificationsOpen && authenticated}
+      onClose={() => setNotificationsOpen(false)}
+      language={lang}
+    />
+    </>
   );
 }

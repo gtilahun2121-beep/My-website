@@ -106,8 +106,8 @@ export default function ForgotPinTab({ lang = defaultLanguage, onSuccess, onErro
 
     if (!newPin) {
       newErrors.newPin = 'New PIN is required';
-    } else if (newPin.length !== 4) {
-      newErrors.newPin = 'PIN must be exactly 4 digits';
+    } else if (newPin.length !== 6) {
+      newErrors.newPin = 'PIN must be exactly 6 digits';
     }
 
     if (!confirmPin) {
@@ -141,7 +141,7 @@ export default function ForgotPinTab({ lang = defaultLanguage, onSuccess, onErro
   };
 
   const handlePinChange = (value: string) => {
-    const numericValue = value.replace(/\D/g, '').slice(0, 4);
+    const numericValue = value.replace(/\D/g, '').slice(0, 6);
     return numericValue;
   };
 
@@ -245,7 +245,7 @@ export default function ForgotPinTab({ lang = defaultLanguage, onSuccess, onErro
           animate={{ opacity: 1 }}
           className="space-y-4"
         >
-          <p className="text-sm text-gray-600 mb-4">Create a new 4-digit PIN</p>
+          <p className="text-sm text-gray-600 mb-4">Create a new 6-digit PIN</p>
 
           <FormInput
             label="New PIN"
@@ -257,7 +257,7 @@ export default function ForgotPinTab({ lang = defaultLanguage, onSuccess, onErro
               if (errors.newPin) setErrors((prev) => ({ ...prev, newPin: '' }));
             }}
             placeholder="••••"
-            maxLength={4}
+            maxLength={6}
             error={errors.newPin}
           />
 
@@ -271,7 +271,7 @@ export default function ForgotPinTab({ lang = defaultLanguage, onSuccess, onErro
               if (errors.confirmPin) setErrors((prev) => ({ ...prev, confirmPin: '' }));
             }}
             placeholder="••••"
-            maxLength={4}
+            maxLength={6}
             error={errors.confirmPin}
           />
 

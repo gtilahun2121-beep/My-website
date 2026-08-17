@@ -83,9 +83,9 @@ export default function ForgotPinFormRefactored({
 
   const handleSetNewPin = async () => {
     setError('');
-    if (newPin.length !== 4 || !/^\d+$/.test(newPin)) {
-      setError('PIN must be exactly 4 digits');
-      onError?.('Error', 'PIN must be 4 digits', 3000);
+    if (newPin.length !== 6 || !/^\d+$/.test(newPin)) {
+      setError('PIN must be exactly 6 digits');
+      onError?.('Error', 'PIN must be 6 digits', 3000);
       return;
     }
     if (newPin !== confirmPin) {

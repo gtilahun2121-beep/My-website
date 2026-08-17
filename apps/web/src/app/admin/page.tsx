@@ -30,6 +30,9 @@ export default function AdminLoginPage() {
   const [resetOtp, setResetOtp] = useState('');
   const [newPin, setNewPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
+  const [showPin, setShowPin] = useState(false);
+  const [showNewPin, setShowNewPin] = useState(false);
+  const [showConfirmPin, setShowConfirmPin] = useState(false);
   const [resetBusy, setResetBusy] = useState(false);
   const [resetError, setResetError] = useState('');
   const [resetInfo, setResetInfo] = useState('');
@@ -52,7 +55,7 @@ export default function AdminLoginPage() {
       setError('Enter your QalNet phone number or email.');
       return;
     }
-    if (pass.length < 4) {
+    if (pass.length !== 6) {
       setError('Enter your PIN.');
       return;
     }
@@ -106,8 +109,8 @@ export default function AdminLoginPage() {
       setResetError('OTP must be exactly 6 digits.');
       return;
     }
-    if (!/^\d{4}$/.test(newPin)) {
-      setResetError('New PIN must be exactly 4 digits.');
+    if (!/^\d{6}$/.test(newPin)) {
+      setResetError('New PIN must be exactly 6 digits.');
       return;
     }
     if (newPin !== confirmPin) {
@@ -245,34 +248,62 @@ export default function AdminLoginPage() {
 
                 <div>
                   <label htmlFor="new-pin" className="block text-xs font-bold text-admin-muted mb-1.5">
-                    New 4-digit PIN
+                    New 6-digit PIN
                   </label>
-                  <input
-                    id="new-pin"
-                    type="password"
-                    inputMode="numeric"
-                    maxLength={4}
-                    value={newPin}
-                    onChange={(e) => setNewPin(e.target.value.replace(/\D/g, ''))}
-                    placeholder="••••"
-                    className={inputCls}
-                  />
+                  <div className="relative">
+                    <input
+                      id="new-pin"
+                      type={showNewPin ? 'text' : 'password'}
+                      inputMode="numeric"
+                      maxLength={6}
+                      value={newPin}
+                      onChange={(e) => setNewPin(e.target.value.replace(/\D/g, ''))}
+                      placeholder="••••"
+                      className={`${inputCls} pr-11`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPin((v) => !v)}
+                      aria-label="Show/Hide PIN"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:text-[#314fa0] hover:bg-gray-100 transition-colors"
+                    >
+                      {!showNewPin ? (
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                      ) : (
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                      )}
+                    </button>
+                  </div>
                 </div>
 
                 <div>
                   <label htmlFor="confirm-pin" className="block text-xs font-bold text-admin-muted mb-1.5">
                     Confirm new PIN
                   </label>
-                  <input
-                    id="confirm-pin"
-                    type="password"
-                    inputMode="numeric"
-                    maxLength={4}
-                    value={confirmPin}
-                    onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, ''))}
-                    placeholder="••••"
-                    className={inputCls}
-                  />
+                  <div className="relative">
+                    <input
+                      id="confirm-pin"
+                      type={showConfirmPin ? 'text' : 'password'}
+                      inputMode="numeric"
+                      maxLength={6}
+                      value={confirmPin}
+                      onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, ''))}
+                      placeholder="••••"
+                      className={`${inputCls} pr-11`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPin((v) => !v)}
+                      aria-label="Show/Hide PIN"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:text-[#314fa0] hover:bg-gray-100 transition-colors"
+                    >
+                      {!showConfirmPin ? (
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                      ) : (
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                      )}
+                    </button>
+                  </div>
                 </div>
 
                 {resetError && (
@@ -344,16 +375,30 @@ export default function AdminLoginPage() {
                 <label htmlFor="pin" className="block text-xs font-bold text-admin-muted mb-1.5">
                   PIN
                 </label>
-                <input
-                  id="pin"
-                  type="password"
-                  autoComplete="current-password"
-                  inputMode="numeric"
-                  value={pin}
-                  onChange={(e) => setPin(e.target.value)}
-                  placeholder="••••"
-                  className={inputCls}
-                />
+                <div className="relative">
+                  <input
+                    id="pin"
+                    type={showPin ? 'text' : 'password'}
+                    autoComplete="current-password"
+                    inputMode="numeric"
+                    value={pin}
+                    onChange={(e) => setPin(e.target.value)}
+                    placeholder="••••"
+                    className={`${inputCls} pr-11`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPin((v) => !v)}
+                    aria-label="Show/Hide PIN"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:text-[#314fa0] hover:bg-gray-100 transition-colors"
+                  >
+                    {!showPin ? (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    ) : (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                    )}
+                  </button>
+                </div>
               </div>
 
               {error && (

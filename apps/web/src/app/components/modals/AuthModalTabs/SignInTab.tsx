@@ -32,7 +32,7 @@ export default function SignInTab({ lang = defaultLanguage, onSuccess, onError }
       }
       finalValue = value;
     } else if (field === 'pin') {
-      finalValue = value.replace(/\D/g, '').slice(0, 4);
+      finalValue = value.replace(/\D/g, '').slice(0, 6);
     }
     setFormData((prev) => ({ ...prev, [field]: finalValue }));
     if (errors[field]) {
@@ -52,8 +52,8 @@ export default function SignInTab({ lang = defaultLanguage, onSuccess, onError }
 
     if (!formData.pin) {
       newErrors.pin = 'PIN is required';
-    } else if (formData.pin.length !== 4) {
-      newErrors.pin = 'PIN must be 4 digits';
+    } else if (formData.pin.length !== 6) {
+      newErrors.pin = 'PIN must be 6 digits';
     }
 
     setErrors(newErrors);
@@ -96,12 +96,12 @@ export default function SignInTab({ lang = defaultLanguage, onSuccess, onError }
       />
 
       <FormInput
-        label={lang === 'en' ? '4-Digit PIN' : lang === 'am' ? '4-ዲጂት ፒን' : lang === 'om' ? '4-Digit PIN' : '4-Digit PIN'}
+        label={lang === 'en' ? '6-Digit PIN' : lang === 'am' ? '6-ዲጂት ፒን' : lang === 'om' ? '6-Digit PIN' : '6-Digit PIN'}
         type="password"
         value={formData.pin}
         onChange={(value) => handleFieldChange('pin', value)}
         placeholder="••••"
-        maxLength={4}
+        maxLength={6}
         error={errors.pin}
       />
 

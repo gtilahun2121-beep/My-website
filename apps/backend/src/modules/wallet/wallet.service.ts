@@ -6,37 +6,9 @@ import {
 } from '@nestjs/common';
 import * as argon2 from 'argon2';
 import { v4 as uuidv4 } from 'uuid';
+import * as argon2 from 'argon2';
 import { WalletRepository } from './wallet.repository';
 import { RlsContext } from '../../config/database.config';
-import { VaultConfig } from '../../config/vault.config';
-
-// ── Supported withdrawal channels ─────────────────────────────────────────
-// Every channel listed in the frontend withdraw form is normalized to a
-// stable code that is embedded in the transaction reference.
-const WITHDRAW_METHOD_CODES: Record<string, string> = {
-    telebirr: 'telebirr',
-    'telebirr phone': 'telebirr',
-    cbe: 'cbe',
-    'commercial bank of ethiopia': 'cbe',
-    abyssinia: 'abyssinia',
-    'abyssinia bank': 'abyssinia',
-    dashen: 'dashen',
-    'dashen bank': 'dashen',
-    awash: 'awash',
-    'awash bank': 'awash',
-    nib: 'nib',
-    'nib international bank': 'nib',
-};
-
-export function normalizeWithdrawMethod(method?: string): string {
-    if (!method) return 'bank_transfer';
-    const key = method.trim().toLowerCase();
-    return WITHDRAW_METHOD_CODES[key] ?? 'bank_transfer';
-}
-
-function sanitizeReferencePart(value?: string): string {
-    return (value ?? '').replace(/[^a-zA-Z0-9]/g, '').slice(0, 16);
-}
 
 @Injectable()
 export class WalletService {
@@ -64,18 +36,7 @@ export class WalletService {
         return wallet;
     }
 
-    /**
-     * Withdraws funds to any supported payment method. Requires the account
-     * PIN. The channel (method) is normalized to a stable code and recorded
-     * in the transaction reference alongside the destination phone.
-     */
-    async withdraw(
-        userId: string,
-        amount: number,
-        method?: string,
-        phone?: string,
-        pin?: string,
-    ) {
+    async withdraw(userId: string, amount: number, method?: string) {
         const ctx: RlsContext = { userId, userRole: 'participant' };
         await this.verifyPin(userId, pin ?? '', ctx);
 
@@ -92,25 +53,5 @@ export class WalletService {
             );
         }
         return wallet;
-    }
-
-    /**
-     * Verifies the supplied PIN against the account's Argon2id hash.
-     * The PIN is peppered exactly as at registration/login.
-     */
-    private async verifyPin(userId: string, pin: string, ctx: RlsContext) {
-        const secrets = await VaultConfig.load();
-        const user = await this.repo.getUserAuth(userId, ctx);
-        if (!user) {
-            throw new NotFoundException('User not found');
-        }
-
-        const isValid = await argon2.verify(
-            user.password_hash,
-            pin + secrets.ARGON2_PEPPER,
-        );
-        if (!isValid) {
-            throw new UnauthorizedException('Invalid PIN.');
-        }
     }
 }

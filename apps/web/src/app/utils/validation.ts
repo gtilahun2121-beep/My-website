@@ -33,8 +33,8 @@ export class ValidationSchema {
     if (!pin) {
       return { valid: false, error: `${fieldName} is required` };
     }
-    if (!/^\d{4}$/.test(pin)) {
-      return { valid: false, error: `${fieldName} must be exactly 4 digits` };
+    if (!/^\d{6}$/.test(pin)) {
+      return { valid: false, error: `${fieldName} must be exactly 6 digits` };
     }
     return { valid: true };
   }

@@ -26,6 +26,14 @@ export class WalletController {
         return this.walletService.deposit(user.sub, dto.amount, dto.pin);
     }
 
+    @Post('verify-pin')
+    async verifyPin(@CurrentUser() user: JwtPayload, @Body() dto: { pin: string }) {
+        if (!dto || !dto.pin) {
+            throw new BadRequestException('PIN is required');
+        }
+        return this.walletService.verifyPin(user.sub, dto.pin);
+    }
+
     @Post('withdraw')
     async withdraw(@CurrentUser() user: JwtPayload, @Body() dto: WithdrawDto) {
         return this.walletService.withdraw(

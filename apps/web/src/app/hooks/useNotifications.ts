@@ -37,6 +37,15 @@ export function useNotifications(active = true) {
     setUnreadCount(0);
   }, [notifications]);
 
+  const remove = useCallback(async (id: string) => {
+    await api.notificationsAPI.deleteNotification(id).catch(() => null);
+    setNotifications((prev) => {
+      const next = prev.filter((n) => n.id !== id);
+      setUnreadCount(next.filter((n) => !n.is_read).length);
+      return next;
+    });
+  }, []);
+
   useEffect(() => {
     if (!active) return;
 
@@ -63,5 +72,5 @@ export function useNotifications(active = true) {
     };
   }, [active, refresh]);
 
-  return { notifications, unreadCount, loading, refresh, markAllRead };
+  return { notifications, unreadCount, loading, refresh, markAllRead, remove };
 }

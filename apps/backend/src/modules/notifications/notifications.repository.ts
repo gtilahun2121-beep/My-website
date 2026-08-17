@@ -33,6 +33,41 @@ export class NotificationsRepository {
     }
 
     /**
+     * Permanently deletes a notification, but only when it belongs to the
+     * requesting user. Used by both regular users (delete after reading/doing)
+     * and admins (delete after completing the pending task).
+     */
+    async deleteById(id: string, userId: string) {
+        const sql = getPool();
+        const rows = await sql`
+            DELETE FROM notifications
+            WHERE id = ${id} AND user_id = ${userId}
+            RETURNING id
+        `;
+        return rows[0];
+    }
+
+    /**
+     * Retention cleanup for regular users only (admin notifications are kept
+     * until the admin has seen AND completed the task, then deleted manually).
+     *
+     * Any notification that has never been seen (is_read = FALSE) by a
+     * non-admin user is permanently deleted once it is older than the
+     * retention window (7 days), even if the user never opens it.
+     */
+    async deleteExpiredUnreadForNonAdmins() {
+        const sql = getPool();
+        return sql`
+            DELETE FROM notifications n
+            USING users u
+            WHERE n.user_id = u.id
+              AND u.role <> 'admin'
+              AND n.is_read = FALSE
+              AND n.created_at < NOW() - INTERVAL '7 days'
+        `;
+    }
+
+    /**
      * Inserts a single notification row for a specific user.
      * Actual delivery (Telegram/SMS/push) happens via the notification
      * worker that polls this table.

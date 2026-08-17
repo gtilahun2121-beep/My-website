@@ -145,7 +145,7 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
           return newErrors;
         });
       }
-      value = value.slice(0, 4);
+      value = value.slice(0, 6);
     }
 
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -230,8 +230,8 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
     const newErrors: Record<string, string> = {};
     if (!formData.pin.trim()) {
       newErrors.pin = 'PIN required';
-    } else if (formData.pin.length !== 4) {
-      newErrors.pin = 'PIN must be 4 digits';
+    } else if (formData.pin.length !== 6) {
+      newErrors.pin = 'PIN must be 6 digits';
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -661,8 +661,8 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
           <div className="bg-white/35 border border-white/60 rounded-lg p-4">
             <p className="text-sm text-gray-900">
               {lang === 'en'
-                ? 'Create a 4-digit PIN for your account security'
-                : 'ሂሳብ ደህንነት ለ 4-ዲጂት PIN ይሰሩ'}
+                ? 'Create a 6-digit PIN for your account security'
+                : 'ሂሳብ ደህንነት ለ 6-ዲጂት PIN ይሰሩ'}
             </p>
           </div>
 
@@ -672,9 +672,9 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
             value={formData.pin}
             onChange={(value) => handleFieldChange('pin', value)}
             placeholder="••••"
-            maxLength={4}
+            maxLength={6}
             error={errors.pin}
-            hint={lang === 'en' ? '4 digits' : '4 ዲጂት'}
+            hint={lang === 'en' ? '6 digits' : '6 ዲጂት'}
           />
 
           {submitError && (

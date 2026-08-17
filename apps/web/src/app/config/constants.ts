@@ -147,8 +147,8 @@ export const VALIDATION = {
   PASSWORD_REQUIRE_SPECIAL: false,
 
   // PIN (for USSD)
-  PIN_LENGTH: 4,
-  PIN_REGEX: /^\d{4}$/,
+  PIN_LENGTH: 6,
+  PIN_REGEX: /^\d{6}$/,
 
   // Equb Pool
   EQUB_NAME_MIN_LENGTH: 3,

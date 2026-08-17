@@ -122,8 +122,8 @@ export default function RegistrationFormRefactored({
       if (!fullName || fullName.length < 3) {
         throw new Error('Full name must be at least 3 characters');
       }
-      if (!pin || pin.length !== 4) {
-        throw new Error('PIN must be exactly 4 digits');
+      if (!pin || pin.length !== 6) {
+        throw new Error('PIN must be exactly 6 digits');
       }
       if (pin !== confirmPin) {
         throw new Error('PINs do not match');
