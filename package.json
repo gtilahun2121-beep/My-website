@@ -42,5 +42,10 @@
             "js-yaml": "^5.2.3"
         }
     },
-    "packageManager": "npm@10.9.2"
+    "packageManager": "npm@10.9.2",
+    "dependencies": {
+        "cors": "^2.8.6",
+        "express": "^5.2.1",
+        "jsonwebtoken": "^9.0.0"
+    }
 }
