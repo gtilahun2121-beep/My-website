@@ -28,10 +28,16 @@ import {
     PaymentRecord,
     FeeConfigRecord,
     LotteryCandidate,
+    PublicWinnerRecord,
 } from './payments.repository';
 import { CheckoutDto, PaymentMethod } from './dto/checkout.dto';
 import { WebhookDto, WebhookStatus } from './dto/webhook.dto';
 import { BidDto } from './dto/bid.dto';
+import {
+    UserLotteryCurrentResponse,
+    UserLotteryHistoryResponse,
+    UserLotteryHistoryItem,
+} from './dto/user-lottery.dto';
 import { RlsContext, inTransaction, getPool } from '../../config/database.config';
 import { VaultConfig } from '../../config/vault.config';
 import { buildTransactionReference } from './reference';
@@ -822,6 +828,112 @@ export class PaymentsService implements OnModuleInit {
             total_rounds: equb.total_rounds,
             latest_draw,
         };
+    }
+
+    // ── User-facing lottery (spec §4 — member dashboard, READ-ONLY) ────────────
+
+    /**
+     * Returns the authenticated member's current lottery view: the active
+     * cycle, the user's OWN eligibility computed from real database state
+     * (approved membership + paid contribution + not-yet-won), and the latest
+     * public winner. The UI must NOT recompute any of this — it is backend
+     * authoritative.
+     */
+    async getLotteryCurrent(
+        equbId: string,
+        userId: string,
+    ): Promise<UserLotteryCurrentResponse> {
+        const overview = await this.repo.getUserCycleOverview(equbId, userId);
+        if (!overview) throw new NotFoundException('Equb group not found.');
+
+        const paid = overview.payment_status === 'paid' || overview.payment_status === 'auto_debited';
+        const approved = overview.membership_status === 'approved';
+        const won = overview.won_current_cycle === true;
+        const eligible = approved && paid && !won;
+
+        let message: string;
+        if (approved && won) {
+            message = 'Not eligible for another win this cycle.';
+        } else if (approved && paid) {
+            message = 'Eligible for the next draw.';
+        } else if (approved && !paid) {
+            message = 'Contribution for this cycle is not yet paid.';
+        } else {
+            message = 'Only approved, paid members are eligible.';
+        }
+
+        const latestWinner = await this.repo.getLatestPublicWinner(equbId);
+
+        return {
+            cycle: {
+                number: overview.current_round,
+                total_rounds: overview.total_rounds,
+                status: overview.status,
+                started_at: overview.created_at?.toISOString?.() ?? overview.created_at,
+                updated_at: overview.updated_at?.toISOString?.() ?? overview.updated_at,
+                is_active: overview.status === 'open' || overview.status === 'active',
+            },
+            eligibility: {
+                contribution: paid ? 'paid' : 'unpaid',
+                eligible,
+                won,
+                message,
+            },
+            latestWinner: latestWinner ? this.toPublicWinner(latestWinner) : null,
+        };
+    }
+
+    /**
+     * Returns the paginated PUBLIC lottery history for an equb. Only
+     * intentionally-public winner fields are exposed (display name + draw
+     * time); no phone/email/wallet/internal ids are ever included.
+     */
+    async getPublicLotteryHistory(
+        equbId: string,
+        page = 1,
+        limit = 10,
+    ): Promise<UserLotteryHistoryResponse> {
+        const equb = await this.repo.getEqubRoundInfo(equbId);
+        if (!equb) throw new NotFoundException('Equb group not found.');
+
+        const safeLimit = Math.min(Math.max(Math.floor(limit), 1), 100);
+        const safePage = Math.max(Math.floor(page), 1);
+        const offset = (safePage - 1) * safeLimit;
+
+        const [items, total] = await Promise.all([
+            this.repo.getPublicLotteryHistory(equbId, safeLimit, offset),
+            this.repo.countPublicLotteryWins(equbId),
+        ]);
+
+        return {
+            items: items.map((r) => this.toPublicWinner(r)),
+            total,
+            page: safePage,
+            limit: safeLimit,
+            total_pages: Math.ceil(total / safeLimit),
+        };
+    }
+
+    /**
+     * Reduces a public win row to the response shape that carries ONLY the
+     * display name (first name + last-name initial) plus draw meta. Defensive
+     * projection: no sensitive fields ever leave the service.
+     */
+    private toPublicWinner(record: PublicWinnerRecord): UserLotteryHistoryItem {
+        return {
+            cycle: record.round_number,
+            winner: {
+                displayName: this.toDisplayName(record.first_name, record.last_name),
+            },
+            drawnAt: record.draw_timestamp?.toISOString?.() ?? record.draw_timestamp,
+        };
+    }
+
+    /** "Dawit A." — first name + last-name initial (falls back gracefully). */
+    private toDisplayName(firstName: string, lastName: string): string {
+        const first = (firstName ?? '').trim() || 'Member';
+        const initial = (lastName ?? '').trim().charAt(0).toUpperCase();
+        return initial ? `${first} ${initial}.` : first;
     }
 
     private async getCandidateById(

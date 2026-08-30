@@ -11,6 +11,7 @@ import ImportantAlerts from '@/app/components/dashboard/ImportantAlerts';
 import QuickActions from '@/app/components/dashboard/QuickActions';
 import RecentActivity from '@/app/components/dashboard/RecentActivity';
 import UpcomingPayments from '@/app/components/dashboard/UpcomingPayments';
+import LotterySection from '@/app/components/dashboard/LotterySection';
 import HelpCard from '@/app/components/dashboard/HelpCard';
 import { useAuth } from '@/app/context/AuthContext';
 import api from '@/app/services/api';
@@ -123,6 +124,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <MyEqubs equbs={data.equbs} loading={loading} error={data.error} />
+          <LotterySection equbs={data.equbs} loading={loading} />
           <QuickActions />
         </div>
 

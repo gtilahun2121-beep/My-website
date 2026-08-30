@@ -46,6 +46,8 @@ import type {
   UserProfileData,
   LotteryDrawResponse,
   LotteryDrawListResponse,
+  UserLotteryCurrentResponse,
+  UserLotteryHistoryResponse,
   SubmitBidResponse,
   RoundBidListResponse,
   AuctionResolutionResponse,
@@ -1082,6 +1084,28 @@ export const equbAPI = {
    */
   runDraw: (id: string) =>
     request<LotteryDrawResponse>(`/equbs/${id}/draws`, { method: 'POST' }),
+
+  /**
+   * GET /api/v1/equbs/:id/lottery/current
+   * User-facing (read-only) view of the active lottery cycle, the current
+   * member's eligibility (computed backend-side), and the latest public winner.
+   * Exposes only public fields (displayName) — never phone/email/wallet ids.
+   */
+  getLotteryCurrent: (id: string) =>
+    request<UserLotteryCurrentResponse>(`/equbs/${id}/lottery/current`, {
+      method: 'GET',
+    }),
+
+  /**
+   * GET /api/v1/equbs/:id/lottery/history
+   * User-facing (read-only) paginated list of past lottery winners.
+   * Exposes only public winner display names.
+   */
+  getLotteryHistory: (id: string, params?: { page?: number; limit?: number }) =>
+    request<UserLotteryHistoryResponse>(`/equbs/${id}/lottery/history`, {
+      method: 'GET',
+      params,
+    }),
 };
 
 // ---------------------------------------------------------------------------

@@ -161,6 +161,64 @@ export interface LotteryDrawListItem {
     winner_phone: string;
 }
 
+// ── User-facing Lottery (read-only member views) ─────────────────────────────
+//
+// These mirror the backend's `user-lottery.dto.ts` shapes exactly. They are the
+// PUBLIC wire format returned by GET /api/v1/equbs/:id/lottery/current and
+// GET /api/v1/equbs/:id/lottery/history. A winner's identity is reduced to a
+// single `displayName` — NO phone, email, wallet balance, internal ids, or raw
+// user data is ever exposed. All eligibility flags are computed backend-side
+// and must be rendered by the UI verbatim (never recomputed client-side).
+
+/** A public winner identity — only the display name is exposed. */
+export interface PublicWinner {
+  /** e.g. "Dawit A." — first name + last-name initial. */
+  displayName: string;
+}
+
+/** One public lottery history row (a completed, public draw). */
+export interface UserLotteryHistoryItem {
+  /** Which cycle/round this win belonged to, e.g. 12. */
+  cycle: number;
+  winner: PublicWinner;
+  /** ISO timestamp of when the draw was committed. */
+  drawnAt: string;
+}
+
+/** Response from GET /api/v1/equbs/:id/lottery/current */
+export interface UserLotteryCurrentResponse {
+  cycle: {
+    /** Current active cycle number. */
+    number: number;
+    total_rounds: number;
+    status: 'open' | 'active' | 'completed' | 'cancelled';
+    started_at: string;
+    updated_at: string;
+    is_active: boolean;
+  };
+  eligibility: {
+    /** Whether the user's contribution for the current cycle is paid. */
+    contribution: 'paid' | 'unpaid';
+    /** True only when approved + paid + not already won (backend-computed). */
+    eligible: boolean;
+    /** True once the user has won during the current cycle. */
+    won: boolean;
+    /** Human-readable status the UI can surface verbatim. */
+    message: string;
+  };
+  /** The most recent public win, or null if none drawn yet. */
+  latestWinner: UserLotteryHistoryItem | null;
+}
+
+/** Response from GET /api/v1/equbs/:id/lottery/history */
+export interface UserLotteryHistoryResponse {
+  items: UserLotteryHistoryItem[];
+  total: number;
+  page: number;
+  limit: number;
+  total_pages: number;
+}
+
 /** Response from GET /api/v1/equbs/:id/draws */
 export interface LotteryDrawListResponse {
     items: LotteryDrawListItem[];
