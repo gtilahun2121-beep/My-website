@@ -16,8 +16,8 @@ export class EqubsService {
         private readonly notifications: NotificationsRepository,
     ) {}
 
-    async findAll() {
-        return this.repo.findAll();
+    async findAll(limit?: number, offset?: number) {
+        return this.repo.findAll(limit, offset);
     }
 
     async findById(id: string, userId?: string) {
@@ -26,8 +26,8 @@ export class EqubsService {
         return equb;
     }
 
-    async findMine(userId: string) {
-        return this.repo.findMine(userId);
+    async findMine(userId: string, limit?: number, offset?: number) {
+        return this.repo.findMine(userId, limit, offset);
     }
 
     validateCreatePayload(data: any): CreateEqubInput {
@@ -101,6 +101,23 @@ export class EqubsService {
         if (result?.pending) {
             await this.dispatchJoinRequest(equbId, userId, result.equbName);
         }
+        return result;
+    }
+
+    /**
+     * Activates an 'open' Equb, starting its first round (current_round → 1).
+     * Host/admin only — role enforcement lives in the controller (RolesGuard).
+     */
+    async activate(equbId: string, userId: string, role: string) {
+        const ctx: RlsContext = { userId, userRole: role === 'admin' ? 'admin' : 'host' };
+        const result = await this.repo.activateEqub(equbId, ctx);
+
+        if (!result.success) {
+            if (result.error === 'EQUB_NOT_FOUND') throw new NotFoundException(result.message);
+            throw new BadRequestException(result.message);
+        }
+
+        this.logger.log(`Equb activated: ${equbId} by ${userId}`);
         return result;
     }
 

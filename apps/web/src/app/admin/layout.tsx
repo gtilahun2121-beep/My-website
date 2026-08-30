@@ -21,6 +21,13 @@ const PAGE_META: Record<string, { title: string; subtitle: string }> = {
   '/admin/approvals': { title: 'Approvals', subtitle: 'Review Equb creation and membership join requests' },
   '/admin/kyc': { title: 'KYC Verification', subtitle: 'Identity verification workflows' },
   '/admin/finance': { title: 'Finance', subtitle: 'Financial operations, balances, payments and transactions' },
+  '/admin/payments': { title: 'Payments', subtitle: 'Payment activity, provider transactions and statuses' },
+  '/admin/transactions': { title: 'Transactions', subtitle: 'Full ledger of member and platform transactions' },
+  '/admin/wallets': { title: 'Wallets', subtitle: 'Live wallet balances across all members' },
+  '/admin/equbs': { title: 'Equbs', subtitle: 'Registry of all Equb groups on the platform' },
+  '/admin/reports': { title: 'Reports', subtitle: 'Exportable reports and downloadable summaries' },
+  '/admin/analytics': { title: 'Analytics', subtitle: 'Trends, growth and platform insights' },
+  '/admin/system-logs': { title: 'System Logs', subtitle: 'Security and audit trail of platform events' },
 };
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

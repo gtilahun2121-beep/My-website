@@ -95,6 +95,7 @@ export class SocialRepository {
         WHERE equb_id = ${equbId}
           AND status  = ${status}
         ORDER BY created_at DESC
+        LIMIT 100
       `;
         }
 
@@ -102,6 +103,7 @@ export class SocialRepository {
       SELECT * FROM social_proposals
       WHERE equb_id = ${equbId}
       ORDER BY created_at DESC
+      LIMIT 100
     `;
     }
 

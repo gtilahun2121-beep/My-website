@@ -1,8 +1,10 @@
-import { Controller, Get, Post, Body, UseGuards, BadRequestException } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
 import { WalletService } from './wallet.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtPayload } from '@qalnet/shared-types';
+import { DepositDto } from './dto/deposit.dto';
+import { WithdrawDto } from './dto/withdraw.dto';
 
 @Controller('api/v1/wallets')
 @UseGuards(JwtAuthGuard)
@@ -20,11 +22,8 @@ export class WalletController {
     }
 
     @Post('deposit')
-    async deposit(@CurrentUser() user: JwtPayload, @Body() dto: { amount: number }) {
-        if (!dto || typeof dto.amount !== 'number' || dto.amount <= 0) {
-            throw new BadRequestException('A positive numeric amount is required');
-        }
-        return this.walletService.deposit(user.sub, dto.amount);
+    async deposit(@CurrentUser() user: JwtPayload, @Body() dto: DepositDto) {
+        return this.walletService.deposit(user.sub, dto.amount, dto.pin);
     }
 
     @Post('verify-pin')
@@ -36,16 +35,13 @@ export class WalletController {
     }
 
     @Post('withdraw')
-    async withdraw(
-        @CurrentUser() user: JwtPayload,
-        @Body() dto: { amount: number; method: string; phone?: string; pin: string },
-    ) {
-        if (!dto || typeof dto.amount !== 'number' || dto.amount <= 0) {
-            throw new BadRequestException('A positive numeric amount is required');
-        }
-        if (!dto.pin) {
-            throw new BadRequestException('PIN is required');
-        }
-        return this.walletService.withdraw(user.sub, dto.amount, dto.method, dto.phone, dto.pin);
+    async withdraw(@CurrentUser() user: JwtPayload, @Body() dto: WithdrawDto) {
+        return this.walletService.withdraw(
+            user.sub,
+            dto.amount,
+            dto.method,
+            dto.phone,
+            dto.pin,
+        );
     }
 }

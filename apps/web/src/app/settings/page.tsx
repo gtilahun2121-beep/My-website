@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import AppShell from '@/app/components/admin/AppShell';
 import { useAuth } from '@/app/context/AuthContext';
+import { authAPI } from '@/app/services/api';
 import { languages, defaultLanguage, type Language } from '@/i18n/config';
 import { initials, roleLabel } from '@/app/components/dashboard/format';
 
@@ -105,6 +106,19 @@ export default function SettingsPage() {
     in_app: true,
   });
 
+  // ── Two-factor authentication state ─────────────────────────────────────
+  const [tfaEnabled, setTfaEnabled] = useState(false);
+  const [tfaBackupCount, setTfaBackupCount] = useState(0);
+  const [tfaLoading, setTfaLoading] = useState(true);
+  const [tfaStep, setTfaStep] = useState<'idle' | 'setup' | 'verify-disable'>('idle');
+  const [tfaSecret, setTfaSecret] = useState('');
+  const [tfaOtpauthUrl, setTfaOtpauthUrl] = useState('');
+  const [tfaCode, setTfaCode] = useState('');
+  const [tfaBackupCodes, setTfaBackupCodes] = useState<string[]>([]);
+  const [tfaBusy, setTfaBusy] = useState(false);
+  const [tfaError, setTfaError] = useState('');
+  const [tfaInfo, setTfaInfo] = useState('');
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const storedLang = localStorage.getItem(LANG_KEY);
@@ -122,6 +136,28 @@ export default function SettingsPage() {
       // ignore malformed prefs
     }
   }, []);
+
+  // Load the real 2FA status once the user is authenticated.
+  useEffect(() => {
+    if (!isAuthenticated || !user) return;
+    let cancelled = false;
+    authAPI
+      .get2FAStatus()
+      .then((status) => {
+        if (cancelled) return;
+        setTfaEnabled(status.enabled);
+        setTfaBackupCount(status.backup_codes_count);
+      })
+      .catch(() => {
+        if (!cancelled) setTfaEnabled(false);
+      })
+      .finally(() => {
+        if (!cancelled) setTfaLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated, user]);
 
   if (isLoading) {
     return (
@@ -142,6 +178,94 @@ export default function SettingsPage() {
     const next = { ...notifPrefs, [key]: value };
     setNotifPrefs(next);
     localStorage.setItem(NOTIF_KEY, JSON.stringify(next));
+  };
+
+  // ── 2FA handlers ─────────────────────────────────────────────────────────
+
+  const start2FASetup = async () => {
+    setTfaBusy(true);
+    setTfaError('');
+    setTfaInfo('');
+    try {
+      const setup = await authAPI.setup2FA();
+      setTfaSecret(setup.secret);
+      setTfaOtpauthUrl(setup.otpauth_url);
+      setTfaCode('');
+      setTfaStep('setup');
+    } catch (e) {
+      setTfaError(e instanceof Error ? e.message : 'Could not start 2FA setup.');
+    } finally {
+      setTfaBusy(false);
+    }
+  };
+
+  const confirm2FASetup = async () => {
+    setTfaBusy(true);
+    setTfaError('');
+    const code = tfaCode.trim();
+    if (!/^\d{6}$/.test(code)) {
+      setTfaError('Enter the 6-digit code from your authenticator app.');
+      setTfaBusy(false);
+      return;
+    }
+    try {
+      const result = await authAPI.verify2FASetup(code);
+      setTfaEnabled(result.enabled);
+      setTfaBackupCodes(result.backup_codes);
+      setTfaBackupCount(result.backup_codes.length);
+      setTfaStep('idle');
+      setTfaInfo('Two-factor authentication is now enabled. Save your backup codes below.');
+    } catch (e) {
+      setTfaError(e instanceof Error ? e.message : 'Invalid code.');
+    } finally {
+      setTfaBusy(false);
+    }
+  };
+
+  const start2FADisable = () => {
+    setTfaCode('');
+    setTfaError('');
+    setTfaInfo('');
+    setTfaStep('verify-disable');
+  };
+
+  const confirm2FADisable = async () => {
+    setTfaBusy(true);
+    setTfaError('');
+    const code = tfaCode.trim();
+    if (code.length < 6 || code.length > 20) {
+      setTfaError('Enter a valid code from your authenticator app, or a backup code.');
+      setTfaBusy(false);
+      return;
+    }
+    try {
+      const result = await authAPI.disable2FA(code);
+      setTfaEnabled(result.enabled);
+      setTfaBackupCount(0);
+      setTfaBackupCodes([]);
+      setTfaStep('idle');
+      setTfaInfo('Two-factor authentication has been disabled.');
+    } catch (e) {
+      setTfaError(e instanceof Error ? e.message : 'Invalid code.');
+    } finally {
+      setTfaBusy(false);
+    }
+  };
+
+  const cancel2FA = () => {
+    setTfaStep('idle');
+    setTfaCode('');
+    setTfaError('');
+    setTfaInfo('');
+  };
+
+  const copyBackupCodes = async () => {
+    try {
+      await navigator.clipboard.writeText(tfaBackupCodes.join('\n'));
+      setTfaInfo('Backup codes copied to clipboard.');
+    } catch {
+      setTfaInfo('Copy the codes below and store them somewhere safe.');
+    }
   };
 
   const fullName = `${user.firstName} ${user.lastName}`.trim() || 'QalNet Member';
@@ -303,19 +427,161 @@ export default function SettingsPage() {
                   </Link>
                 </div>
 
-                <Toggle
-                  label="Two-factor authentication"
-                  description="Require an OTP on sign-in (coming soon)"
-                  checked={false}
-                  onChange={() => {}}
-                />
+                {/* Two-factor authentication */}
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <p className="text-sm font-bold text-slate-800">Two-factor authentication</p>
+                      <p className="text-xs text-slate-500">
+                        {tfaLoading
+                          ? 'Checking your 2FA status…'
+                          : tfaEnabled
+                            ? tfaBackupCount > 0
+                              ? `Enabled — ${tfaBackupCount} backup code${tfaBackupCount === 1 ? '' : 's'} remaining`
+                              : 'Enabled'
+                            : 'Add an extra layer of security with an authenticator app'}
+                      </p>
+                    </div>
+                    {!tfaLoading &&
+                      (tfaStep === 'idle' ? (
+                        tfaEnabled ? (
+                          <button
+                            type="button"
+                            onClick={() => void start2FADisable()}
+                            className="px-4 py-2 rounded-lg border border-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-100 transition-colors shrink-0"
+                          >
+                            Disable
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => void start2FASetup()}
+                            disabled={tfaBusy}
+                            className="px-4 py-2 rounded-lg bg-brand-600 text-white text-sm font-bold hover:bg-brand-700 disabled:opacity-50 transition-colors shrink-0"
+                          >
+                            {tfaBusy ? 'Preparing…' : 'Enable'}
+                          </button>
+                        )
+                      ) : null)}
+                  </div>
 
-                <Toggle
-                  label="Login alerts"
-                  description="Notify me when a new device signs in (coming soon)"
-                  checked={false}
-                  onChange={() => {}}
-                />
+                  {/* Setup / disable panels */}
+                  {tfaStep === 'setup' && (
+                    <div className="mt-4 rounded-xl border border-brand-200 bg-white p-4 space-y-3">
+                      <p className="text-xs font-bold text-slate-700">
+                        Step 1 — Scan or enter this secret in your authenticator app (Google Authenticator, Authy, etc.)
+                      </p>
+                      <div className="rounded-lg bg-slate-100 p-3 font-mono text-xs break-all text-slate-700">
+                        {tfaOtpauthUrl}
+                      </div>
+                      <p className="text-xs text-slate-500">
+                        Secret key: <span className="font-mono font-bold text-slate-700">{tfaSecret}</span>
+                      </p>
+
+                      <p className="text-xs font-bold text-slate-700">Step 2 — Enter the 6-digit code shown by the app</p>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={6}
+                        value={tfaCode}
+                        onChange={(e) => setTfaCode(e.target.value.replace(/\D/g, ''))}
+                        placeholder="000000"
+                        className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-brand-500 focus:outline-none text-center text-2xl tracking-widest font-bold"
+                      />
+
+                      {tfaError && <p className="text-xs font-semibold text-danger-600">{tfaError}</p>}
+
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => void confirm2FASetup()}
+                          disabled={tfaBusy || !/^\d{6}$/.test(tfaCode)}
+                          className="flex-1 px-4 py-2 rounded-lg bg-brand-600 text-white text-sm font-bold hover:bg-brand-700 disabled:opacity-50 transition-colors"
+                        >
+                          {tfaBusy ? 'Verifying…' : 'Verify & Enable'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={cancel2FA}
+                          className="px-4 py-2 rounded-lg border border-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-100 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {tfaStep === 'verify-disable' && (
+                    <div className="mt-4 rounded-xl border border-danger-200 bg-white p-4 space-y-3">
+                      <p className="text-xs font-bold text-slate-700">
+                        Enter a current code from your authenticator app (or a backup code) to disable 2FA.
+                      </p>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={tfaCode}
+                        onChange={(e) => setTfaCode(e.target.value.replace(/[^A-Za-z0-9-]/g, '').slice(0, 20))}
+                        placeholder="000000"
+                        className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-brand-500 focus:outline-none text-center text-2xl tracking-widest font-bold"
+                      />
+
+                      {tfaError && <p className="text-xs font-semibold text-danger-600">{tfaError}</p>}
+
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => void confirm2FADisable()}
+                          disabled={tfaBusy}
+                          className="flex-1 px-4 py-2 rounded-lg bg-danger-600 text-white text-sm font-bold hover:bg-danger-700 disabled:opacity-50 transition-colors"
+                        >
+                          {tfaBusy ? 'Disabling…' : 'Disable 2FA'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={cancel2FA}
+                          className="px-4 py-2 rounded-lg border border-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-100 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {tfaInfo && <p className="mt-3 text-xs font-semibold text-success-600">{tfaInfo}</p>}
+
+                  {tfaBackupCodes.length > 0 && (
+                    <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-xs font-black text-amber-800">Your one-time backup codes</p>
+                        <button
+                          type="button"
+                          onClick={() => void copyBackupCodes()}
+                          className="text-xs font-bold text-amber-700 hover:underline"
+                        >
+                          Copy all
+                        </button>
+                      </div>
+                      <p className="mt-1 text-xs text-amber-700">
+                        Store these somewhere safe. Each code works only once and can sign you in if you lose your device.
+                      </p>
+                      <div className="mt-3 grid grid-cols-2 gap-2">
+                        {tfaBackupCodes.map((code) => (
+                          <code key={code} className="rounded bg-white px-2 py-1.5 text-center text-xs font-mono font-bold text-slate-700 border border-amber-200">
+                            {code}
+                          </code>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 opacity-60">
+                  <div>
+                    <p className="text-sm font-bold text-slate-800">Login alerts</p>
+                    <p className="text-xs text-slate-500">Notify me when a new device signs in</p>
+                  </div>
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Coming soon</span>
+                </div>
               </div>
             </div>
           )}

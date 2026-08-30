@@ -11,8 +11,10 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { UsersService } from './users.service';
 import { AdminStatsService } from './admin-stats.service';
 import { AdminFinanceService } from './admin-finance.service';
+import { AdminOperationsService } from './admin-operations.service';
 import { ResetPinDto } from './dto/reset-pin.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
+import { UpdateKycDto } from './dto/update-kyc.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -27,6 +29,7 @@ export class AdminController {
         private readonly usersService: UsersService,
         private readonly adminStatsService: AdminStatsService,
         private readonly adminFinanceService: AdminFinanceService,
+        private readonly adminOperationsService: AdminOperationsService,
     ) {}
 
     @Get('stats')
@@ -65,6 +68,7 @@ export class AdminController {
         @Query('search') search?: string,
         @Query('role') role?: string,
         @Query('status') status?: string,
+        @Query('kyc') kyc?: string,
     ) {
         const parsedPage = Math.max(1, parseInt(page ?? '1', 10) || 1);
         const parsedLimit = Math.min(100, Math.max(1, parseInt(limit ?? '20', 10) || 20));
@@ -76,6 +80,7 @@ export class AdminController {
             search,
             role,
             status: status === 'active' || status === 'inactive' ? status : undefined,
+            kyc: kyc === 'pending' || kyc === 'verified' || kyc === 'rejected' ? kyc : undefined,
         });
     }
 
@@ -110,6 +115,23 @@ export class AdminController {
         @Body() dto: UpdateRoleDto,
     ) {
         return this.usersService.setUserRole(user.sub, userId, dto.role);
+    }
+
+    @Patch('users/:id/kyc')
+    @UseGuards(RolesGuard)
+    @Roles('admin')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Verify or reject a member identity (KYC) submission' })
+    @ApiResponse({ status: 200, description: 'Verification status updated.' })
+    @ApiResponse({ status: 400, description: 'Invalid status.' })
+    @ApiResponse({ status: 403, description: 'Forbidden — requires role admin.' })
+    @ApiResponse({ status: 404, description: 'User not found.' })
+    async updateKycStatus(
+        @CurrentUser() user: JwtPayload,
+        @Param('id') userId: string,
+        @Body() dto: UpdateKycDto,
+    ) {
+        return this.usersService.setKycStatus(user.sub, userId, dto.status);
     }
 
     @Get('finance/overview')
@@ -171,6 +193,73 @@ export class AdminController {
             page: Math.max(1, parseInt(page ?? '1', 10) || 1),
             limit: Math.min(100, Math.max(1, parseInt(limit ?? '20', 10) || 20)),
             status: validStatus ? status : undefined,
+        });
+    }
+
+    // ── Operations console ──────────────────────────────────────────────────
+
+    @Get('wallets')
+    @UseGuards(RolesGuard)
+    @Roles('admin')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'List member wallets (paged, searchable)' })
+    @ApiResponse({ status: 200, description: 'Paged wallet list.' })
+    @ApiResponse({ status: 403, description: 'Forbidden — requires role admin.' })
+    async listWallets(
+        @CurrentUser() user: JwtPayload,
+        @Query('page') page?: string,
+        @Query('limit') limit?: string,
+        @Query('search') search?: string,
+    ) {
+        return this.adminOperationsService.listWallets({
+            adminId: user.sub,
+            page: Math.max(1, parseInt(page ?? '1', 10) || 1),
+            limit: Math.min(100, Math.max(1, parseInt(limit ?? '20', 10) || 20)),
+            search,
+        });
+    }
+
+    @Get('equbs')
+    @UseGuards(RolesGuard)
+    @Roles('admin')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'List all Equb groups (paged, searchable)' })
+    @ApiResponse({ status: 200, description: 'Paged equb list.' })
+    @ApiResponse({ status: 403, description: 'Forbidden — requires role admin.' })
+    async listAdminEqubs(
+        @CurrentUser() user: JwtPayload,
+        @Query('page') page?: string,
+        @Query('limit') limit?: string,
+        @Query('search') search?: string,
+    ) {
+        return this.adminOperationsService.listEqubs({
+            adminId: user.sub,
+            page: Math.max(1, parseInt(page ?? '1', 10) || 1),
+            limit: Math.min(100, Math.max(1, parseInt(limit ?? '20', 10) || 20)),
+            search,
+        });
+    }
+
+    @Get('system-logs')
+    @UseGuards(RolesGuard)
+    @Roles('admin')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'List security/audit log entries (paged, filterable)' })
+    @ApiResponse({ status: 200, description: 'Paged audit log list.' })
+    @ApiResponse({ status: 403, description: 'Forbidden — requires role admin.' })
+    async listSystemLogs(
+        @CurrentUser() user: JwtPayload,
+        @Query('page') page?: string,
+        @Query('limit') limit?: string,
+        @Query('table') table?: string,
+        @Query('action') action?: string,
+    ) {
+        return this.adminOperationsService.listSystemLogs({
+            adminId: user.sub,
+            page: Math.max(1, parseInt(page ?? '1', 10) || 1),
+            limit: Math.min(100, Math.max(1, parseInt(limit ?? '20', 10) || 20)),
+            table,
+            action,
         });
     }
 }

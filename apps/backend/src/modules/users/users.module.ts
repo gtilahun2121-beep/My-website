@@ -7,6 +7,8 @@ import { AdminStatsService } from './admin-stats.service';
 import { AdminStatsRepository } from './admin-stats.repository';
 import { AdminFinanceService } from './admin-finance.service';
 import { AdminFinanceRepository } from './admin-finance.repository';
+import { AdminOperationsService } from './admin-operations.service';
+import { AdminOperationsRepository } from './admin-operations.repository';
 
 @Module({
     controllers: [UsersController, AdminController],
@@ -17,6 +19,8 @@ import { AdminFinanceRepository } from './admin-finance.repository';
         AdminStatsRepository,
         AdminFinanceService,
         AdminFinanceRepository,
+        AdminOperationsService,
+        AdminOperationsRepository,
     ],
     exports: [UsersService],
 })

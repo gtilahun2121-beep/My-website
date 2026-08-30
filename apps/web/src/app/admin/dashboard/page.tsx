@@ -12,6 +12,7 @@ import { useRequireAdmin } from '@/app/hooks/useRequireAdmin';
 import { AdminRouteLoading } from '@/app/components/admin/AdminGate';
 import { useAuth } from '@/app/context/AuthContext';
 import { initials } from '@/app/components/dashboard/format';
+import { exportCsv as downloadCsv, exportExcel as downloadExcel, exportPdf as downloadPdf } from '@/app/components/admin/exportUtils';
 
 const stroke = {
   fill: 'none',
@@ -263,9 +264,9 @@ export default function AdminDashboardPage() {
 
   const adminInitials = user ? initials(user.firstName, user.lastName) : 'A';
 
-  const exportCsv = () => {
-    if (!stats?.recent_transactions?.length) return;
-    const rows = [
+  const exportRows = () => {
+    if (!stats?.recent_transactions?.length) return null;
+    const rows: (string | number)[][] = [
       ['User', 'Phone', 'Equb', 'Round', 'Amount (ETB)', 'Status', 'Date'],
       ...stats.recent_transactions.map((t) => [
         `${t.user_first_name} ${t.user_last_name}`,
@@ -277,14 +278,25 @@ export default function AdminDashboardPage() {
         t.created_at,
       ]),
     ];
-    const csv = rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `qalnet-recent-transactions-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    return rows;
+  };
+
+  const exportCsv = () => {
+    const rows = exportRows();
+    if (!rows) return;
+    downloadCsv(rows, `qalnet-recent-transactions-${new Date().toISOString().slice(0, 10)}.csv`);
+  };
+
+  const exportExcel = () => {
+    const rows = exportRows();
+    if (!rows) return;
+    downloadExcel(rows, `qalnet-recent-transactions-${new Date().toISOString().slice(0, 10)}.xls`, 'QalNet Recent Transactions');
+  };
+
+  const exportPdf = () => {
+    const rows = exportRows();
+    if (!rows) return;
+    downloadPdf(rows, `qalnet-recent-transactions-${new Date().toISOString().slice(0, 10)}.pdf`, 'QalNet Recent Transactions');
   };
 
   const cardCls = 'bg-admin-card rounded-card border border-admin-border';
@@ -370,24 +382,34 @@ export default function AdminDashboardPage() {
                   </svg>
                   CSV
                 </button>
-                <span
-                  className="flex w-full items-center gap-3 px-4 py-2.5 text-sm font-semibold text-admin-disabled cursor-not-allowed"
-                  title="Coming soon"
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    exportPdf();
+                    setExportOpen(false);
+                  }}
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-sm font-semibold text-admin-text-secondary hover:bg-admin-elevated"
                 >
-                  <svg viewBox="0 0 24 24" className="w-4 h-4" {...stroke}>
+                  <svg viewBox="0 0 24 24" className="w-4 h-4 text-danger-500" {...stroke}>
                     <path d="M6 3h12v4H6V3Zm0 6h12M6 13h12m0 8V17H6v4M6 13v4h12v-4" />
                   </svg>
                   PDF
-                </span>
-                <span
-                  className="flex w-full items-center gap-3 px-4 py-2.5 text-sm font-semibold text-admin-disabled cursor-not-allowed"
-                  title="Coming soon"
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    exportExcel();
+                    setExportOpen(false);
+                  }}
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-sm font-semibold text-admin-text-secondary hover:bg-admin-elevated"
                 >
-                  <svg viewBox="0 0 24 24" className="w-4 h-4" {...stroke}>
+                  <svg viewBox="0 0 24 24" className="w-4 h-4 text-success-600" {...stroke}>
                     <path d="M4 6h16v12H4V6Z" />
                   </svg>
                   Excel
-                </span>
+                </button>
                 <button
                   type="button"
                   role="menuitem"
@@ -841,21 +863,26 @@ function TopEqubsCard({ loading, equbs }: { loading: boolean; equbs: AdminTopEqu
       ) : (
         <ul className="space-y-3 mt-4">
           {equbs.map((e) => (
-            <li key={e.id} className="flex items-center gap-3 p-3 rounded-xl border border-admin-border hover:border-brand-500/40 hover:bg-admin-elevated transition-colors">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-600 to-brand-800 text-white flex items-center justify-center font-black shrink-0">
-                {e.name?.[0]?.toUpperCase() ?? 'E'}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="font-bold text-admin-text truncate">{e.name}</p>
-                  <StatusBadge tone={EQUB_TONE[e.status] ?? 'neutral'} variant="dark">
-                    {statusLabel(e.status)}
-                  </StatusBadge>
+            <li key={e.id}>
+              <Link
+                href={`/equbs/${e.id}`}
+                className="flex items-center gap-3 p-3 rounded-xl border border-admin-border hover:border-brand-500/40 hover:bg-admin-elevated transition-colors"
+              >
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-600 to-brand-800 text-white flex items-center justify-center font-black shrink-0">
+                  {e.name?.[0]?.toUpperCase() ?? 'E'}
                 </div>
-                <p className="text-xs text-admin-muted mt-0.5">
-                  {e.member_count} member{e.member_count !== 1 ? 's' : ''} · round {e.current_round}/{e.total_rounds} · ETB {money(e.total_amount)}
-                </p>
-              </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-bold text-admin-text truncate">{e.name}</p>
+                    <StatusBadge tone={EQUB_TONE[e.status] ?? 'neutral'} variant="dark">
+                      {statusLabel(e.status)}
+                    </StatusBadge>
+                  </div>
+                  <p className="text-xs text-admin-muted mt-0.5">
+                    {e.member_count} member{e.member_count !== 1 ? 's' : ''} · round {e.current_round}/{e.total_rounds} · ETB {money(e.total_amount)}
+                  </p>
+                </div>
+              </Link>
             </li>
           ))}
         </ul>

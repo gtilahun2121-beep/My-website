@@ -24,7 +24,23 @@ import {
   useEffect,
 } from 'react';
 import { authAPI, userAPI, APIError } from '@/app/services/api';
-import type { UserRole, JwtPayload } from '@qalnet/shared-types';
+import type { UserRole, JwtPayload, AuthTokenResponse } from '@qalnet/shared-types';
+
+// ---------------------------------------------------------------------------
+// 2FA control-flow error
+// ---------------------------------------------------------------------------
+
+/**
+ * Thrown by signin() when the account has 2FA enabled. Carries the short-lived
+ * mfa_token issued by /auth/login so the UI can prompt for a TOTP/backup code
+ * and then call verify2FALogin(mfaToken, code).
+ */
+export class TwoFactorRequiredError extends Error {
+  constructor(public readonly mfaToken: string) {
+    super('Two-factor authentication required.');
+    this.name = 'TwoFactorRequiredError';
+  }
+}
 
 // ---------------------------------------------------------------------------
 // User type — derived from the JWT payload + UI state
@@ -60,7 +76,18 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  /**
+   * Attempts a PIN login. When the account has 2FA enabled the backend pauses
+   * the login and this method throws TwoFactorRequiredError carrying the
+   * short-lived mfa_token — the caller must then complete the login with
+   * `verify2FALogin(mfaToken, code)`.
+   */
   signin: (identifier: string, pin: string) => Promise<void>;
+  /**
+   * Completes a 2FA-protected login using the mfa_token from the paused
+   * signin plus a TOTP/backup code. Stores the real session on success.
+   */
+  verify2FALogin: (mfaToken: string, code: string) => Promise<void>;
   signup: (data: SignupData) => Promise<void>;
   signout: () => Promise<void>;
   /**
@@ -288,10 +315,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // api.ts handles PIN padding and sends { identifier, password: padPin(pin) }
       const response = await authAPI.signin(identifier, pin);
 
-      const payload = decodeJwtPayload(response.access_token);
+      // Account has 2FA enabled — the backend paused the login and issued a
+      // short-lived MFA token instead of access tokens. Surface that to the
+      // form so it can prompt for a TOTP/backup code.
+      if ('two_factor_required' in response) {
+        throw new TwoFactorRequiredError(response.mfa_token);
+      }
+
+      const tokens: AuthTokenResponse = response;
+      const payload = decodeJwtPayload(tokens.access_token);
       if (!payload) throw new Error('Invalid token received from server.');
 
       const userData = userFromJwt(payload, { phoneNumber: identifier });
+
+      setUser(userData);
+      localStorage.setItem(STORAGE.ACCESS_TOKEN, tokens.access_token);
+      localStorage.setItem(STORAGE.USER, JSON.stringify(userData));
+      if (tokens.refresh_token) {
+        localStorage.setItem(STORAGE.REFRESH_TOKEN, tokens.refresh_token);
+      }
+      void refreshProfile();
+    } catch (error) {
+      if (error instanceof TwoFactorRequiredError) throw error;
+      const message =
+        error instanceof APIError
+          ? error.data?.message || error.message
+          : error instanceof Error
+            ? error.message
+            : 'Sign in failed';
+      throw new Error(message);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [refreshProfile]);
+
+  // ── 2FA second step ─────────────────────────────────────────────────────────
+
+  const verify2FALogin = useCallback(async (mfaToken: string, code: string) => {
+    setIsLoading(true);
+    try {
+      const response: AuthTokenResponse = await authAPI.verify2FALogin(mfaToken, code);
+
+      const payload = decodeJwtPayload(response.access_token);
+      if (!payload) throw new Error('Invalid token received from server.');
+
+      const userData = userFromJwt(payload);
 
       setUser(userData);
       localStorage.setItem(STORAGE.ACCESS_TOKEN, response.access_token);
@@ -306,7 +374,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           ? error.data?.message || error.message
           : error instanceof Error
             ? error.message
-            : 'Sign in failed';
+            : 'Two-factor authentication failed';
       throw new Error(message);
     } finally {
       setIsLoading(false);
@@ -398,6 +466,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isAuthenticated: user !== null,
     isLoading,
     signin,
+    verify2FALogin,
     signup,
     signout,
     resetPin,

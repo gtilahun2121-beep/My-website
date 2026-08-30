@@ -53,6 +53,50 @@ export interface BidRequest {
     bid_amount: number; // ETB amount to bid (must be > 0)
 }
 
+/** A standing bid on the auction leaderboard (joined with the bidder's name). */
+export interface BidRecord {
+    id: string;
+    equb_id: string;
+    user_id: string;
+    round_number: number;
+    bid_amount: number;
+    potential_payout: number;
+    status: 'open' | 'winning' | 'outbid' | 'settled';
+    created_at: string;
+    first_name?: string;
+    last_name?: string;
+    phone?: string;
+}
+
+/** Response from POST /api/v1/equbs/:id/bid */
+export interface SubmitBidResponse {
+    bid_recorded: boolean;
+    bid_id: string;
+    round_number: number;
+    potential_payout: number;
+    updated: boolean;
+    message: string;
+}
+
+/** Response from GET /api/v1/equbs/:id/bids?round=N */
+export interface RoundBidListResponse {
+    items: BidRecord[];
+    total: number;
+    round_number: number;
+}
+
+/** Response from POST /api/v1/equbs/:id/auction/resolve */
+export interface AuctionResolutionResponse {
+    round_number: number;
+    winner: LotteryCandidate;
+    bid_amount: number;
+    payout_amount: number;
+    redistributed_share: number;
+    total_bids: number;
+    already_resolved: boolean;
+    message: string;
+}
+
 // ── Webhook ───────────────────────────────────────────────────────────────────
 
 /**
@@ -73,4 +117,67 @@ export interface WalletBalance {
     userId: string;
     balance: number;
     currency: string; // 'ETB'
+}
+
+// ── Lottery Draws ─────────────────────────────────────────────────────────────
+
+/**
+ * A single eligible lottery participant (approved member who paid the round).
+ * Matches the backend LotteryCandidate shape.
+ */
+export interface LotteryCandidate {
+    id: string;
+    first_name: string;
+    last_name: string;
+    phone: string;
+}
+
+/**
+ * Response from POST /api/v1/equbs/:id/draws.
+ * The winner + full candidate list let the client animate a fair spinning
+ * wheel that lands on the actual winner.
+ */
+export interface LotteryDrawResponse {
+    draw: {
+        id: string;
+        equb_id: string;
+        round_number: number;
+        winner_id: string;
+        draw_timestamp: string;
+    };
+    winner: LotteryCandidate;
+    candidates: LotteryCandidate[];
+    message: string;
+}
+
+/** One historical draw row, joined with the winner's name. */
+export interface LotteryDrawListItem {
+    id: string;
+    round_number: number;
+    winner_id: string;
+    draw_timestamp: string;
+    winner_first_name: string;
+    winner_last_name: string;
+    winner_phone: string;
+}
+
+/** Response from GET /api/v1/equbs/:id/draws */
+export interface LotteryDrawListResponse {
+    items: LotteryDrawListItem[];
+    total: number;
+    current_round: number;
+    total_rounds: number;
+    /** The most recent draw with the full candidate set so the wheel can
+     *  render immediately on page load (no need to re-run the draw). */
+    latest_draw: {
+        draw: {
+            id: string;
+            equb_id: string;
+            round_number: number;
+            winner_id: string;
+            draw_timestamp: string;
+        };
+        winner: LotteryCandidate;
+        candidates: LotteryCandidate[];
+    } | null;
 }

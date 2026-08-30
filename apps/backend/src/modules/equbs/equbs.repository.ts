@@ -36,6 +36,15 @@ export interface CreateRequestInput {
 
 export type MembershipStatus = 'pending' | 'approved' | 'rejected';
 
+/**
+ * Clamps a pagination value to a safe integer range so a malformed query
+ * string can never request a huge LIMIT/OFFSET.
+ */
+function clampPaging(value: number, min: number, max: number): number {
+    const n = Math.trunc(Number.isFinite(value) ? value : min);
+    return Math.min(Math.max(n, min), max);
+}
+
 @Injectable()
 export class EqubsRepository {
     // ── Read ──────────────────────────────────────────────────────────────────
@@ -54,8 +63,10 @@ export class EqubsRepository {
         return rows[0]?.name ?? null;
     }
 
-    async findAll(): Promise<any[]> {
+    async findAll(limit = 100, offset = 0): Promise<any[]> {
         const sql = getPool();
+        const safeLimit = clampPaging(limit, 1, 200);
+        const safeOffset = clampPaging(offset, 0, Number.MAX_SAFE_INTEGER);
         return sql`
             SELECT
                 e.id, e.host_id, e.name, e.description, e.telegram_group_id,
@@ -65,11 +76,17 @@ export class EqubsRepository {
                 u.first_name AS host_first_name,
                 u.last_name  AS host_last_name,
                 u.phone      AS host_phone,
-                (SELECT COUNT(*) FROM memberships m WHERE m.equb_id = e.id AND m.status = 'approved')::int AS member_count,
-                GREATEST(e.total_rounds - (SELECT COUNT(*) FROM memberships m WHERE m.equb_id = e.id AND m.status = 'approved')::int, 0) AS open_slots
+                counts.member_count,
+                GREATEST(e.total_rounds - counts.member_count, 0) AS open_slots
             FROM equb_groups e
             JOIN users u ON u.id = e.host_id
+            LEFT JOIN LATERAL (
+                SELECT COUNT(*)::int AS member_count
+                FROM memberships m
+                WHERE m.equb_id = e.id AND m.status = 'approved'
+            ) counts ON TRUE
             ORDER BY e.created_at DESC
+            LIMIT ${safeLimit} OFFSET ${safeOffset}
         `;
     }
 
@@ -107,8 +124,10 @@ export class EqubsRepository {
      * Equbs the user belongs to — as host, or as an approved/pending member.
      * Rejected memberships are not surfaced here.
      */
-    async findMine(userId: string): Promise<any[]> {
+    async findMine(userId: string, limit = 100, offset = 0): Promise<any[]> {
         const sql = getPool();
+        const safeLimit = clampPaging(limit, 1, 200);
+        const safeOffset = clampPaging(offset, 0, Number.MAX_SAFE_INTEGER);
         return sql`
             SELECT
                 e.id, e.host_id, e.name, e.description, e.telegram_group_id,
@@ -118,19 +137,28 @@ export class EqubsRepository {
                 u.first_name AS host_first_name,
                 u.last_name  AS host_last_name,
                 u.phone      AS host_phone,
-                (SELECT COUNT(*) FROM memberships m WHERE m.equb_id = e.id AND m.status = 'approved')::int AS member_count,
-                GREATEST(e.total_rounds - (SELECT COUNT(*) FROM memberships m WHERE m.equb_id = e.id AND m.status = 'approved')::int, 0) AS open_slots,
+                counts.member_count,
+                GREATEST(e.total_rounds - counts.member_count, 0) AS open_slots,
                 (e.host_id = ${userId}) AS is_host,
-                (SELECT mm.status FROM memberships mm
-                 WHERE mm.equb_id = e.id AND mm.user_id = ${userId}
-                 LIMIT 1) AS membership_status
+                ms.status AS membership_status
             FROM equb_groups e
             JOIN users u ON u.id = e.host_id
+            LEFT JOIN LATERAL (
+                SELECT COUNT(*)::int AS member_count
+                FROM memberships m
+                WHERE m.equb_id = e.id AND m.status = 'approved'
+            ) counts ON TRUE
+            LEFT JOIN LATERAL (
+                SELECT mm.status FROM memberships mm
+                WHERE mm.equb_id = e.id AND mm.user_id = ${userId}
+                LIMIT 1
+            ) ms ON TRUE
             WHERE e.host_id = ${userId}
                OR EXISTS (SELECT 1 FROM memberships mm
                           WHERE mm.equb_id = e.id AND mm.user_id = ${userId}
                             AND mm.status IN ('approved', 'pending'))
             ORDER BY e.created_at DESC
+            LIMIT ${safeLimit} OFFSET ${safeOffset}
         `;
     }
 
@@ -217,6 +245,51 @@ export class EqubsRepository {
                 return { success: true, membership, pending: false, equbName: equb.name, message: 'Joined Equb successfully' };
             }
             return { success: true, membership, pending: true, equbName: equb.name, message: 'Join request submitted — awaiting admin approval' };
+        });
+    }
+
+    // ── Activate ────────────────────────────────────────────────────────────────
+
+    /**
+     * Starts the Equb's first round: flips an 'open' equb to 'active' and
+     * sets current_round to 1. Idempotent — returns an explicit error when
+     * the equb is not in the 'open' state (already active/completed/cancelled).
+     * Only the host or an admin may activate (role enforced at the controller).
+     */
+    async activateEqub(equbId: string, ctx: RlsContext): Promise<any> {
+        return inTransaction(ctx, async (tx) => {
+            const rows = await tx`
+                UPDATE equb_groups
+                SET status       = 'active',
+                    current_round = 1,
+                    updated_at   = NOW()
+                WHERE id = ${equbId}
+                  AND status = 'open'
+                  AND current_round = 0
+                RETURNING
+                    id, host_id, name, description, telegram_group_id,
+                    total_amount, contribution_amount, cycle_days,
+                    total_rounds, current_round, status, social_fund_balance,
+                    created_at, updated_at
+            `;
+
+            if (rows.length > 0) {
+                return { success: true, equb: rows[0] };
+            }
+
+            const [existing] = await tx`
+                SELECT id, status, current_round
+                FROM equb_groups
+                WHERE id = ${equbId}
+            `;
+            if (!existing) {
+                return { success: false, error: 'EQUB_NOT_FOUND', message: 'Equb not found' };
+            }
+            return {
+                success: false,
+                error: 'EQUB_ALREADY_STARTED',
+                message: `This Equb is already ${existing.status}.`,
+            };
         });
     }
 
