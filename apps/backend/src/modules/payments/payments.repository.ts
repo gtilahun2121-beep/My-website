@@ -124,6 +124,25 @@ export interface EqubRoundInfo {
     status: 'open' | 'active' | 'completed' | 'cancelled';
 }
 
+/** A lottery spin candidate: the user plus their membership id (needed to
+ *  write both winner state and the immutable event row). */
+export interface LotterySpinCandidate extends LotteryCandidate {
+    membership_id: string;
+}
+
+/** An immutable lottery ledger event (see migration 014). */
+export interface LotteryEventRecord {
+    id: string;
+    equb_id: string;
+    round_number: number;
+    membership_id: string | null;
+    winner_id: string | null;
+    event_type: 'LOTTERY_WIN' | 'DRAW_SKIPPED' | 'PAYOUT_SCHEDULED';
+    performed_by: string | null;
+    draw_timestamp: Date;
+    metadata: any;
+}
+
 export type BidStatus = 'open' | 'winning' | 'outbid' | 'settled';
 
 export interface BidRecord {
@@ -773,5 +792,178 @@ export class PaymentsRepository {
     `;
 
         return rows[0] ?? null;
+    }
+
+    // ── Lottery spin — single-transaction primitives ────────────────────────
+    //
+    // These methods MUST be called from inside a single inTransaction() opened
+    // by the service. They share the caller's `tx` so the whole spin (lock,
+    // eligibility, winner write, immutable event, payout, round advance) is
+    // atomic: any failure rolls everything back.
+
+    /**
+     * Locks the equb's current round row FOR UPDATE so two concurrent spins
+     * on the same equb serialize: the second one waits for the first to
+     * commit/rollback, then re-reads the (now advanced) current_round.
+     */
+    async lockEqubCycleForUpdate(
+        equbId: string,
+        tx: any,
+    ): Promise<EqubRoundInfo | null> {
+        const rows = await tx<EqubRoundInfo[]>`
+      SELECT id, host_id, name, total_amount, contribution_amount,
+             total_rounds, current_round, status
+      FROM equb_groups
+      WHERE id = ${equbId}
+      FOR UPDATE
+    `;
+
+        return rows[0] ?? null;
+    }
+
+    /**
+     * Fetches the lottery-eligible candidates for the round INSIDE the spin
+     * transaction, excluding any member who has already won the current
+     * cycle (won_current_cycle = TRUE). Only approved members with a paid /
+     * auto_debited contribution for the round are considered.
+     */
+    async getEligibleCandidatesForSpinRound(
+        equbId: string,
+        roundNumber: number,
+        tx: any,
+    ): Promise<LotterySpinCandidate[]> {
+        return tx<LotterySpinCandidate[]>`
+      SELECT DISTINCT u.id,
+                      u.first_name,
+                      u.last_name,
+                      u.phone,
+                      m.id AS membership_id
+      FROM memberships m
+      JOIN users       u ON u.id = m.user_id
+      JOIN payments    p ON p.user_id  = m.user_id
+                        AND p.equb_id  = m.equb_id
+                        AND p.round_number = ${roundNumber}
+      WHERE m.equb_id  = ${equbId}
+        AND m.status   = 'approved'
+        AND m.won_current_cycle = FALSE
+        AND p.payment_status IN ('paid', 'auto_debited')
+      ORDER BY u.first_name, u.last_name
+    `;
+    }
+
+    /** tx-scoped idempotent draw insert (ON CONFLICT round = no-op). */
+    async createLotteryDrawInTx(
+        equbId: string,
+        roundNumber: number,
+        winnerId: string,
+        svgCanvasData: string | null,
+        tx: any,
+    ): Promise<LotteryDrawRecord | null> {
+        const rows = await tx<LotteryDrawRecord[]>`
+      INSERT INTO lottery_draws (equb_id, round_number, winner_id, svg_canvas_data)
+      VALUES (${equbId}, ${roundNumber}, ${winnerId}, ${svgCanvasData})
+      ON CONFLICT (equb_id, round_number) DO NOTHING
+      RETURNING id, equb_id, round_number, winner_id,
+                draw_timestamp, video_url, svg_canvas_data, is_purged
+    `;
+        return rows[0] ?? null;
+    }
+
+    /**
+     * Idempotency guard executed within the spin transaction. Returns the
+     * existing draw row for a round if one already exists (a concurrent
+     * spin that committed before this one was granted the row lock).
+     */
+    async getExistingDrawInTx(
+        equbId: string,
+        roundNumber: number,
+        tx: any,
+    ): Promise<LotteryDrawRecord | null> {
+        const rows = await tx<LotteryDrawRecord[]>`
+      SELECT id, equb_id, round_number, winner_id,
+             draw_timestamp, video_url, svg_canvas_data, is_purged
+      FROM lottery_draws
+      WHERE equb_id      = ${equbId}
+        AND round_number = ${roundNumber}
+      LIMIT 1
+    `;
+
+        return rows[0] ?? null;
+    }
+
+    /**
+     * Marks the winner's membership as having won the current cycle. Called
+     * inside the spin transaction so it commits atomically with the ledger.
+     */
+    async markMembershipWonCycle(
+        membershipId: string,
+        roundNumber: number,
+        tx: any,
+    ): Promise<void> {
+        await tx`
+      UPDATE memberships
+      SET won_current_cycle = TRUE,
+          won_round_number  = ${roundNumber},
+          updated_at        = NOW()
+      WHERE id = ${membershipId}
+    `;
+    }
+
+    /**
+     * Inserts an immutable lottery event into the append-only ledger. The
+     * partial unique index uq_lottery_win_per_member rejects a second
+     * LOTTERY_WIN for the same (equb, winner), failing the whole spin.
+     */
+    async insertLotteryEvent(
+        equbId: string,
+        roundNumber: number,
+        membershipId: string | null,
+        winnerId: string | null,
+        eventType: 'LOTTERY_WIN' | 'DRAW_SKIPPED' | 'PAYOUT_SCHEDULED',
+        performedBy: string | null,
+        metadata: any,
+        tx: any,
+    ): Promise<LotteryEventRecord> {
+        const [row] = await tx<LotteryEventRecord[]>`
+      INSERT INTO lottery_events
+        (equb_id, round_number, membership_id, winner_id, event_type, performed_by, metadata)
+      VALUES
+        (${equbId}, ${roundNumber}, ${membershipId}, ${winnerId}, ${eventType}, ${performedBy}, ${JSON.stringify(metadata ?? {})})
+      RETURNING id, equb_id, round_number, membership_id, winner_id,
+                event_type, performed_by, draw_timestamp, metadata
+    `;
+
+        return row;
+    }
+
+    /** tx-scoped payout insert (idempotent per equb/round). */
+    async createPayoutInTx(
+        equbId: string,
+        roundNumber: number,
+        winnerId: string,
+        totalPotAmount: number,
+        tx: any,
+    ): Promise<PayoutRecord> {
+        const [payout] = await tx<PayoutRecord[]>`
+      INSERT INTO payouts (equb_id, round_number, winner_id, total_pot_amount)
+      VALUES (${equbId}, ${roundNumber}, ${winnerId}, ${totalPotAmount})
+      ON CONFLICT (equb_id, round_number) DO NOTHING
+      RETURNING *
+    `;
+        return payout;
+    }
+
+    /** tx-scoped round advance (completes after the final round). */
+    async advanceEqubRoundInTx(equbId: string, tx: any): Promise<void> {
+        await tx`
+      UPDATE equb_groups
+      SET current_round = LEAST(current_round + 1, total_rounds),
+          status        = CASE
+                            WHEN current_round + 1 >= total_rounds THEN 'completed'::equb_status
+                            ELSE status
+                          END,
+          updated_at    = NOW()
+      WHERE id = ${equbId}
+    `;
     }
 }

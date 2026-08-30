@@ -5,6 +5,8 @@ import {
     UnprocessableEntityException,
 } from '@nestjs/common';
 import * as crypto from 'crypto';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import Redlock from 'redlock';
 
 import {
@@ -105,6 +107,14 @@ function makeRepoMock() {
         createPayout: jest.fn(),
         advanceEqubRound: jest.fn(),
         getLotteryDraws: jest.fn(),
+        lockEqubCycleForUpdate: jest.fn(),
+        getEligibleCandidatesForSpinRound: jest.fn(),
+        getExistingDrawInTx: jest.fn(),
+        markMembershipWonCycle: jest.fn(),
+        insertLotteryEvent: jest.fn(),
+        createLotteryDrawInTx: jest.fn(),
+        createPayoutInTx: jest.fn(),
+        advanceEqubRoundInTx: jest.fn(),
         createBid: jest.fn(),
         getRoundBids: jest.fn(),
         getWinningBid: jest.fn(),
@@ -506,10 +516,17 @@ describe('PaymentsService.runLotteryDraw', () => {
     let service: PaymentsService;
     let repo: ReturnType<typeof makeRepoMock>;
 
+    const TX = { tx: true };
+
+    // (id, membership_id) — candidates now carry their membership id so the
+    // spin can write BOTH the winner state and the immutable ledger row.
     const candidates = [
-        { id: 'alice', first_name: 'Alice', last_name: 'A', phone: '111' },
-        { id: 'bob', first_name: 'Bob', last_name: 'B', phone: '222' },
+        { id: 'alice', first_name: 'Alice', last_name: 'A', phone: '111', membership_id: 'mem-alice' },
+        { id: 'bob', first_name: 'Bob', last_name: 'B', phone: '222', membership_id: 'mem-bob' },
     ];
+
+    const eligibleOnly = (list: typeof candidates, excludeId?: string) =>
+        list.filter((c) => c.membership_id !== excludeId);
 
     const createdDraw = {
         id: 'draw-1',
@@ -526,79 +543,106 @@ describe('PaymentsService.runLotteryDraw', () => {
         jest.clearAllMocks();
         repo = makeRepoMock();
         service = new PaymentsService(repo as unknown as PaymentsRepository);
-        repo.getEqubRoundInfo.mockResolvedValue(ACTIVE_EQUB);
-        repo.getEligibleMembersForDraw.mockResolvedValue(candidates);
+        // runLotteryDraw opens a single inTransaction (mocked to run the
+        // callback with TX) and locks the cycle row FOR UPDATE.
+        repo.lockEqubCycleForUpdate.mockResolvedValue(ACTIVE_EQUB);
+        repo.getExistingDrawInTx.mockResolvedValue(null);
+        repo.getEligibleCandidatesForSpinRound.mockResolvedValue(candidates);
+        repo.createLotteryDrawInTx.mockImplementation(
+            async (_equbId, _round, winnerId, _video, _tx) => ({ ...createdDraw, winner_id: winnerId }),
+        );
+        repo.createPayoutInTx.mockResolvedValue(undefined);
+        repo.markMembershipWonCycle.mockResolvedValue(undefined);
+        repo.insertLotteryEvent.mockResolvedValue(undefined);
+        repo.advanceEqubRoundInTx.mockResolvedValue(undefined);
     });
 
     afterEach(() => {
         jest.restoreAllMocks();
     });
 
+    it('runs inside a single transaction and locks the cycle FOR UPDATE', async () => {
+        (crypto.randomInt as jest.Mock).mockReturnValue(0);
+        await service.runLotteryDraw('equb-1', CONTEXT);
+        expect(repo.lockEqubCycleForUpdate).toHaveBeenCalledWith('equb-1', TX);
+    });
+
     it('throws NotFoundException when the Equb does not exist', async () => {
-        repo.getEqubRoundInfo.mockResolvedValue(null);
+        repo.lockEqubCycleForUpdate.mockResolvedValue(null);
         await expect(service.runLotteryDraw('equb-1', CONTEXT)).rejects.toBeInstanceOf(
             NotFoundException,
         );
     });
 
     it('rejects draws on cancelled Equbs', async () => {
-        repo.getEqubRoundInfo.mockResolvedValue({ ...ACTIVE_EQUB, status: 'cancelled' });
+        repo.lockEqubCycleForUpdate.mockResolvedValue({ ...ACTIVE_EQUB, status: 'cancelled' });
         await expect(service.runLotteryDraw('equb-1', CONTEXT)).rejects.toBeInstanceOf(
             BadRequestException,
         );
     });
 
     it('rejects draws on completed Equbs', async () => {
-        repo.getEqubRoundInfo.mockResolvedValue({ ...ACTIVE_EQUB, status: 'completed' });
+        repo.lockEqubCycleForUpdate.mockResolvedValue({ ...ACTIVE_EQUB, status: 'completed' });
         await expect(service.runLotteryDraw('equb-1', CONTEXT)).rejects.toBeInstanceOf(
             BadRequestException,
         );
     });
 
     it('rejects draws before the Equb is activated', async () => {
-        repo.getEqubRoundInfo.mockResolvedValue({ ...ACTIVE_EQUB, current_round: 0 });
+        repo.lockEqubCycleForUpdate.mockResolvedValue({ ...ACTIVE_EQUB, current_round: 0 });
         await expect(service.runLotteryDraw('equb-1', CONTEXT)).rejects.toBeInstanceOf(
             BadRequestException,
         );
     });
 
-    it('rejects draws when nobody has paid the round', async () => {
-        repo.getEligibleMembersForDraw.mockResolvedValue([]);
+    it('rejects draws when nobody is eligible (no paid / all already won)', async () => {
+        repo.getEligibleCandidatesForSpinRound.mockResolvedValue([]);
         await expect(service.runLotteryDraw('equb-1', CONTEXT)).rejects.toBeInstanceOf(
             UnprocessableEntityException,
         );
     });
 
-    it('selects a winner via CSPRNG and persists draw + payout + round advance', async () => {
-        (crypto.randomInt as jest.Mock).mockReturnValue(0);
-        repo.getLotteryDraw.mockResolvedValue(null);
-        repo.createLotteryDraw.mockResolvedValue(createdDraw);
+    it('selects exactly one winner from the eligible pool via CSPRNG', async () => {
+        (crypto.randomInt as jest.Mock).mockReturnValue(1);
 
         const result = await service.runLotteryDraw('equb-1', CONTEXT);
 
-        expect(result.winner.id).toBe('alice');
+        expect(crypto.randomInt).toHaveBeenCalledWith(0, 2);
+        expect(result.winner.id).toBe('bob');
         expect(result.candidates).toHaveLength(2);
-        expect(result.draw.winner_id).toBe('alice');
-        expect(repo.createLotteryDraw).toHaveBeenCalledWith(
-            'equb-1',
-            1,
-            'alice',
-            null,
-            CONTEXT,
-        );
-        expect(repo.createPayout).toHaveBeenCalledWith(
-            'equb-1',
-            1,
-            'alice',
-            2000,
-            CONTEXT,
-        );
-        expect(repo.advanceEqubRound).toHaveBeenCalledWith('equb-1', CONTEXT);
+        expect(result.draw.winner_id).toBe('bob');
     });
 
-    it('is idempotent — replays the existing draw without drawing twice', async () => {
+    it('writer updates winner state, inserts immutable event, payout, round advance in ONE transaction', async () => {
+        (crypto.randomInt as jest.Mock).mockReturnValue(0);
+        repo.createLotteryDrawInTx.mockResolvedValue(createdDraw);
+
+        const result = await service.runLotteryDraw('equb-1', CONTEXT);
+
+        expect(repo.markMembershipWonCycle).toHaveBeenCalledWith('mem-alice', 1, TX);
+        expect(repo.insertLotteryEvent).toHaveBeenCalledWith(
+            'equb-1', 1, 'mem-alice', 'alice', 'LOTTERY_WIN', CONTEXT.userId,
+            { candidate_count: 2 }, TX,
+        );
+        expect(repo.createLotteryDrawInTx).toHaveBeenCalledWith('equb-1', 1, 'alice', null, TX);
+        expect(repo.createPayoutInTx).toHaveBeenCalledWith('equb-1', 1, 'alice', 2000, TX);
+        expect(repo.insertLotteryEvent).toHaveBeenCalledWith(
+            'equb-1', 1, 'mem-alice', 'alice', 'PAYOUT_SCHEDULED', CONTEXT.userId,
+            expect.anything(), TX,
+        );
+        expect(repo.advanceEqubRoundInTx).toHaveBeenCalledWith('equb-1', TX);
+        expect(result.winner.id).toBe('alice');
+    });
+
+    it('uses crypto.randomInt (CSPRNG), never Math.random', () => {
+        const src = paymentsServiceSource();
+        expect(src).toContain('crypto.randomInt');
+        expect(src).not.toContain('Math.random(');
+    });
+
+    it('is idempotent — replays the existing draw without drawing twice or writing again', async () => {
         const existing = { ...createdDraw, winner_id: 'bob' };
-        repo.getLotteryDraw.mockResolvedValue(existing);
+        repo.getExistingDrawInTx.mockResolvedValue(existing);
 
         const result = await service.runLotteryDraw('equb-1', CONTEXT);
 
@@ -606,8 +650,60 @@ describe('PaymentsService.runLotteryDraw', () => {
         expect(result.draw.winner_id).toBe('bob');
         expect(result.winner.id).toBe('bob');
         expect(result.message).toContain('already drawn');
-        expect(repo.createLotteryDraw).not.toHaveBeenCalled();
-        expect(repo.createPayout).not.toHaveBeenCalled();
-        expect(repo.advanceEqubRound).not.toHaveBeenCalled();
+        expect(repo.markMembershipWonCycle).not.toHaveBeenCalled();
+        expect(repo.insertLotteryEvent).not.toHaveBeenCalled();
+        expect(repo.createLotteryDrawInTx).not.toHaveBeenCalled();
+        expect(repo.createPayoutInTx).not.toHaveBeenCalled();
+        expect(repo.advanceEqubRoundInTx).not.toHaveBeenCalled();
+    });
+
+    it('excludes a previous cycle winner from the candidate pool', async () => {
+        repo.getEligibleCandidatesForSpinRound.mockImplementation(
+            async () => eligibleOnly(candidates, 'mem-alice'),
+        );
+        (crypto.randomInt as jest.Mock).mockReturnValue(0);
+
+        const result = await service.runLotteryDraw('equb-1', CONTEXT);
+
+        // The repo (database) did the exclusion: alice is gone from the pool.
+        expect(result.candidates).toHaveLength(1);
+        expect(result.candidates[0].id).toBe('bob');
+        expect(result.winner.id).toBe('bob');
+    });
+
+    it('rolls back the winner update if the ledger event insert fails', async () => {
+        (crypto.randomInt as jest.Mock).mockReturnValue(0);
+        // The service throws AFTER the winner-state write, but because every
+        // write shares one transaction, the DB rollback reverts the winner
+        // update. Here we assert the error propagates and the draw is not
+        // considered persisted (no advance).
+        repo.insertLotteryEvent.mockImplementation(async () => {
+            throw new Error('duplicate key value violates unique constraint');
+        });
+
+        await expect(service.runLotteryDraw('equb-1', CONTEXT)).rejects.toThrow(
+            'duplicate key value violates unique constraint',
+        );
+        expect(repo.advanceEqubRoundInTx).not.toHaveBeenCalled();
+        expect(repo.createPayoutInTx).not.toHaveBeenCalled();
+    });
+
+    it('propagates a winner-state update failure (full rollback)', async () => {
+        (crypto.randomInt as jest.Mock).mockReturnValue(0);
+        repo.markMembershipWonCycle.mockImplementation(async () => {
+            throw new Error('winner update failed');
+        });
+
+        await expect(service.runLotteryDraw('equb-1', CONTEXT)).rejects.toThrow(
+            'winner update failed',
+        );
+        expect(repo.insertLotteryEvent).not.toHaveBeenCalled();
+        expect(repo.createLotteryDrawInTx).not.toHaveBeenCalled();
+        expect(repo.advanceEqubRoundInTx).not.toHaveBeenCalled();
     });
 });
+
+/** Reads the payments.service.ts source to assert CSPRNG usage. */
+function paymentsServiceSource(): string {
+    return readFileSync(join(__dirname, 'payments.service.ts'), 'utf8');
+}

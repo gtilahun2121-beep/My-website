@@ -635,8 +635,17 @@ export class PaymentsService implements OnModuleInit {
 
     /**
      * Runs a lottery draw for the equb's CURRENT round using Node's OS-level
-     * CSPRNG. Idempotent per (equb, round) — a second call returns the
-     * existing result instead of drawing twice.
+     * CSPRNG (crypto.randomInt).
+     *
+     * The ENTIRE spin — cycle lock, eligibility, prior-winner exclusion,
+     * winner write, immutable event, payout, and round advance — executes
+     * inside ONE strict PostgreSQL transaction. Any failure rolls the whole
+     * operation back, leaving no partial state.
+     *
+     * Concurrency: the equb row is locked FOR UPDATE, so two simultaneous
+     * spins on the same equb serialize; the second sees the first's
+     * committed/advanced round and is idempotent (it replays the existing
+     * draw) rather than drawing twice.
      *
      * Returns the winner + the full candidate list so the client can animate
      * a transparent spinning wheel that lands on the actual winner.
@@ -650,96 +659,132 @@ export class PaymentsService implements OnModuleInit {
         candidates: LotteryCandidate[];
         message: string;
     }> {
-        const equb = await this.repo.getEqubRoundInfo(equbId);
-        if (!equb) throw new NotFoundException('Equb group not found.');
+        return inTransaction(ctx, async (tx) => {
+            // (1) Lock + verify the active cycle. FOR UPDATE serializes
+            //     concurrent spins on the same equb at the database level.
+            const equb = await this.repo.lockEqubCycleForUpdate(equbId, tx);
+            if (!equb) throw new NotFoundException('Equb group not found.');
 
-        if (equb.status === 'cancelled') {
-            throw new BadRequestException('This Equb has been cancelled.');
-        }
-        if (equb.status === 'completed') {
-            throw new BadRequestException('This Equb has already completed all rounds.');
-        }
+            if (equb.status === 'cancelled') {
+                throw new BadRequestException('This Equb has been cancelled.');
+            }
+            if (equb.status === 'completed') {
+                throw new BadRequestException('This Equb has already completed all rounds.');
+            }
 
-        const roundNumber = equb.current_round;
-        if (roundNumber < 1) {
-            throw new BadRequestException(
-                'This Equb has not started any rounds yet. Activate it first.',
+            const roundNumber = equb.current_round;
+            if (roundNumber < 1) {
+                throw new BadRequestException(
+                    'This Equb has not started any rounds yet. Activate it first.',
+                );
+            }
+
+            // (2) Idempotency — if a concurrent spin already drew this round,
+            //     replay the committed result instead of drawing twice.
+            const existing = await this.repo.getExistingDrawInTx(equbId, roundNumber, tx);
+            if (existing) {
+                const candidates = await this.repo.getEligibleCandidatesForSpinRound(
+                    equbId, roundNumber, tx,
+                );
+                const winner = candidates.find((c) => c.id === existing.winner_id)
+                    ?? await this.getCandidateById(equbId, roundNumber, existing.winner_id);
+                return {
+                    draw: {
+                        id: existing.id,
+                        equb_id: existing.equb_id,
+                        round_number: existing.round_number,
+                        winner_id: existing.winner_id,
+                        draw_timestamp: existing.draw_timestamp.toISOString(),
+                    },
+                    winner,
+                    candidates,
+                    message: `Round ${roundNumber} was already drawn. Winner: ${winner?.first_name ?? 'Unknown'} ${winner?.last_name ?? ''}.`,
+                };
+            }
+
+            // (3) Eligibility + exclusion — approved, paid-for-this-round
+            //     members who have NOT already won the current cycle.
+            const candidates = await this.repo.getEligibleCandidatesForSpinRound(
+                equbId, roundNumber, tx,
             );
-        }
+            if (candidates.length === 0) {
+                throw new UnprocessableEntityException(
+                    'No eligible members for this round — nobody has paid yet, or every paying member has already won this cycle.',
+                );
+            }
 
-        // Idempotency — if this round was already drawn, replay the result.
-        const existing = await this.repo.getLotteryDraw(equbId, roundNumber);
-        if (existing) {
-            const winner = await this.getCandidateById(equbId, roundNumber, existing.winner_id);
-            const candidates = await this.repo.getEligibleMembersForDraw(equbId, roundNumber);
+            // (4) CSPRNG uniform winner selection (crypto.randomInt, never Math.random).
+            const winnerIndex = crypto.randomInt(0, candidates.length);
+            const winner = candidates[winnerIndex];
+
+            // (5) Winner state update.
+            await this.repo.markMembershipWonCycle(winner.membership_id, roundNumber, tx);
+
+            // (6) Immutable lottery WIN event (append-only ledger).
+            await this.repo.insertLotteryEvent(
+                equbId,
+                roundNumber,
+                winner.membership_id,
+                winner.id,
+                'LOTTERY_WIN',
+                ctx.userId,
+                { candidate_count: candidates.length },
+                tx,
+            );
+
+            const created = await this.repo.createLotteryDrawInTx(
+                equbId,
+                roundNumber,
+                winner.id,
+                null,
+                tx,
+            );
+
+            // If the draw already existed (race condition), return the existing.
+            const draw = created ?? (await this.repo.getExistingDrawInTx(equbId, roundNumber, tx));
+            if (!draw) {
+                throw new InternalServerErrorException('Failed to persist lottery draw.');
+            }
+
+            // (7) Record the payout + its immutable event so finance can release the pot.
+            await this.repo.createPayoutInTx(
+                equbId,
+                roundNumber,
+                winner.id,
+                equb.contribution_amount * Math.max(1, candidates.length),
+                tx,
+            );
+            await this.repo.insertLotteryEvent(
+                equbId,
+                roundNumber,
+                winner.membership_id,
+                winner.id,
+                'PAYOUT_SCHEDULED',
+                ctx.userId,
+                { pot_amount: equb.contribution_amount * Math.max(1, candidates.length) },
+                tx,
+            );
+
+            // (8) Advance to the next round (completes after the final round).
+            await this.repo.advanceEqubRoundInTx(equbId, tx);
+
+            this.logger.log(
+                `Lottery draw committed: equb=${equbId} round=${roundNumber} winner=${winner.id}`,
+            );
+
             return {
                 draw: {
-                    id: existing.id,
-                    equb_id: existing.equb_id,
-                    round_number: existing.round_number,
-                    winner_id: existing.winner_id,
-                    draw_timestamp: existing.draw_timestamp.toISOString(),
+                    id: draw.id,
+                    equb_id: draw.equb_id,
+                    round_number: draw.round_number,
+                    winner_id: draw.winner_id,
+                    draw_timestamp: draw.draw_timestamp.toISOString(),
                 },
                 winner,
                 candidates,
-                message: `Round ${roundNumber} was already drawn. Winner: ${winner?.first_name ?? 'Unknown'} ${winner?.last_name ?? ''}.`,
+                message: `🎉 ${winner.first_name} ${winner.last_name} won the Round ${roundNumber} pot!`,
             };
-        }
-
-        // Eligible set = approved members who paid this round.
-        const candidates = await this.repo.getEligibleMembersForDraw(equbId, roundNumber);
-        if (candidates.length === 0) {
-            throw new UnprocessableEntityException(
-                'No eligible members for this round — nobody has paid yet.',
-            );
-        }
-
-        // CSPRNG winner selection (crypto.randomInt is OS-level random).
-        const winnerIndex = crypto.randomInt(0, candidates.length);
-        const winner = candidates[winnerIndex];
-
-        const created = await this.repo.createLotteryDraw(
-            equbId,
-            roundNumber,
-            winner.id,
-            null,
-            ctx,
-        );
-
-        // If the draw already existed (race condition), return the existing.
-        const draw = created ?? (await this.repo.getLotteryDraw(equbId, roundNumber));
-        if (!draw) {
-            throw new InternalServerErrorException('Failed to persist lottery draw.');
-        }
-
-        // Record the payout so the finance pipeline can release the pot.
-        await this.repo.createPayout(
-            equbId,
-            roundNumber,
-            winner.id,
-            equb.contribution_amount * Math.max(1, candidates.length),
-            ctx,
-        );
-
-        // Advance to the next round (completes after the final round).
-        await this.repo.advanceEqubRound(equbId, ctx);
-
-        this.logger.log(
-            `Lottery draw committed: equb=${equbId} round=${roundNumber} winner=${winner.id}`,
-        );
-
-        return {
-            draw: {
-                id: draw.id,
-                equb_id: draw.equb_id,
-                round_number: draw.round_number,
-                winner_id: draw.winner_id,
-                draw_timestamp: draw.draw_timestamp.toISOString(),
-            },
-            winner,
-            candidates,
-            message: `🎉 ${winner.first_name} ${winner.last_name} won the Round ${roundNumber} pot!`,
-        };
+        });
     }
 
     /** Lists all draws for an equb with winner details. */
