@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { EqubsService } from './equbs.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -12,13 +12,20 @@ export class EqubsController {
     constructor(private readonly equbsService: EqubsService) {}
 
     @Get()
-    async listEqubs() {
-        return this.equbsService.findAll();
+    async listEqubs(
+        @Query('limit') limit?: string,
+        @Query('offset') offset?: string,
+    ) {
+        return this.equbsService.findAll(parseInt(limit ?? '', 10), parseInt(offset ?? '', 10));
     }
 
     @Get('mine')
-    async getMyEqubs(@CurrentUser() user: JwtPayload) {
-        return this.equbsService.findMine(user.sub);
+    async getMyEqubs(
+        @CurrentUser() user: JwtPayload,
+        @Query('limit') limit?: string,
+        @Query('offset') offset?: string,
+    ) {
+        return this.equbsService.findMine(user.sub, parseInt(limit ?? '', 10), parseInt(offset ?? '', 10));
     }
 
     @Get('requests/mine')
@@ -56,5 +63,16 @@ export class EqubsController {
     @Post(':id/join')
     async joinEqub(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
         return this.equbsService.join(id, user.sub, user.role);
+    }
+
+    /**
+     * Starts the first round of an 'open' Equb (status → 'active',
+     * current_round → 1). Host/admin only — enforced by RolesGuard.
+     */
+    @Post(':id/activate')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles('host', 'admin')
+    async activateEqub(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
+        return this.equbsService.activate(id, user.sub, user.role);
     }
 }

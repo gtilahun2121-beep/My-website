@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { Language } from '@/i18n/config';
 import { translations } from '@/i18n/translations';
-import { useAuth } from '@/app/context/AuthContext';
+import { useAuth, TwoFactorRequiredError } from '@/app/context/AuthContext';
 
 interface LoginFormProps {
   lang: Language;
@@ -13,14 +13,16 @@ interface LoginFormProps {
   onError?: (title: string, message: string, duration?: number) => void;
 }
 
-type LoginStep = 'phone' | 'pin' | 'success';
+type LoginStep = 'phone' | 'pin' | '2fa' | 'success';
 
 export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
-  const { signin, user } = useAuth();
+  const { signin, verify2FALogin, user } = useAuth();
   const router = useRouter();
   const [step, setStep] = useState<LoginStep>('phone');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [pin, setPin] = useState('');
+  const [mfaToken, setMfaToken] = useState('');
+  const [otpCode, setOtpCode] = useState('');
   const [showPin, setShowPin] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -66,7 +68,36 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
       onSuccess?.('🎉 Welcome Back!', 'Redirecting to dashboard…', 3000);
       router.push('/');
     } catch (err) {
+      if (err instanceof TwoFactorRequiredError) {
+        // 2FA enabled on this account — collect the authenticator code.
+        setMfaToken(err.mfaToken);
+        setStep('2fa');
+        setError('');
+        setPin('');
+        onSuccess?.('Two-Factor Authentication', 'Enter the 6-digit code from your authenticator app', 3000);
+        return;
+      }
       setError(err instanceof Error ? err.message : 'Login failed');
+      setLoading(false);
+    }
+  };
+
+  // Step 3: Complete login with the TOTP/backup code
+  const handle2FASubmit = async () => {
+    setError('');
+    const code = otpCode.trim();
+    if (code.length < 6 || code.length > 20) {
+      setError('Enter the 6-digit code from your authenticator app, or a backup code');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await verify2FALogin(mfaToken, code);
+      onSuccess?.('🎉 Welcome Back!', 'Redirecting to dashboard…', 3000);
+      router.push('/');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Verification failed');
       setLoading(false);
     }
   };
@@ -82,7 +113,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
 
   return (
     <motion.div
-      className="card-eth p-8 rounded-2xl"
+      className="glass-form p-8 rounded-2xl"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
@@ -246,7 +277,70 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
         </motion.div>
       )}
 
-      {/* Step 3: Login Success */}
+      {/* Step 3: Two-Factor Authentication */}
+      {step === '2fa' && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          <h3 className="text-2xl font-black text-[#314fa0] mb-2 text-center">
+            🔐 Two-Factor Authentication
+          </h3>
+          <p className="text-center text-sm text-gray-600 mb-6">
+            Enter the 6-digit code from your authenticator app (or a backup code).
+          </p>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-bold text-[#314fa0] mb-2">
+                Authentication Code
+              </label>
+              <input
+                type="text"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                placeholder="000000"
+                value={otpCode}
+                onChange={(e) => setOtpCode(e.target.value.replace(/[^A-Za-z0-9-]/g, '').slice(0, 20))}
+                className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-[#314fa0] font-bold text-3xl text-center tracking-widest"
+              />
+              <p className="text-xs text-[#5a5a5a] mt-1">
+                Backup codes are single-use and formatted like XXXX-XXXX.
+              </p>
+            </div>
+
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded"
+              >
+                {error}
+              </motion.div>
+            )}
+
+            <motion.button
+              onClick={handle2FASubmit}
+              disabled={loading}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="w-full py-3 bg-gradient-to-r from-[#314fa0] to-[#2a4183] text-white font-black rounded-full hover:shadow-lg transition-all duration-300 disabled:opacity-50"
+            >
+              {loading ? '⏳ Verifying...' : '🔓 Verify & Sign In'}
+            </motion.button>
+
+            <button
+              onClick={() => {
+                setStep('pin');
+                setOtpCode('');
+                setError('');
+              }}
+              className="w-full py-2 text-[#314fa0] font-bold hover:underline"
+            >
+              ← Use a different code
+            </button>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Step 4: Login Success */}
       {step === 'success' && user && (
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}

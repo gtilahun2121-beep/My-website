@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/app/context/AuthContext';
+import { useAuth, TwoFactorRequiredError } from '@/app/context/AuthContext';
 import { authAPI } from '@/app/services/api';
 
 const stroke = {
@@ -15,13 +15,18 @@ const stroke = {
 } as const;
 
 export default function AdminLoginPage() {
-  const { user, isLoading, signin, signout } = useAuth();
+  const { user, isLoading, signin, verify2FALogin, signout } = useAuth();
   const router = useRouter();
 
   const [identifier, setIdentifier] = useState('');
   const [pin, setPin] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  // 2FA second step
+  const [mfaToken, setMfaToken] = useState('');
+  const [otpCode, setOtpCode] = useState('');
+  const [otpSubmitting, setOtpSubmitting] = useState(false);
 
   // Forgot-PIN reset flow (phone → OTP → new PIN)
   const [resetMode, setResetMode] = useState(false);
@@ -67,9 +72,35 @@ export default function AdminLoginPage() {
       // AuthContext.signin stores the session; the effect above redirects
       // once user.role === 'admin' lands in state.
     } catch (err) {
+      if (err instanceof TwoFactorRequiredError) {
+        setMfaToken(err.mfaToken);
+        setOtpCode('');
+        setError('');
+        return;
+      }
       setError(err instanceof Error ? err.message : 'Sign in failed.');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleOtpSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (otpSubmitting) return;
+    const code = otpCode.trim();
+    if (code.length < 6 || code.length > 20) {
+      setError('Enter the 6-digit code from your authenticator app, or a backup code.');
+      return;
+    }
+    setError('');
+    setOtpSubmitting(true);
+    try {
+      await verify2FALogin(mfaToken, code);
+      // redirect happens via the isAdmin effect above once the session lands
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Verification failed.');
+    } finally {
+      setOtpSubmitting(false);
     }
   };
 
@@ -173,6 +204,60 @@ export default function AdminLoginPage() {
               Sign out and try again
             </button>
           </div>
+        ) : mfaToken ? (
+          <>
+            <h1 className="text-xl font-black text-admin-text text-center">Two-factor authentication</h1>
+            <p className="text-sm text-admin-muted mt-1 text-center">
+              Enter the 6-digit code from your authenticator app (or a backup code).
+            </p>
+
+            <form onSubmit={handleOtpSubmit} className="mt-6 space-y-4">
+              <div>
+                <label htmlFor="otp-code" className="block text-xs font-bold text-admin-muted mb-1.5">
+                  Authentication code
+                </label>
+                <input
+                  id="otp-code"
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(e.target.value.replace(/[^A-Za-z0-9-]/g, '').slice(0, 20))}
+                  placeholder="000000"
+                  className={`${inputCls} text-center tracking-widest`}
+                />
+                <p className="text-xs text-admin-muted mt-1">
+                  Backup codes are single-use and formatted like XXXX-XXXX.
+                </p>
+              </div>
+
+              {error && (
+                <div className="rounded-lg border border-danger-500/30 bg-danger-500/10 px-4 py-3 text-sm font-semibold text-danger-600">
+                  {error}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={otpSubmitting}
+                className="w-full py-3 rounded-lg bg-gradient-to-r from-brand-600 to-brand-500 text-white text-sm font-bold hover:from-brand-500 hover:to-brand-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                {otpSubmitting ? 'Verifying…' : 'Verify & Sign In'}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setMfaToken('');
+                  setOtpCode('');
+                  setError('');
+                }}
+                className="w-full text-xs font-bold text-admin-muted hover:text-admin-text transition-colors"
+              >
+                ← Use a different code
+              </button>
+            </form>
+          </>
         ) : resetMode ? (
           <>
             <h1 className="text-xl font-black text-admin-text text-center">Reset your PIN</h1>

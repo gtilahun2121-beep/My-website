@@ -66,4 +66,16 @@ export class UsersService {
         }
         return { success: true, user };
     }
+
+    /**
+     * Admin reviews a member's KYC submission and sets the verification
+     * state to 'verified' or 'rejected'.
+     */
+    async setKycStatus(adminId: string, userId: string, status: 'verified' | 'rejected') {
+        const user = await this.repo.setKycStatus(adminId, userId, status);
+        if (!user) {
+            throw new NotFoundException('User not found.');
+        }
+        return { success: true, user };
+    }
 }

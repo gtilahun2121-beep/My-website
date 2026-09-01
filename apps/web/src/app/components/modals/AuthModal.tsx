@@ -78,14 +78,14 @@ export default function AuthModal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 glass-backdrop flex items-center justify-center z-50 p-4"
           onClick={onClose}
         >
           <motion.div
             initial={{ scale: 0.9, y: 20 }}
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.9, y: 20 }}
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden"
+            className="glass-form rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -108,7 +108,7 @@ export default function AuthModal({
             </div>
 
             {/* Tabs */}
-            <div className="flex border-b border-gray-200 bg-gray-50">
+            <div className="flex border-b border-white/30 bg-white/25">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
@@ -116,7 +116,7 @@ export default function AuthModal({
                   className={`flex-1 py-4 px-4 font-bold text-sm transition-all flex items-center justify-center gap-2 ${
                     activeTab === tab.id
                       ? 'bg-[#314fa0] text-white border-b-4 border-[#2a4183]'
-                      : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                      : 'bg-transparent text-gray-700 hover:bg-white/30'
                   }`}
                 >
                   <span className="text-lg">{tab.icon}</span>

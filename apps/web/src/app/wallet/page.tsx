@@ -2,11 +2,10 @@
 
 import { useState } from 'react';
 import { Language, defaultLanguage } from '@/i18n/config';
-import { translations } from '@/i18n/translations';
 import { useAuth } from '@/app/context/AuthContext';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
-import api from '@/app/services/api';
+import api, { APIError } from '@/app/services/api';
 import { useEffect } from 'react';
 import type { WalletTransaction } from '@qalnet/shared-types';
 import Withdrawal from '@/app/components/withdrawal/Withdrawal';
@@ -27,9 +26,7 @@ export default function WalletPage() {
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [depositAmount, setDepositAmount] = useState('');
-  const [withdrawAmount, setWithdrawAmount] = useState('');
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('telebirr');
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [depositPin, setDepositPin] = useState('');
   const [transactions, setTransactions] = useState<TxnRow[]>([]);
 
   const refreshTransactions = () => {
@@ -74,57 +71,34 @@ export default function WalletPage() {
     }
   }, [isAuthenticated]);
 
-  const paymentMethods = [
-    { id: 'telebirr', name: 'Telebirr', icon: '📱', color: 'bg-slate-100 border-slate-300' },
-    { id: 'cbe', name: 'CBE', icon: '🏦', color: 'bg-slate-100 border-slate-300' },
-    { id: 'abyssinia', name: 'Abyssinia Bank', icon: '🏛️', color: 'bg-slate-100 border-slate-300' },
-    { id: 'dashen', name: 'Dashen Bank', icon: '🏦', color: 'bg-slate-100 border-slate-300' },
-    { id: 'awash', name: 'Awash Bank', icon: '🏦', color: 'bg-slate-100 border-slate-300' },
-    { id: 'nib', name: 'NIB', icon: '🏦', color: 'bg-slate-100 border-slate-300' },
-  ];
-
   const handleDeposit = async () => {
     const amount = parseFloat(depositAmount);
     if (!depositAmount || amount <= 0) {
       alert('Please enter a valid amount');
       return;
     }
+    if (!depositPin) {
+      alert('Please enter your PIN');
+      return;
+    }
     
     try {
-      const res = await api.walletAPI.deposit(amount);
+      const res = await api.walletAPI.deposit(amount, depositPin);
       setBalance(res.balance);
       setShowDepositModal(false);
       setDepositAmount('');
+      setDepositPin('');
       refreshTransactions();
-    } catch (error) {
+    } catch (error: unknown) {
       console.error(error);
-      alert('Deposit failed');
+      const message = error instanceof APIError ? error.data?.message : undefined;
+      alert(message === 'Invalid PIN.' ? 'Invalid PIN' : 'Deposit failed');
     }
   };
 
-  const handleWithdraw = async () => {
-    const amount = parseFloat(withdrawAmount);
-    if (!withdrawAmount || amount <= 0) {
-      alert('Please enter a valid amount');
-      return;
-    }
-    if (amount > balance) {
-      alert('Insufficient balance');
-      return;
-    }
-
-    setWithdrawAmount('');
+  const handleWithdrawSuccess = () => {
     setShowWithdrawModal(false);
-  };
-
-  const handleWithdrawSuccess = async () => {
-    try {
-      const res = await api.walletAPI.getBalance();
-      setBalance(res.balance);
-      refreshTransactions();
-    } catch (error) {
-      console.error(error);
-    }
+    refreshTransactions();
   };
 
   if (!isAuthenticated) {
@@ -197,7 +171,6 @@ export default function WalletPage() {
                 onSuccess={handleWithdrawSuccess}
                 onCancel={() => {
                   setShowWithdrawModal(false);
-                  setWithdrawAmount('');
                 }}
               />
             </div>
@@ -208,7 +181,7 @@ export default function WalletPage() {
       {/* Deposit Modal */}
       {showDepositModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+          <div className="glass-form rounded-2xl max-w-md w-full p-6">
             <h3 className="text-2xl font-bold mb-6 text-gray-900">Deposit Funds</h3>
             <div className="space-y-4">
               <div>
@@ -221,11 +194,23 @@ export default function WalletPage() {
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#314fa0]"
                 />
               </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">PIN</label>
+                <input
+                  type="password"
+                  inputMode="numeric"
+                  value={depositPin}
+                  onChange={(e) => setDepositPin(e.target.value)}
+                  placeholder="Enter your PIN"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#314fa0]"
+                />
+              </div>
               <div className="flex gap-3">
                 <button
                   onClick={() => {
                     setShowDepositModal(false);
                     setDepositAmount('');
+                    setDepositPin('');
                   }}
                   className="flex-1 px-4 py-3 bg-gray-200 text-gray-800 font-bold rounded-lg hover:bg-gray-300 transition-all"
                 >

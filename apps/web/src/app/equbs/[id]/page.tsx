@@ -8,18 +8,23 @@ import { translations } from '@/i18n/translations';
 import { useAuth } from '@/app/context/AuthContext';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
+import { LotteryPanel } from '@/app/components/lottery/LotteryPanel';
+import { AuctionPanel } from '@/app/components/auction/AuctionPanel';
+import PaymentFlow from '@/app/components/payment/PaymentFlow';
 import api from '@/app/services/api';
 import type { EqubGroup } from '@qalnet/shared-types';
 
 export default function EqubDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [lang, setLang] = useState<Language>(defaultLanguage);
   const [equb, setEqub] = useState<EqubGroup | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [joining, setJoining] = useState(false);
+  const [activating, setActivating] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
 
   const t = translations[lang];
@@ -64,6 +69,29 @@ export default function EqubDetailPage() {
       setNotice(err instanceof Error ? err.message : 'Failed to join Equb.');
     } finally {
       setJoining(false);
+    }
+  };
+
+  const reloadEqub = async () => {
+    try {
+      const fresh = await api.equbAPI.getById(params.id);
+      setEqub(fresh);
+    } catch {
+      // keep the current data — a refresh failure must not blank the page
+    }
+  };
+
+  const handleActivate = async () => {
+    setActivating(true);
+    setNotice(null);
+    try {
+      await api.equbAPI.activateEqub(params.id);
+      setNotice('Equb activated — Round 1 is now live!');
+      await reloadEqub();
+    } catch (err) {
+      setNotice(err instanceof Error ? err.message : 'Failed to activate Equb.');
+    } finally {
+      setActivating(false);
     }
   };
 
@@ -194,6 +222,7 @@ export default function EqubDetailPage() {
                   const isPending = membership === 'pending';
                   const isMember = membership === 'approved';
                   const isHost = equb.is_host;
+                  const canAdminister = isHost || user?.role === 'admin';
 
                   let label = lang === 'en' ? 'Request to Join' : 'መቀላቀል ጠይቅ';
                   const disabled = isFull || isPending || isMember || joining;
@@ -203,20 +232,84 @@ export default function EqubDetailPage() {
                   else if (isFull) label = lang === 'en' ? 'Equb is Full' : 'እቁቡ ሞልቷል';
 
                   return (
-                    <button
-                      onClick={handleJoin}
-                      disabled={disabled}
-                      className={`w-full py-3 font-black rounded-lg transition-all ${
-                        disabled
-                          ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                          : 'bg-[#314fa0] text-white hover:bg-[#2a4183]'
-                      }`}
-                    >
-                      {joining ? (lang === 'en' ? 'Submitting...' : 'በመላክ ላይ...') : label}
-                    </button>
+                    <div className="space-y-3">
+                      <button
+                        onClick={handleJoin}
+                        disabled={disabled}
+                        className={`w-full py-3 font-black rounded-lg transition-all ${
+                          disabled
+                            ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                            : 'bg-[#314fa0] text-white hover:bg-[#2a4183]'
+                        }`}
+                      >
+                        {joining ? (lang === 'en' ? 'Submitting...' : 'በመላክ ላይ...') : label}
+                      </button>
+
+                      {canAdminister && equb.status === 'open' && (
+                        <button
+                          onClick={handleActivate}
+                          disabled={activating}
+                          className={`w-full py-3 font-black rounded-lg transition-all ${
+                            activating
+                              ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                              : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                          }`}
+                        >
+                          {activating
+                            ? (lang === 'en' ? 'Activating...' : 'በማግበር ላይ...')
+                            : (lang === 'en' ? '🚀 Activate Equb' : 'እቁቡን አግብር')}
+                        </button>
+                      )}
+
+                      {isMember && equb.status === 'active' && equb.current_round >= 1 && (
+                        <button
+                          onClick={() => setShowPayment(true)}
+                          className="w-full py-3 font-black rounded-lg bg-[#314fa0] text-white hover:bg-[#2a4183] transition-all"
+                        >
+                          💳 {lang === 'en' ? `Pay for Round ${equb.current_round}` : `ለዙር ${equb.current_round} ይክፈሉ`}
+                        </button>
+                      )}
+                    </div>
                   );
                 })()}
               </div>
+
+              <LotteryPanel
+                equbId={equb.id}
+                isHost={!!equb.is_host}
+                isAdmin={user?.role === 'admin'}
+                isActive={equb.status === 'active'}
+                currentRound={equb.current_round}
+                totalRounds={equb.total_rounds}
+                potAmount={Number(equb.total_amount)}
+                onChange={reloadEqub}
+              />
+
+              <AuctionPanel
+                equbId={equb.id}
+                roundNumber={equb.current_round}
+                potValue={Number(equb.total_amount)}
+                isHost={!!equb.is_host}
+                isAdmin={user?.role === 'admin'}
+                isActive={equb.status === 'active'}
+                isMember={equb.membership_status === 'approved'}
+                onChange={reloadEqub}
+              />
+
+              {showPayment && (
+                <PaymentFlow
+                  equbId={equb.id}
+                  roundNumber={equb.current_round}
+                  amount={Number(equb.contribution_amount)}
+                  onSuccess={(result) => {
+                    setShowPayment(false);
+                    setNotice(result.message || 'Payment successful!');
+                    reloadEqub();
+                  }}
+                  onCancel={() => setShowPayment(false)}
+                  language={lang}
+                />
+              )}
             </>
           ) : null}
         </div>

@@ -107,7 +107,7 @@ export default function ForgotPinForm({ onSuccess, onError }: ForgotPinFormProps
 
   return (
     <motion.div
-      className="bg-white rounded-2xl p-8 shadow-xl"
+      className="glass-form rounded-2xl p-8"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
