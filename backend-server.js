@@ -2,12 +2,18 @@
 const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
+const fs = require('fs');
+const path = require('path');
+
+// Load configuration from backend-config.json
+const configPath = path.join(__dirname, 'backend-config.json');
+const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
 
 const app = express();
-const PORT = 4000;
-
-// Secret key for signing JWT tokens (same across all sessions for mock server)
-const JWT_SECRET = 'qalnet-mock-secret-key-dev-only-change-in-production';
+const { port, host } = config.server;
+const { secret: JWT_SECRET, algorithm: JWT_ALGORITHM, expiresInSeconds: JWT_EXPIRES_IN } = config.jwt;
+const TEST_CREDENTIALS = config.testCredentials.admin;
+const TEST_DATA = config.testData;
 
 // In-memory store for pending join requests (user -> equb mapping)
 const pendingRequests = {};
@@ -22,9 +28,9 @@ function generateToken(user) {
     last_name: user.lastName,
     role: user.role,
     iat: Math.floor(Date.now() / 1000),
-    exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60), // 24 hours
+    exp: Math.floor(Date.now() / 1000) + JWT_EXPIRES_IN,
   };
-  return jwt.sign(payload, JWT_SECRET, { algorithm: 'HS256' });
+  return jwt.sign(payload, JWT_SECRET, { algorithm: JWT_ALGORITHM });
 }
 
 // Middleware
@@ -45,18 +51,18 @@ app.get('/api/v1/health', (req, res) => {
 // Login endpoint
 app.post('/api/v1/auth/login', (req, res) => {
   const { phone, pin } = req.body;
-  if (phone === '+251904556677' && pin === '4488') {
+  if (phone === TEST_CREDENTIALS.phone && pin === TEST_CREDENTIALS.pin) {
     const user = {
-      id: 'admin-1',
-      phone: '+251904556677',
-      email: 'admin@qalnet.com',
-      firstName: 'Danel',
-      lastName: 'Temesgen',
-      role: 'admin',
+      id: TEST_CREDENTIALS.id,
+      phone: TEST_CREDENTIALS.phone,
+      email: TEST_CREDENTIALS.email,
+      firstName: TEST_CREDENTIALS.firstName,
+      lastName: TEST_CREDENTIALS.lastName,
+      role: TEST_CREDENTIALS.role,
     };
     return res.json({
       access_token: generateToken(user),
-      refresh_token: generateToken(user), // In mock, same as access
+      refresh_token: generateToken(user),
       user,
     });
   }
@@ -91,7 +97,7 @@ app.get('/api/v1/auth/check-availability', (req, res) => {
 // Verify OTP
 app.post('/api/v1/auth/verify-otp', (req, res) => {
   const { otp } = req.body;
-  res.json({ verified: otp === '818959' });
+  res.json({ verified: otp === TEST_DATA.otp });
 });
 
 // Send OTP
@@ -104,7 +110,7 @@ app.post('/api/v1/auth/send-otp', (req, res) => {
   res.json({ 
     sent: true,
     message: `OTP sent to ${phoneNum}`,
-    devOtp: '818959' 
+    devOtp: TEST_DATA.otp 
   });
 });
 
@@ -114,12 +120,12 @@ app.post('/api/v1/auth/verify-fayda', (req, res) => {
   if (!fayda_id) {
     return res.status(400).json({ error: 'Fayda ID is required' });
   }
-  // Mock verification - accept 16-digit numbers
+  // Mock verification - accept configured fayda length
   const cleanId = String(fayda_id).replace(/\D/g, '');
-  const isValid = /^\d{16}$/.test(cleanId);
+  const isValid = new RegExp(`^\\d{${TEST_DATA.fayda.faydaIdLength}}$`).test(cleanId);
   res.json({ 
     verified: isValid,
-    name: isValid ? 'Danel Temesgen' : undefined,
+    name: isValid ? TEST_DATA.fayda.verifiedName : undefined,
     message: isValid ? 'Fayda ID verified successfully' : 'Invalid Fayda ID format'
   });
 });
@@ -128,12 +134,12 @@ app.post('/api/v1/auth/verify-fayda', (req, res) => {
 app.get('/api/v1/users', (req, res) => {
   res.json([
     {
-      id: 'admin-1',
-      phone: '+251904556677',
-      email: 'admin@qalnet.com',
-      firstName: 'Danel',
-      lastName: 'Temesgen',
-      role: 'admin',
+      id: TEST_CREDENTIALS.id,
+      phone: TEST_CREDENTIALS.phone,
+      email: TEST_CREDENTIALS.email,
+      firstName: TEST_CREDENTIALS.firstName,
+      lastName: TEST_CREDENTIALS.lastName,
+      role: TEST_CREDENTIALS.role,
     },
   ]);
 });
@@ -141,91 +147,65 @@ app.get('/api/v1/users', (req, res) => {
 // Get current user
 app.get('/api/v1/users/me', (req, res) => {
   res.json({
-    id: 'admin-1',
-    phone: '+251904556677',
-    email: 'admin@qalnet.com',
-    firstName: 'Danel',
-    lastName: 'Temesgen',
-    role: 'admin',
+    id: TEST_CREDENTIALS.id,
+    phone: TEST_CREDENTIALS.phone,
+    email: TEST_CREDENTIALS.email,
+    firstName: TEST_CREDENTIALS.firstName,
+    lastName: TEST_CREDENTIALS.lastName,
+    role: TEST_CREDENTIALS.role,
   });
 });
 
 // Get equbs
 app.get('/api/v1/equbs', (req, res) => {
-  res.json([
-    {
-      id: 'equb-1',
-      name: 'Community Savings Group',
-      description: 'Monthly savings rotation',
-      contribution_amount: 1000,
-      total_rounds: 12,
-      current_round: 1,
-      status: 'active',
-      members: 5,
-    },
-    {
-      id: 'equb-2',
-      name: 'Business Fund',
-      description: 'Investment group',
-      contribution_amount: 5000,
-      total_rounds: 6,
-      current_round: 2,
-      status: 'active',
-      members: 8,
-    },
-  ]);
+  res.json(TEST_DATA.equbs.map(e => ({
+    id: e.id,
+    name: e.name,
+    description: e.description,
+    contribution_amount: e.contributionAmount,
+    total_rounds: e.totalRounds,
+    current_round: e.currentRound,
+    status: e.status,
+    members: e.members,
+  })));
 });
 
 // Get user's equbs
 app.get('/api/v1/equbs/mine', (req, res) => {
-  res.json([
-    {
-      id: 'equb-1',
-      name: 'Community Savings Group',
-      description: 'Monthly savings rotation',
-      contribution_amount: 1000,
-      total_rounds: 12,
-      current_round: 1,
-      status: 'active',
-      members: 5,
-    },
-    {
-      id: 'equb-2',
-      name: 'Business Fund',
-      description: 'Investment group',
-      contribution_amount: 5000,
-      total_rounds: 6,
-      current_round: 2,
-      status: 'active',
-      members: 8,
-    },
-  ]);
+  res.json(TEST_DATA.equbs.map(e => ({
+    id: e.id,
+    name: e.name,
+    description: e.description,
+    contribution_amount: e.contributionAmount,
+    total_rounds: e.totalRounds,
+    current_round: e.currentRound,
+    status: e.status,
+    members: e.members,
+  })));
 });
 
 // Get equb details
 app.get('/api/v1/equbs/:id', (req, res) => {
   const equbId = req.params.id;
-  // For demo: assume user-1 is the current user
   const currentUserId = 'user-1';
-  
-  // Check if this user has a pending request for this equb
+  const equb = TEST_DATA.equbs.find(e => e.id === equbId) || TEST_DATA.equbs[0];
   const hasPendingRequest = pendingRequests[`${currentUserId}-${equbId}`] === true;
   
   res.json({
-    id: equbId,
-    name: 'Community Savings Group',
-    description: 'Monthly savings rotation for community members',
-    contribution_amount: 1000,
-    total_rounds: 12,
-    current_round: 1,
-    total_amount: 12000,
-    status: 'active',
-    members: 5,
-    member_count: 5,
-    cycle_days: 30,
-    open_slots: 7,
-    host_first_name: 'Danel',
-    host_last_name: 'Temesgen',
+    id: equb.id,
+    name: equb.name,
+    description: equb.description,
+    contribution_amount: equb.contributionAmount,
+    total_rounds: equb.totalRounds,
+    current_round: equb.currentRound,
+    total_amount: equb.totalAmount,
+    status: equb.status,
+    members: equb.members,
+    member_count: equb.memberCount,
+    cycle_days: equb.cycleDays,
+    open_slots: equb.openSlots,
+    host_first_name: equb.hostFirstName,
+    host_last_name: equb.hostLastName,
     membership_status: hasPendingRequest ? 'pending' : 'not_member',
     is_host: false,
   });
@@ -249,8 +229,8 @@ app.post('/api/v1/equbs/:id/join', (req, res) => {
 // Get wallet
 app.get('/api/v1/wallet', (req, res) => {
   res.json({
-    balance: 50000,
-    currency: 'ETB',
+    balance: TEST_DATA.wallet.balance,
+    currency: TEST_DATA.wallet.currency,
     lastUpdated: new Date().toISOString(),
   });
 });
@@ -258,66 +238,47 @@ app.get('/api/v1/wallet', (req, res) => {
 // Get user wallet
 app.get('/api/v1/wallets/me', (req, res) => {
   res.json({
-    balance: 50000,
-    currency: 'ETB',
+    balance: TEST_DATA.wallet.balance,
+    currency: TEST_DATA.wallet.currency,
     lastUpdated: new Date().toISOString(),
   });
 });
 
 // Get wallet transactions
 app.get('/api/v1/wallet/transactions', (req, res) => {
-  res.json([
-    {
-      id: 'txn-1',
-      direction: 'payment',
-      amount: 1000,
-      status: 'paid',
-      description: 'Community Savings Group - Round 1',
-      timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-  ]);
+  res.json(TEST_DATA.transactions.slice(0, 1).map(t => ({
+    id: t.id,
+    direction: t.direction,
+    amount: t.amount,
+    status: t.status,
+    description: t.description,
+    timestamp: new Date(Date.now() - t.daysAgo * 24 * 60 * 60 * 1000).toISOString(),
+  })));
 });
 
 // Get user wallet transactions
 app.get('/api/v1/wallets/me/transactions', (req, res) => {
-  res.json([
-    {
-      id: 'txn-1',
-      direction: 'payment',
-      amount: 1000,
-      status: 'paid',
-      description: 'Community Savings Group - Round 1',
-      timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-    {
-      id: 'txn-2',
-      direction: 'payout',
-      amount: 5000,
-      status: 'received',
-      description: 'Business Fund Payout',
-      timestamp: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-  ]);
+  res.json(TEST_DATA.transactions.map(t => ({
+    id: t.id,
+    direction: t.direction,
+    amount: t.amount,
+    status: t.status,
+    description: t.description,
+    timestamp: new Date(Date.now() - t.daysAgo * 24 * 60 * 60 * 1000).toISOString(),
+  })));
 });
 
 // Get notifications
 app.get('/api/v1/notifications', (req, res) => {
-  res.json([
-    {
-      id: 'notif-1',
-      message: 'Your contribution was received',
-      type: 'success',
-      is_read: false,
-      created_at: new Date().toISOString(),
-    },
-    {
-      id: 'notif-2',
-      message: 'Your payout is ready to claim',
-      type: 'info',
-      is_read: false,
-      created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-    },
-  ]);
+  res.json(TEST_DATA.notifications.map(n => ({
+    id: n.id,
+    message: n.message,
+    type: n.type,
+    is_read: n.isRead,
+    created_at: n.daysAgo !== undefined 
+      ? new Date(Date.now() - n.daysAgo * 24 * 60 * 60 * 1000).toISOString()
+      : new Date().toISOString(),
+  })));
 });
 
 // ────────────────────────────────────────────────────────────────────────
@@ -326,32 +287,18 @@ app.get('/api/v1/notifications', (req, res) => {
 
 // Get pending membership requests
 app.get('/api/v1/admin/memberships/pending', (req, res) => {
-  res.json([
-    {
-      id: 'membership-req-1',
-      equb_id: 'equb-1',
-      equb_name: 'Community Savings Group',
-      user_id: 'user-123',
-      first_name: 'John',
-      last_name: 'Doe',
-      phone: '+251912345678',
-      email: 'john@example.com',
-      status: 'pending',
-      requested_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-    },
-    {
-      id: 'membership-req-2',
-      equb_id: 'equb-2',
-      equb_name: 'Business Fund',
-      user_id: 'user-456',
-      first_name: 'Jane',
-      last_name: 'Smith',
-      phone: '+251913456789',
-      email: 'jane@example.com',
-      status: 'pending',
-      requested_at: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
-    },
-  ]);
+  res.json(TEST_DATA.pendingMemberships.map(m => ({
+    id: m.id,
+    equb_id: m.equbId,
+    equb_name: m.equbName,
+    user_id: m.userId,
+    first_name: m.firstName,
+    last_name: m.lastName,
+    phone: m.phone,
+    email: m.email,
+    status: m.status,
+    requested_at: new Date(Date.now() - m.daysAgo * 24 * 60 * 60 * 1000).toISOString(),
+  })));
 });
 
 // Approve membership request
@@ -384,23 +331,21 @@ app.post('/api/v1/admin/memberships/:id/reject', (req, res) => {
 
 // Get pending equb creation requests
 app.get('/api/v1/admin/equb-requests', (req, res) => {
-  res.json([
-    {
-      id: 'equb-req-1',
-      requester_id: 'user-789',
-      requester_first_name: 'Ahmed',
-      requester_last_name: 'Hassan',
-      phone: '+251914567890',
-      email: 'ahmed@example.com',
-      equb_name: 'Tech Founders Fund',
-      description: 'Investment pool for tech startups',
-      contribution_amount: 10000,
-      total_rounds: 10,
-      cycle_days: 30,
-      status: 'pending',
-      requested_at: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
-    },
-  ]);
+  res.json(TEST_DATA.pendingEqubRequests.map(r => ({
+    id: r.id,
+    requester_id: r.requesterId,
+    requester_first_name: r.requesterFirstName,
+    requester_last_name: r.requesterLastName,
+    phone: r.phone,
+    email: r.email,
+    equb_name: r.equbName,
+    description: r.description,
+    contribution_amount: r.contributionAmount,
+    total_rounds: r.totalRounds,
+    cycle_days: r.cycleDays,
+    status: r.status,
+    requested_at: new Date(Date.now() - r.daysAgo * 24 * 60 * 60 * 1000).toISOString(),
+  })));
 });
 
 // Approve equb creation request
@@ -438,8 +383,8 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`✅ Backend Server running on: http://localhost:${PORT}`);
+app.listen(port, host, () => {
+  console.log(`✅ Backend Server running on: http://localhost:${port}`);
   console.log('');
   console.log('📚 API Endpoints:');
   console.log('   GET    /api/v1/health');
@@ -456,10 +401,17 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log('   GET    /api/v1/wallet');
   console.log('   GET    /api/v1/notifications');
   console.log('');
-  console.log('🔐 Test Credentials:');
-  console.log('   Phone: +251904556677');
-  console.log('   PIN:   4488');
-  console.log('   OTP:   818959');
+  console.log('🔐 Test Credentials (from backend-config.json):');
+  console.log(`   Phone: ${TEST_CREDENTIALS.phone}`);
+  console.log(`   PIN:   ${TEST_CREDENTIALS.pin}`);
+  console.log(`   OTP:   ${TEST_DATA.otp}`);
+  console.log('');
+  console.log('⚙️ Configuration:');
+  console.log(`   JWT Expires In: ${JWT_EXPIRES_IN}s (${Math.floor(JWT_EXPIRES_IN / 3600)}h)`);
+  console.log(`   Equbs Count: ${TEST_DATA.equbs.length}`);
+  console.log(`   Wallet Balance: ${TEST_DATA.wallet.balance} ${TEST_DATA.wallet.currency}`);
+  console.log('');
+  console.log('📝 Config File: backend-config.json');
   console.log('');
   console.log('Press Ctrl+C to stop');
   console.log('');

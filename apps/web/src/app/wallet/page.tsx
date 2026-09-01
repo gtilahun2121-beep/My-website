@@ -180,7 +180,7 @@ export default function WalletPage() {
                     <p className="text-sm text-gray-500">{txn.date}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className={`font-bold text-lg whitespace-nowrap ${txn.amount.includes('-') ? 'text-red-600' : 'text-green-600'}`}>
+                    <p className={`font-bold text-lg whitespace-nowrap ${txn.amount.includes('-') ? 'text-amber-600' : 'text-green-600'}`}>
                       {txn.amount}
                     </p>
                     <p className="text-xs text-green-600">{txn.status}</p>

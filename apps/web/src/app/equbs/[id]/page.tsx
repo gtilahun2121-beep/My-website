@@ -102,7 +102,7 @@ export default function EqubDetailPage() {
           {loading ? (
             <p className="text-gray-500">{lang === 'en' ? 'Loading...' : 'በመጫን ላይ...'}</p>
           ) : error ? (
-            <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-6">
+            <div className="bg-amber-50 border border-amber-300 text-amber-700 rounded-lg p-6">
               <p className="font-bold mb-2">{lang === 'en' ? 'Something went wrong' : 'ስህተት ተከስቷል'}</p>
               <p className="text-sm">{error}</p>
             </div>
@@ -183,7 +183,7 @@ export default function EqubDetailPage() {
                 </div>
 
                 {notice && (
-                  <div className={`border rounded-lg p-4 mb-4 ${notice.startsWith('Failed') || notice.startsWith('You are already') ? 'bg-red-50 border-red-200 text-red-700' : 'bg-green-50 border-green-300 text-green-800'}`}>
+                  <div className={`border rounded-lg p-4 mb-4 ${notice.startsWith('Failed') || notice.startsWith('You are already') ? 'bg-amber-50 border-amber-300 text-amber-700' : 'bg-green-50 border-green-300 text-green-800'}`}>
                     {notice}
                   </div>
                 )}

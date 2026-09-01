@@ -231,10 +231,10 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                 onChange={handleChange}
                 placeholder="Enter first name"
                 className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-all ${
-                  errors.firstName ? 'border-red-500' : 'border-gray-200 focus:border-[#314fa0]'
+                  errors.firstName ? 'border-amber-500' : 'border-gray-200 focus:border-[#314fa0]'
                 }`}
               />
-              {errors.firstName && <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>}
+              {errors.firstName && <p className="text-amber-600 text-sm mt-1">{errors.firstName}</p>}
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Last Name</label>
@@ -245,10 +245,10 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                 onChange={handleChange}
                 placeholder="Enter last name"
                 className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-all ${
-                  errors.lastName ? 'border-red-500' : 'border-gray-200 focus:border-[#314fa0]'
+                  errors.lastName ? 'border-amber-500' : 'border-gray-200 focus:border-[#314fa0]'
                 }`}
               />
-              {errors.lastName && <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>}
+              {errors.lastName && <p className="text-amber-600 text-sm mt-1">{errors.lastName}</p>}
             </div>
           </div>
         </div>
@@ -268,10 +268,10 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                 onChange={handleChange}
                 placeholder="+2519xxxxxxxx"
                 className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-all ${
-                  errors.phoneNumber ? 'border-red-500' : 'border-gray-200 focus:border-[#314fa0]'
+                  errors.phoneNumber ? 'border-amber-500' : 'border-gray-200 focus:border-[#314fa0]'
                 }`}
               />
-              {errors.phoneNumber && <p className="text-red-500 text-sm mt-1">{errors.phoneNumber}</p>}
+              {errors.phoneNumber && <p className="text-amber-600 text-sm mt-1">{errors.phoneNumber}</p>}
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
@@ -282,10 +282,10 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                 onChange={handleChange}
                 placeholder="your.email@gmail.com"
                 className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-all ${
-                  errors.email ? 'border-red-500' : 'border-gray-200 focus:border-[#314fa0]'
+                  errors.email ? 'border-amber-500' : 'border-gray-200 focus:border-[#314fa0]'
                 }`}
               />
-              {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+              {errors.email && <p className="text-amber-600 text-sm mt-1">{errors.email}</p>}
             </div>
           </div>
         </div>
@@ -306,7 +306,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                   onChange={handleChange}
                   placeholder="At least 8 characters with uppercase, lowercase, digit, special char"
                   className={`w-full px-4 pr-11 py-3 border-2 rounded-lg focus:outline-none transition-all ${
-                    errors.password ? 'border-red-500' : 'border-gray-200 focus:border-[#314fa0]'
+                    errors.password ? 'border-amber-500' : 'border-gray-200 focus:border-[#314fa0]'
                   }`}
                 />
                 <button
@@ -322,7 +322,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                   )}
                 </button>
               </div>
-              {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+              {errors.password && <p className="text-amber-600 text-sm mt-1">{errors.password}</p>}
               
               {/* Password Validation Checklist */}
               {formData.password && (
@@ -362,10 +362,10 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                 onChange={handleChange}
                 placeholder="Exactly 6 digits"
                 className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-all ${
-                  errors.pin ? 'border-red-500' : 'border-gray-200 focus:border-[#314fa0]'
+                  errors.pin ? 'border-amber-500' : 'border-gray-200 focus:border-[#314fa0]'
                 }`}
               />
-              {errors.pin && <p className="text-red-500 text-sm mt-1">{errors.pin}</p>}
+              {errors.pin && <p className="text-amber-600 text-sm mt-1">{errors.pin}</p>}
             </div>
           </div>
         </div>
@@ -385,10 +385,10 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                 onChange={handleChange}
                 placeholder="Enter 16-digit Fayda number"
                 className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-all ${
-                  errors.fayda ? 'border-red-500' : 'border-gray-200 focus:border-[#314fa0]'
+                  errors.fayda ? 'border-amber-500' : 'border-gray-200 focus:border-[#314fa0]'
                 }`}
               />
-              {errors.fayda && <p className="text-red-500 text-sm mt-1">{errors.fayda}</p>}
+              {errors.fayda && <p className="text-amber-600 text-sm mt-1">{errors.fayda}</p>}
             </div>
           </div>
         </div>
@@ -410,10 +410,10 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                 onChange={handleChange}
                 placeholder="Enter 6-digit OTP"
                 className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-all ${
-                  errors.faydaOtp ? 'border-red-500' : 'border-gray-200 focus:border-[#314fa0]'
+                  errors.faydaOtp ? 'border-amber-500' : 'border-gray-200 focus:border-[#314fa0]'
                 }`}
               />
-              {errors.faydaOtp && <p className="text-red-500 text-sm mt-1">{errors.faydaOtp}</p>}
+              {errors.faydaOtp && <p className="text-amber-600 text-sm mt-1">{errors.faydaOtp}</p>}
               
               <button
                 onClick={() => {
@@ -441,8 +441,8 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
 
       {/* Error message */}
       {errors.submit && (
-        <div className="mt-6 p-4 bg-red-50 border-2 border-red-300 rounded-lg">
-          <p className="text-red-700 font-semibold">{errors.submit}</p>
+        <div className="mt-6 p-4 bg-amber-50 border-2 border-amber-300 rounded-lg">
+          <p className="text-amber-700 font-semibold">{errors.submit}</p>
         </div>
       )}
 

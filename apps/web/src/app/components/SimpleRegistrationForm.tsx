@@ -117,7 +117,7 @@ export default function SimpleRegistrationForm({
             onChange={e => updateField('firstName', e.target.value)}
             className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#314fa0] focus:outline-none"
           />
-          {errors.firstName && <p className="text-red-500 text-sm">{errors.firstName}</p>}
+          {errors.firstName && <p className="text-amber-600 text-sm">{errors.firstName}</p>}
           
           <input
             type="text"
@@ -126,7 +126,7 @@ export default function SimpleRegistrationForm({
             onChange={e => updateField('lastName', e.target.value)}
             className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#314fa0] focus:outline-none"
           />
-          {errors.lastName && <p className="text-red-500 text-sm">{errors.lastName}</p>}
+          {errors.lastName && <p className="text-amber-600 text-sm">{errors.lastName}</p>}
 
           <button
             onClick={() => {
@@ -153,7 +153,7 @@ export default function SimpleRegistrationForm({
             onChange={e => updateField('phoneNumber', e.target.value)}
             className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#314fa0] focus:outline-none"
           />
-          {errors.phoneNumber && <p className="text-red-500 text-sm">{errors.phoneNumber}</p>}
+          {errors.phoneNumber && <p className="text-amber-600 text-sm">{errors.phoneNumber}</p>}
 
           <input
             type="email"
@@ -162,7 +162,7 @@ export default function SimpleRegistrationForm({
             onChange={e => updateField('email', e.target.value)}
             className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#314fa0] focus:outline-none"
           />
-          {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+          {errors.email && <p className="text-amber-600 text-sm">{errors.email}</p>}
 
           <div className="flex gap-3">
             <button
@@ -206,7 +206,7 @@ export default function SimpleRegistrationForm({
             disabled={fayda.verified}
             className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#314fa0] focus:outline-none disabled:bg-gray-100"
           />
-          {errors.fayda && <p className="text-red-500 text-sm">{errors.fayda}</p>}
+          {errors.fayda && <p className="text-amber-600 text-sm">{errors.fayda}</p>}
 
           {fayda.verified ? (
             <div className="bg-green-50 border-2 border-green-300 rounded-lg p-4 flex items-center gap-3">
@@ -272,8 +272,8 @@ export default function SimpleRegistrationForm({
             maxLength={5}
             className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#314fa0] focus:outline-none text-center text-2xl tracking-widest"
           />
-          {errors.otp && <p className="text-red-500 text-sm text-center">{errors.otp}</p>}
-          {errors.submit && <p className="text-red-500 text-sm text-center">{errors.submit}</p>}
+          {errors.otp && <p className="text-amber-600 text-sm text-center">{errors.otp}</p>}
+          {errors.submit && <p className="text-amber-600 text-sm text-center">{errors.submit}</p>}
 
           <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4">
             <h4 className="font-bold text-green-900 text-sm mb-3">🔒 Security</h4>

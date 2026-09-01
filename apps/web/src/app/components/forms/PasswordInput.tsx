@@ -92,7 +92,7 @@ export default function PasswordInput({
                         'pr-11',
                         disabled ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white',
                         error
-                            ? 'border-red-400 focus:ring-red-300'
+                            ? 'border-amber-400 focus:ring-amber-300'
                             : 'border-gray-300 focus:ring-[#314fa0] focus:border-[#314fa0]',
                     ].join(' ')}
                 />
@@ -108,7 +108,7 @@ export default function PasswordInput({
             </div>
 
             {hint && !error && <p className="text-xs text-gray-400">{hint}</p>}
-            {error && <p className="text-xs text-red-500 font-medium">{error}</p>}
+            {error && <p className="text-xs text-amber-600 font-medium">{error}</p>}
         </div>
     );
 }

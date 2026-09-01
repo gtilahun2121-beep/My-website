@@ -41,7 +41,7 @@ const ToastNotification: React.FC<{ toast: Toast; onDismiss: () => void }> = ({ 
       case 'success':
         return 'bg-emerald-600';
       case 'error':
-        return 'bg-red-600';
+        return 'bg-amber-600';
       case 'warning':
         return 'bg-yellow-600';
       case 'info':

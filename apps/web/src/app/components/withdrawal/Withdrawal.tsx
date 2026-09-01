@@ -257,7 +257,7 @@ export const Withdrawal: React.FC<WithdrawalProps> = ({ balance, onSuccess, onCa
       {/* Content */}
       <div className="p-6">
           {error && (
-            <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
+            <div className="mb-4 p-3 rounded-lg bg-amber-50 border border-amber-300 text-sm text-amber-700">
               {error}
             </div>
           )}
@@ -466,7 +466,7 @@ export const Withdrawal: React.FC<WithdrawalProps> = ({ balance, onSuccess, onCa
           {step === 'error' && (
             <div className="text-center py-8">
               <div className="text-6xl mb-4">❌</div>
-              <p className="text-lg font-semibold text-red-600 mb-2">Withdrawal Failed</p>
+              <p className="text-lg font-semibold text-amber-600 mb-2">Withdrawal Failed</p>
               <p className="text-sm text-gray-600 mb-4">{error}</p>
               <div className="flex gap-3">
                 <button
@@ -477,7 +477,7 @@ export const Withdrawal: React.FC<WithdrawalProps> = ({ balance, onSuccess, onCa
                 </button>
                 <button
                   onClick={onCancel}
-                  className="flex-1 bg-red-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors"
+                  className="flex-1 bg-amber-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-amber-700 transition-colors"
                 >
                   Cancel
                 </button>

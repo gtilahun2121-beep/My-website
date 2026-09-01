@@ -118,7 +118,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded"
+                className="bg-amber-100 border-l-4 border-amber-500 text-amber-700 p-4 rounded"
               >
                 {error}
               </motion.div>
@@ -198,7 +198,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded"
+                className="bg-amber-100 border-l-4 border-amber-500 text-amber-700 p-4 rounded"
               >
                 {error}
               </motion.div>

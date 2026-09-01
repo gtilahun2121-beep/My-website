@@ -41,35 +41,35 @@ function SecurityContent() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
             {securityMeasures.map((measure, idx) => (
-              <div key={idx} className="bg-gradient-to-br from-red-50 to-pink-50 rounded-lg p-8 border border-red-200">
-                <h3 className="font-bold text-lg mb-2 text-gray-900">🔒 {measure.title}</h3>
-                <p className="text-gray-600">{measure.desc}</p>
+              <div key={idx} className="bg-gradient-to-br from-[#314fa0] to-[#2a4183] rounded-lg p-8 border border-blue-300">
+                <h3 className="font-bold text-lg mb-2 text-white">🔒 {measure.title}</h3>
+                <p className="text-blue-50">{measure.desc}</p>
               </div>
             ))}
           </div>
 
-          <div className="bg-gradient-to-r from-red-50 to-pink-50 rounded-lg p-8 border border-red-200">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">Data Protection</h3>
+          <div className="bg-gradient-to-r from-[#314fa0] to-[#2a4183] rounded-lg p-8 border border-blue-300">
+            <h3 className="text-2xl font-bold text-white mb-4">Data Protection</h3>
             <ul className="space-y-3">
               <li className="flex items-start">
-                <span className="text-red-600 mr-3 font-bold">✓</span>
-                <span className="text-gray-700">PII encrypted at application level with pgcrypto</span>
+                <span className="text-amber-400 mr-3 font-bold">✓</span>
+                <span className="text-blue-50">PII encrypted at application level with pgcrypto</span>
               </li>
               <li className="flex items-start">
-                <span className="text-red-600 mr-3 font-bold">✓</span>
-                <span className="text-gray-700">Row-level security enforced at database policy level</span>
+                <span className="text-amber-400 mr-3 font-bold">✓</span>
+                <span className="text-blue-50">Row-level security enforced at database policy level</span>
               </li>
               <li className="flex items-start">
-                <span className="text-red-600 mr-3 font-bold">✓</span>
-                <span className="text-gray-700">Automated 90-day API key rotation</span>
+                <span className="text-amber-400 mr-3 font-bold">✓</span>
+                <span className="text-blue-50">Automated 90-day API key rotation</span>
               </li>
               <li className="flex items-start">
-                <span className="text-red-600 mr-3 font-bold">✓</span>
-                <span className="text-gray-700">HashiCorp Vault secret management</span>
+                <span className="text-amber-400 mr-3 font-bold">✓</span>
+                <span className="text-blue-50">HashiCorp Vault secret management</span>
               </li>
               <li className="flex items-start">
-                <span className="text-red-600 mr-3 font-bold">✓</span>
-                <span className="text-gray-700">Compliance with NBE Directive No. ONPS/10/2025</span>
+                <span className="text-amber-400 mr-3 font-bold">✓</span>
+                <span className="text-blue-50">Compliance with NBE Directive No. ONPS/10/2025</span>
               </li>
             </ul>
           </div>

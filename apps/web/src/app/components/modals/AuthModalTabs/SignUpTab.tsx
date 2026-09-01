@@ -678,7 +678,7 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
           />
 
           {submitError && (
-            <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+            <p className="text-xs text-amber-600 bg-amber-50 border border-amber-300 rounded-md px-3 py-2">
               {submitError}
             </p>
           )}

@@ -134,7 +134,7 @@ export default function ProfileDrawer({ isOpen, onClose, language }: ProfileDraw
               <button
                 type="button"
                 onClick={handleSignOut}
-                className={`${itemBase} bg-red-50 text-red-600 justify-center`}
+                className={`${itemBase} bg-amber-50 text-amber-600 justify-center`}
               >
                 {language === 'en' ? 'Sign out' : 'መውጣት'}
               </button>

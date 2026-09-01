@@ -147,11 +147,11 @@ export const EqubCard: React.FC<EqubCardProps> = ({
 
         {/* Payment Info */}
         {equb.unpaidRoundsCount > 0 && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
-            <p className="text-sm text-red-700">
+          <div className="bg-amber-50 border border-amber-300 rounded-lg p-3 mb-4">
+            <p className="text-sm text-amber-700">
               ⚠️ {equb.unpaidRoundsCount} {translations.unpaid_rounds[language]}
             </p>
-            <p className="text-xs text-red-600 mt-1">
+            <p className="text-xs text-amber-600 mt-1">
               Due: {equb.nextDeadline}
             </p>
           </div>

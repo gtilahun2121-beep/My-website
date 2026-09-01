@@ -162,7 +162,7 @@ export default function DiagramRegistrationForm({
               onChange={e => updateField('firstName', e.target.value)}
               className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#314fa0] focus:outline-none"
             />
-            {errors.firstName && <p className="text-red-500 text-sm">{errors.firstName}</p>}
+            {errors.firstName && <p className="text-amber-600 text-sm">{errors.firstName}</p>}
           </div>
 
           <div>
@@ -174,7 +174,7 @@ export default function DiagramRegistrationForm({
               onChange={e => updateField('lastName', e.target.value)}
               className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#314fa0] focus:outline-none"
             />
-            {errors.lastName && <p className="text-red-500 text-sm">{errors.lastName}</p>}
+            {errors.lastName && <p className="text-amber-600 text-sm">{errors.lastName}</p>}
           </div>
 
           <button
@@ -198,7 +198,7 @@ export default function DiagramRegistrationForm({
               onChange={e => updateField('phoneNumber', e.target.value)}
               className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#314fa0] focus:outline-none"
             />
-            {errors.phoneNumber && <p className="text-red-500 text-sm">{errors.phoneNumber}</p>}
+            {errors.phoneNumber && <p className="text-amber-600 text-sm">{errors.phoneNumber}</p>}
           </div>
 
           <div>
@@ -210,7 +210,7 @@ export default function DiagramRegistrationForm({
               onChange={e => updateField('email', e.target.value)}
               className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#314fa0] focus:outline-none"
             />
-            {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+            {errors.email && <p className="text-amber-600 text-sm">{errors.email}</p>}
           </div>
 
           <div className="flex gap-3">
@@ -243,7 +243,7 @@ export default function DiagramRegistrationForm({
               disabled={fayda.verified}
               className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#314fa0] focus:outline-none disabled:bg-gray-100"
             />
-            {errors.fayda && <p className="text-red-500 text-sm">{errors.fayda}</p>}
+            {errors.fayda && <p className="text-amber-600 text-sm">{errors.fayda}</p>}
           </div>
 
           {fayda.verified && (
@@ -327,7 +327,7 @@ export default function DiagramRegistrationForm({
                 )}
               </button>
             </div>
-            {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
+            {errors.password && <p className="text-amber-600 text-sm">{errors.password}</p>}
           </div>
 
           {/* Confirm Password */}
@@ -354,7 +354,7 @@ export default function DiagramRegistrationForm({
                 )}
               </button>
             </div>
-            {errors.confirmPassword && <p className="text-red-500 text-sm">{errors.confirmPassword}</p>}
+            {errors.confirmPassword && <p className="text-amber-600 text-sm">{errors.confirmPassword}</p>}
           </div>
 
           {/* PIN */}
@@ -382,7 +382,7 @@ export default function DiagramRegistrationForm({
                 )}
               </button>
             </div>
-            {errors.pin && <p className="text-red-500 text-sm">{errors.pin}</p>}
+            {errors.pin && <p className="text-amber-600 text-sm">{errors.pin}</p>}
           </div>
 
           <hr className="my-6" />
@@ -403,10 +403,10 @@ export default function DiagramRegistrationForm({
               maxLength={5}
               className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#314fa0] focus:outline-none text-center text-2xl tracking-widest"
             />
-            {errors.otp && <p className="text-red-500 text-sm text-center">{errors.otp}</p>}
+            {errors.otp && <p className="text-amber-600 text-sm text-center">{errors.otp}</p>}
           </div>
 
-          {errors.submit && <p className="text-red-500 text-sm text-center">{errors.submit}</p>}
+          {errors.submit && <p className="text-amber-600 text-sm text-center">{errors.submit}</p>}
 
           <div className="flex gap-3">
             <button

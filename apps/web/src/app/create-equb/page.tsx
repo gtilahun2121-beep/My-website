@@ -198,7 +198,7 @@ export default function CreateEqubPage() {
                 </div>
 
                 {error && (
-                  <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded">
+                  <div className="bg-amber-50 border-l-4 border-amber-500 text-amber-700 p-4 rounded">
                     {error}
                   </div>
                 )}

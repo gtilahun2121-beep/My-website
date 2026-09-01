@@ -234,7 +234,7 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({
           {step === 'error' && (
             <div className="text-center py-8">
               <div className="text-6xl mb-4">❌</div>
-              <p className="text-lg font-semibold text-red-600 mb-2">Payment Failed</p>
+              <p className="text-lg font-semibold text-amber-600 mb-2">Payment Failed</p>
               <p className="text-sm text-gray-600 mb-4">{error}</p>
               <div className="flex gap-3">
                 <button
@@ -245,7 +245,7 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({
                 </button>
                 <button
                   onClick={onCancel}
-                  className="flex-1 bg-red-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors"
+                  className="flex-1 bg-amber-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-amber-700 transition-colors"
                 >
                   Cancel
                 </button>

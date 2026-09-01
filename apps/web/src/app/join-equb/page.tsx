@@ -104,7 +104,7 @@ export default function JoinEqubPage() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">{lang === 'en' ? 'Open Slots' : 'ክፍት ቦታ'}</span>
-                    <span className={`font-bold ${equb.open_slots === 0 ? 'text-red-600' : 'text-green-600'}`}>
+                    <span className={`font-bold ${equb.open_slots === 0 ? 'text-amber-600' : 'text-green-600'}`}>
                       {equb.open_slots}
                     </span>
                   </div>

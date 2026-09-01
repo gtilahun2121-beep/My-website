@@ -55,7 +55,7 @@ export default function MyEqubsPage() {
           {loading ? (
             <p className="text-gray-500">{lang === 'en' ? 'Loading...' : 'በመጫን ላይ...'}</p>
           ) : error ? (
-            <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-6">
+            <div className="bg-amber-50 border border-amber-300 text-amber-700 rounded-lg p-6">
               <p className="font-bold mb-2">{lang === 'en' ? 'Something went wrong' : 'ስህተት ተከስቷል'}</p>
               <p className="text-sm">{error}</p>
             </div>
