@@ -322,7 +322,7 @@ export class LotterySelectionService {
                 },
             });
 
-            const hasProcessedPayments = paymentHistory.some(p =>
+            const hasProcessedPayments = paymentHistory.some((p: PayoutHistoryRecord) =>
                 ['PROCESSING', 'COMPLETED'].includes(p.status),
             );
 
@@ -441,9 +441,9 @@ export class LotterySelectionService {
 
         try {
             // Get cycle details
-            const cycle = await queryRunner.manager.findOne('payout_cycles', {
+            const cycle = (await queryRunner.manager.findOne('payout_cycles', {
                 where: { cycle_id: cycleId },
-            });
+            })) as PayoutCycleInfo | null;
 
             if (!cycle) {
                 throw new NotFoundException(`Payout cycle ${cycleId} not found`);

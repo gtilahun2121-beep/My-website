@@ -116,18 +116,38 @@ app.post('/api/v1/auth/send-otp', (req, res) => {
 
 // Verify Fayda ID
 app.post('/api/v1/auth/verify-fayda', (req, res) => {
-  const { fayda_id } = req.body;
-  if (!fayda_id) {
-    return res.status(400).json({ error: 'Fayda ID is required' });
+  try {
+    const { fayda_id, faydaId } = req.body;
+    const id = fayda_id || faydaId;
+    
+    if (!id) {
+      return res.status(400).json({ 
+        error: 'Fayda ID is required',
+        received: req.body 
+      });
+    }
+    
+    // Mock verification - accept configured fayda length
+    const cleanId = String(id).replace(/\D/g, '');
+    const faydaLength = TEST_DATA.fayda?.faydaIdLength || 16;
+    const isValid = new RegExp(`^\\d{${faydaLength}}$`).test(cleanId);
+    
+    res.json({ 
+      verified: isValid,
+      name: isValid ? (TEST_DATA.fayda?.verifiedName || 'Verified User') : undefined,
+      message: isValid ? 'Fayda ID verified successfully' : `Invalid Fayda ID format. Expected ${faydaLength} digits, got ${cleanId.length}`,
+      debug: {
+        received: id,
+        cleaned: cleanId,
+        expected_length: faydaLength
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      error: 'Internal server error',
+      message: error.message 
+    });
   }
-  // Mock verification - accept configured fayda length
-  const cleanId = String(fayda_id).replace(/\D/g, '');
-  const isValid = new RegExp(`^\\d{${TEST_DATA.fayda.faydaIdLength}}$`).test(cleanId);
-  res.json({ 
-    verified: isValid,
-    name: isValid ? TEST_DATA.fayda.verifiedName : undefined,
-    message: isValid ? 'Fayda ID verified successfully' : 'Invalid Fayda ID format'
-  });
 });
 
 // Get users
@@ -211,18 +231,59 @@ app.get('/api/v1/equbs/:id', (req, res) => {
   });
 });
 
-// Join equb - creates pending request
-app.post('/api/v1/equbs/:id/join', (req, res) => {
-  const equbId = req.params.id;
+// Join equb tier - creates pending request
+app.post('/api/v1/equbs/join', (req, res) => {
+  const { tier_type, user_id, user_name, phone, email } = req.body;
+
+  // Validate tier type
+  if (!['DAILY', 'WEEKLY', 'MONTHLY'].includes(tier_type)) {
+    return res.status(400).json({ error: 'Invalid tier type' });
+  }
+
+  // Mock: Create equb based on tier
+  const tierConfig = {
+    DAILY: {
+      name: 'Daily Equb Pool',
+      contribution: 300,
+      capacity: 103,
+      members: 1,
+    },
+    WEEKLY: {
+      name: 'Weekly Equb Pool',
+      contribution: 2000,
+      capacity: 12,
+      members: 1,
+    },
+    MONTHLY: {
+      name: 'Monthly Equb Pool',
+      contribution: 10000,
+      capacity: 6,
+      members: 1,
+    },
+  };
+
+  const config = tierConfig[tier_type];
+  
   // For demo: assume user-1 is the current user
-  const currentUserId = 'user-1';
+  const currentUserId = user_id || 'user-1';
   
-  // Store pending request
-  pendingRequests[`${currentUserId}-${equbId}`] = true;
+  // Store join request
+  pendingRequests[`${currentUserId}-equb-${tier_type}`] = true;
   
-  res.status(200).json({
-    pending: true,
-    message: 'Join request submitted. Awaiting admin approval.',
+  res.status(201).json({
+    success: true,
+    message: `Successfully joined ${tier_type} Equb`,
+    enrollment: {
+      user_id: currentUserId,
+      user_name,
+      phone,
+      email,
+      tier_type,
+      equb_name: config.name,
+      contribution: config.contribution,
+      status: 'PENDING_PAYMENT',
+      joined_at: new Date().toISOString(),
+    },
   });
 });
 

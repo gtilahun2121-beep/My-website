@@ -54,7 +54,38 @@ export class EqubsService {
             throw new BadRequestException('cycle_days must be at least 3');
         }
 
-        return {
+        // Periodic-cycle configuration (daily/weekly engines).
+        const cycleType = (data.cycle_type ?? 'round') as 'round' | 'daily' | 'weekly';
+        if (!['round', 'daily', 'weekly'].includes(cycleType)) {
+            throw new BadRequestException('cycle_type must be round, daily or weekly');
+        }
+
+        let paymentCutoffTime: string | undefined;
+        if (data.payment_cutoff_time != null) {
+            const c = String(data.payment_cutoff_time);
+            if (!/^\d{2}:\d{2}$/.test(c)) {
+                throw new BadRequestException('payment_cutoff_time must be HH:MM (24h)');
+            }
+            paymentCutoffTime = c;
+        }
+
+        let penaltyRate: number | undefined;
+        if (data.late_penalty_rate != null) {
+            penaltyRate = Number(data.late_penalty_rate);
+            if (!Number.isFinite(penaltyRate) || penaltyRate < 0 || penaltyRate > 1) {
+                throw new BadRequestException('late_penalty_rate must be between 0 and 1');
+            }
+        }
+
+        let cutoffWeekday: number | undefined;
+        if (data.payment_cutoff_weekday != null) {
+            cutoffWeekday = Number(data.payment_cutoff_weekday);
+            if (!Number.isInteger(cutoffWeekday) || cutoffWeekday < 0 || cutoffWeekday > 6) {
+                throw new BadRequestException('payment_cutoff_weekday must be between 0 (Sun) and 6 (Sat)');
+            }
+        }
+
+        const base: CreateEqubInput = {
             name,
             description: typeof data.description === 'string' ? data.description : undefined,
             total_amount: contribution * totalRounds,
@@ -62,6 +93,18 @@ export class EqubsService {
             cycle_days: cycleDays,
             total_rounds: Math.floor(totalRounds),
         };
+
+        if (cycleType !== 'round' || paymentCutoffTime || penaltyRate != null || cutoffWeekday != null) {
+            return {
+                ...base,
+                cycle_type: cycleType,
+                payment_cutoff_time: paymentCutoffTime,
+                late_penalty_rate: penaltyRate,
+                payment_cutoff_weekday: cutoffWeekday,
+            };
+        }
+
+        return base;
     }
 
     /**

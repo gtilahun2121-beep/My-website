@@ -8,12 +8,14 @@ import { useAuth } from './context/AuthContext';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import AuthModal from './components/modals/AuthModal';
+import EqubTiersSection from './components/EqubTiersSection';
 import { homePathForStoredUser } from './lib/roleHome';
 
 export default function Home() {
   const router = useRouter();
   const [lang, setLang] = useState<Language>(defaultLanguage);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const { isAuthenticated } = useAuth();
 
   const handleLanguageChange = (newLang: Language) => {
     setLang(newLang);
@@ -95,6 +97,12 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        {/* Equb Tiers Section - Now positioned below hero */}
+        <EqubTiersSection 
+          onJoinStart={() => setShowAuthModal(true)}
+          isAuthenticated={isAuthenticated}
+        />
 
         {/* CTA Section - semi-transparent color so the image stays visible */}
         <section className="bg-gradient-to-r from-[#314fa0]/55 to-[#ce1126]/45 text-white py-16 px-4">

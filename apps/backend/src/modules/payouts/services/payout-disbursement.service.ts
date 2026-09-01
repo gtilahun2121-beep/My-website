@@ -557,16 +557,18 @@ export class PayoutDisbursementService {
         cycle_id: cycleId,
       });
 
-      const totalAmount = payouts.reduce((sum, p) => sum + p.amount, 0);
-      const completed = payouts.filter((p) => p.status === 'COMPLETED').length;
-      const pending = payouts.filter((p) => p.status === 'PENDING').length;
-      const processing = payouts.filter((p) => p.status === 'PROCESSING').length;
-      const failed = payouts.filter((p) => p.status === 'FAILED').length;
-      const refunded = payouts.filter((p) => p.status === 'REFUNDED').length;
+      type PayoutRecord = { status: string; amount: number };
+
+      const totalAmount = payouts.reduce((sum: number, p: PayoutRecord) => sum + p.amount, 0);
+      const completed = payouts.filter((p: PayoutRecord) => p.status === 'COMPLETED').length;
+      const pending = payouts.filter((p: PayoutRecord) => p.status === 'PENDING').length;
+      const processing = payouts.filter((p: PayoutRecord) => p.status === 'PROCESSING').length;
+      const failed = payouts.filter((p: PayoutRecord) => p.status === 'FAILED').length;
+      const refunded = payouts.filter((p: PayoutRecord) => p.status === 'REFUNDED').length;
 
       const completedAmount = payouts
-        .filter((p) => p.status === 'COMPLETED')
-        .reduce((sum, p) => sum + p.amount, 0);
+        .filter((p: PayoutRecord) => p.status === 'COMPLETED')
+        .reduce((sum: number, p: PayoutRecord) => sum + p.amount, 0);
 
       return {
         cycleId,

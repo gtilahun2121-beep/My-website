@@ -208,6 +208,52 @@ export class PaymentsRepository {
         return rows[0] ?? null;
     }
 
+    /**
+     * Periodic-cycle window enforcement. For daily-cycle equbs, payments are
+     * only accepted while the current local time is before the daily
+     * payment_cutoff_time. For weekly-cycle equbs, payments are accepted during
+     * the 6-day window and up to payment_cutoff_time on the weekly
+     * payment_cutoff_weekday (Day 7). Classic round-based equbs are always open.
+     * Returns true when the window is open (or the equb is not a periodic equb).
+     */
+    async isPaymentWindowOpen(equbId: string): Promise<boolean> {
+        const sql = getPool();
+        const rows = await sql<{
+            cycle_type: 'round' | 'daily' | 'weekly';
+            payment_cutoff_time: string;
+            payment_cutoff_weekday: number;
+        }[]>`
+      SELECT cycle_type, payment_cutoff_time, payment_cutoff_weekday
+      FROM equb_groups
+      WHERE id = ${equbId}
+      LIMIT 1
+    `;
+        const row = rows[0];
+        if (!row || (row.cycle_type !== 'daily' && row.cycle_type !== 'weekly')) {
+            return true;
+        }
+
+        const now = new Date();
+        const [hh, mm] = row.payment_cutoff_time
+            .split(':')
+            .map((s) => parseInt(s, 10));
+
+        if (row.cycle_type === 'daily') {
+            const cutoff = new Date(now);
+            cutoff.setHours(hh ?? 17, mm ?? 0, 0, 0);
+            return now < cutoff;
+        }
+
+        // Weekly — bank on the configured cutoff weekday (Day 7).
+        const cutoffDay = row.payment_cutoff_weekday;
+        // daysSinceCutoff = 0 when today IS the cutoff weekday.
+        const daysSinceCutoff = (now.getDay() - cutoffDay + 7) % 7;
+        if (daysSinceCutoff !== 0) return true; // inside the 6-day window
+        const cutoff = new Date(now);
+        cutoff.setHours(hh ?? 17, mm ?? 0, 0, 0);
+        return now < cutoff;
+    }
+
     // ── Payment ────────────────────────────────────────────────────────────
 
     /**

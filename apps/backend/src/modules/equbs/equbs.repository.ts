@@ -24,6 +24,14 @@ export interface CreateEqubInput {
     contribution_amount: number;
     cycle_days: number;
     total_rounds: number;
+    /** 'round' (default) | 'daily' | 'weekly' — selects the cycle engine. */
+    cycle_type?: 'round' | 'daily' | 'weekly';
+    /** Local time each day/week the payment window closes (default '17:00'). */
+    payment_cutoff_time?: string;
+    /** Fraction of the contribution charged for missing a cutoff (default 0.02). */
+    late_penalty_rate?: number;
+    /** Weekly mode only: day of week (0=Sun..6=Sat) the weekly draw runs (Day 7). */
+    payment_cutoff_weekday?: number;
 }
 
 export interface CreateRequestInput {
@@ -166,11 +174,14 @@ export class EqubsRepository {
 
     async create(input: CreateEqubInput, hostId: string, ctx: RlsContext): Promise<any> {
         return inTransaction(ctx, async (tx) => {
+            const cycleType = input.cycle_type ?? 'round';
             const [equb] = await tx`
                 INSERT INTO equb_groups
-                    (host_id, name, description, total_amount, contribution_amount, cycle_days, total_rounds)
+                    (host_id, name, description, total_amount, contribution_amount, cycle_days, total_rounds,
+                     cycle_type, payment_cutoff_time, late_penalty_rate, payment_cutoff_weekday)
                 VALUES
-                    (${hostId}, ${input.name}, ${input.description ?? null}, ${input.total_amount}, ${input.contribution_amount}, ${input.cycle_days}, ${input.total_rounds})
+                    (${hostId}, ${input.name}, ${input.description ?? null}, ${input.total_amount}, ${input.contribution_amount}, ${input.cycle_days}, ${input.total_rounds},
+                     ${cycleType}, ${input.payment_cutoff_time ?? '17:00'}, ${input.late_penalty_rate ?? 0.02}, ${input.payment_cutoff_weekday ?? 6})
                 RETURNING id, host_id, name, total_amount, contribution_amount, cycle_days, total_rounds, current_round, status, created_at
             `;
 

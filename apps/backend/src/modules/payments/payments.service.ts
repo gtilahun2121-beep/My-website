@@ -132,6 +132,15 @@ export class PaymentsService implements OnModuleInit {
             );
         }
 
+        // Periodic-cycle (daily/weekly) equbs: reject contributions after the
+        // cycle's cutoff.
+        const windowOpen = await this.repo.isPaymentWindowOpen(dto.equb_id);
+        if (!windowOpen) {
+            throw new BadRequestException(
+                'The current contribution window is closed. Contributions reopen at the start of the next cycle.',
+            );
+        }
+
         const membership = await this.repo.getMembership(ctx.userId, dto.equb_id);
         if (!membership) {
             throw new BadRequestException('You are not a member of this Equb group.');

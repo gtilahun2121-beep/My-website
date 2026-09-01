@@ -277,7 +277,7 @@ export class PaymentRemindersService {
       const riskFactors: string[] = [];
 
       // 1. Check payment defaults
-      const failedPayments = payments.filter((p) => p.status === 'FAILED').length;
+      const failedPayments = payments.filter((p: any) => p.status === 'FAILED').length;
       if (failedPayments > 0) {
         riskScore += 20 * failedPayments;
         riskFactors.push(`${failedPayments} failed payments`);

@@ -1122,6 +1122,113 @@ export const notificationsAPI = {
 };
 
 // ---------------------------------------------------------------------------
+// Daily-Cycle API
+// ---------------------------------------------------------------------------
+
+export interface DailyCycleState {
+  equb_id: string;
+  name: string;
+  contribution_amount: number;
+  current_round: number;
+  total_rounds: number;
+  payment_cutoff_time: string;
+  late_penalty_rate: number;
+  cycle_date: string;
+  cycle_status: 'open' | 'closed' | 'drawn';
+  payment_window_open: boolean;
+}
+
+export interface DailyCycleRunResult {
+  equb_id: string;
+  success: boolean;
+  cycle_date?: string;
+  penalties_applied: number;
+  draw?: unknown;
+  message: string;
+}
+
+export const dailyCycleAPI = {
+  /**
+   * GET /api/v1/daily-cycles/:equbId/state
+   * Current daily window / cycle state for a daily equb (authenticated).
+   */
+  getState: (equbId: string) =>
+    request<DailyCycleState>(`/daily-cycles/${equbId}/state`, { method: 'GET' }),
+
+  /**
+   * POST /api/v1/daily-cycles/:equbId/run
+   * Force-runs this equb's daily cutoff (close window → penalties → draw).
+   * HOST/ADMIN ONLY.
+   */
+  runEqub: (equbId: string) =>
+    request<DailyCycleRunResult>(`/daily-cycles/${equbId}/run`, { method: 'POST' }),
+
+  /**
+   * POST /api/v1/daily-cycles/run-due
+   * Processes every daily equb whose cutoff has passed. ADMIN ONLY.
+   */
+  runDue: (force = false) =>
+    request<{ processed: number; results: unknown[] }>(`/daily-cycles/run-due`, {
+      method: 'POST',
+      body: JSON.stringify({ force }),
+    }),
+};
+
+// ---------------------------------------------------------------------------
+// Weekly-Cycle API
+// ---------------------------------------------------------------------------
+
+export interface WeeklyCycleState {
+  equb_id: string;
+  name: string;
+  contribution_amount: number;
+  current_round: number;
+  total_rounds: number;
+  payment_cutoff_time: string;
+  payment_cutoff_weekday: number;
+  late_penalty_rate: number;
+  cycle_date: string;
+  cycle_status: 'open' | 'closed' | 'drawn';
+  payment_window_open: boolean;
+}
+
+export interface WeeklyCycleRunResult {
+  equb_id: string;
+  success: boolean;
+  cycle_date?: string;
+  penalties_applied: number;
+  draw?: unknown;
+  message: string;
+}
+
+export const weeklyCycleAPI = {
+  /**
+   * GET /api/v1/weekly-cycles/:equbId/state
+   * Current weekly window / cycle state for a weekly equb (authenticated).
+   */
+  getState: (equbId: string) =>
+    request<WeeklyCycleState>(`/weekly-cycles/${equbId}/state`, { method: 'GET' }),
+
+  /**
+   * POST /api/v1/weekly-cycles/:equbId/run
+   * Force-runs this equb's weekly cutoff (close window → penalties → draw).
+   * HOST/ADMIN ONLY.
+   */
+  runEqub: (equbId: string) =>
+    request<WeeklyCycleRunResult>(`/weekly-cycles/${equbId}/run`, { method: 'POST' }),
+
+  /**
+   * POST /api/v1/weekly-cycles/run-due
+   * Processes every weekly equb whose cutoff has passed. ADMIN ONLY.
+   */
+  runDue: (force = false) =>
+    request<{ processed: number; results: unknown[] }>(`/weekly-cycles/run-due`, {
+      method: 'POST',
+      body: JSON.stringify({ force }),
+    }),
+};
+
+// ---------------------------------------------------------------------------
 // Health API
 // ---------------------------------------------------------------------------
 
@@ -1145,6 +1252,8 @@ const apiClient = {
   equbAPI,
   walletAPI,
   notificationsAPI,
+  dailyCycleAPI,
+  weeklyCycleAPI,
   healthAPI,
   request,
   padPin,

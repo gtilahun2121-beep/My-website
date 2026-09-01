@@ -10,6 +10,8 @@ import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
 import { LotteryPanel } from '@/app/components/lottery/LotteryPanel';
 import { AuctionPanel } from '@/app/components/auction/AuctionPanel';
+import DailyCyclePanel from '@/app/components/daily-cycle/DailyCyclePanel';
+import WeeklyCyclePanel from '@/app/components/weekly-cycle/WeeklyCyclePanel';
 import PaymentFlow from '@/app/components/payment/PaymentFlow';
 import api from '@/app/services/api';
 import type { EqubGroup } from '@qalnet/shared-types';
@@ -283,6 +285,20 @@ export default function EqubDetailPage() {
                 totalRounds={equb.total_rounds}
                 potAmount={Number(equb.total_amount)}
                 onChange={reloadEqub}
+              />
+
+              <DailyCyclePanel
+                equbId={equb.id}
+                isHost={!!equb.is_host}
+                isAdmin={user?.role === 'admin'}
+                onChanged={reloadEqub}
+              />
+
+              <WeeklyCyclePanel
+                equbId={equb.id}
+                isHost={!!equb.is_host}
+                isAdmin={user?.role === 'admin'}
+                onChanged={reloadEqub}
               />
 
               <AuctionPanel

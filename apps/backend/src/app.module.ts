@@ -18,6 +18,8 @@ import { EqubsModule } from './modules/equbs/equbs.module';
 import { WalletModule } from './modules/wallet/wallet.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { ReconciliationModule } from './modules/reconciliation/reconciliation.module';
+import { DailyCycleModule } from './modules/daily-cycle/daily-cycle.module';
+import { WeeklyCycleModule } from './modules/weekly-cycle/weekly-cycle.module';
 
 @Module({
     imports: [
@@ -43,6 +45,8 @@ import { ReconciliationModule } from './modules/reconciliation/reconciliation.mo
         WalletModule,
         NotificationsModule,
         ReconciliationModule,
+        DailyCycleModule,
+        WeeklyCycleModule,
     ],
 })
 export class AppModule { }

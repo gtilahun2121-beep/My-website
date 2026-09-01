@@ -44,6 +44,7 @@
         "redlock": "^4.2.0",
         "reflect-metadata": "^0.2.1",
         "rxjs": "^7.8.1",
+        "typeorm": "^1.1.0",
         "uuid": "^14.0.0"
     },
     "devDependencies": {
