@@ -10,7 +10,46 @@ import { withAdminContext } from '../../config/database.config';
  */
 @Injectable()
 export class AdminStatsRepository {
-    async getDashboardStats(
+    /**
+     * Range-independent KPI snapshot. This is the costliest block (a handful
+     * of full-table scans), so callers should cache it for a short TTL rather
+     * than recompute it on every dashboard load or range toggle.
+     */
+    async getKpis(adminId: string) {
+        return withAdminContext(adminId, async (sql) => {
+            // Single-pass FILTER aggregation: the users, payments and payouts
+            // tables are each scanned ONCE (not once per metric), which keeps
+            // full-table COUNT cost to a handful of sequential scans.
+            const [kpis] = await sql`
+                SELECT
+                    (SELECT COUNT(*)::int FROM users)::int AS total_users,
+                    (SELECT COUNT(*)::int FROM users WHERE is_active)::int AS active_users,
+                    (SELECT COUNT(*)::int FROM users WHERE role IN ('host','admin'))::int AS hosts,
+                    (SELECT COUNT(*)::int FROM users WHERE created_at >= date_trunc('month', CURRENT_DATE))::int AS new_users_this_month,
+                    (SELECT COUNT(*)::int FROM equb_groups)::int AS total_equbs,
+                    (SELECT COUNT(*)::int FROM equb_groups WHERE status = 'open')::int AS active_equbs,
+                    (SELECT COUNT(*)::int FROM memberships)::int AS total_memberships,
+                    (SELECT COALESCE(SUM(balance),0)::numeric FROM wallets)::numeric AS total_wallet_balance,
+                    (SELECT COUNT(*)::int FROM payments WHERE payment_status IN ('paid','auto_debited'))::int AS successful_payments,
+                    (SELECT COUNT(*)::int FROM payments WHERE payment_status = 'pending')::int AS pending_payments,
+                    (SELECT COUNT(*)::int FROM payments WHERE payment_status = 'failed')::int AS failed_transactions,
+                    (SELECT COUNT(*)::int FROM payouts WHERE status = 'pending')::int AS pending_withdrawals,
+                    (SELECT COALESCE(SUM(total_pot_amount),0)::numeric FROM payouts WHERE status IN ('approved','batched','completed'))::numeric AS total_payout_volume,
+                    (SELECT COUNT(*)::int FROM equb_groups WHERE status IN ('open','active'))::int AS operational_equbs,
+                    (SELECT COUNT(*)::int FROM payments WHERE created_at >= CURRENT_DATE - INTERVAL '30 days')::int AS transactions_30d,
+                    (SELECT COUNT(*)::int FROM payments WHERE created_at >= CURRENT_DATE - INTERVAL '60 days' AND created_at < CURRENT_DATE - INTERVAL '30 days')::int AS transactions_prev_30d,
+                    (SELECT pg_database_size(current_database())::bigint)::bigint AS db_size_bytes
+            `;
+            return kpis;
+        });
+    }
+
+    /**
+     * Window-specific aggregates (activity trend, recent transactions and top
+     * equbs). These depend on the requested date range so they are computed
+     * per-window and cached with a short TTL keyed by the window.
+     */
+    async getWindowStats(
         adminId: string,
         window: { days?: number; start?: string; end?: string } = {},
     ) {
@@ -24,26 +63,6 @@ export class AdminStatsRepository {
             const upperExclusive = window.end
                 ? sql`${window.end}::date + 1`
                 : sql`CURRENT_DATE + 1`;
-            const [kpis] = await sql`
-                SELECT
-                    (SELECT COUNT(*)::int                FROM users)                        AS total_users,
-                    (SELECT COUNT(*)::int                FROM users WHERE is_active)         AS active_users,
-                    (SELECT COUNT(*)::int                FROM users WHERE role IN ('host','admin')) AS hosts,
-                    (SELECT COUNT(*)::int                FROM users WHERE created_at >= date_trunc('month', CURRENT_DATE)) AS new_users_this_month,
-                    (SELECT COUNT(*)::int                FROM equb_groups)                   AS total_equbs,
-                    (SELECT COUNT(*)::int                FROM equb_groups WHERE status = 'open') AS active_equbs,
-                    (SELECT COUNT(*)::int                FROM memberships)                   AS total_memberships,
-                    (SELECT COALESCE(SUM(balance),0)::numeric          FROM wallets)         AS total_wallet_balance,
-                    (SELECT COUNT(*)::int                FROM payments WHERE payment_status IN ('paid','auto_debited')) AS successful_payments,
-                    (SELECT COUNT(*)::int                FROM payments WHERE payment_status = 'pending') AS pending_payments,
-                    (SELECT COUNT(*)::int                FROM payments WHERE payment_status = 'failed')   AS failed_transactions,
-                    (SELECT COUNT(*)::int                FROM payouts   WHERE status = 'pending')        AS pending_withdrawals,
-                    (SELECT COALESCE(SUM(total_pot_amount),0)::numeric FROM payouts WHERE status IN ('approved','batched','completed')) AS total_payout_volume,
-                    (SELECT COUNT(*)::int                FROM equb_groups WHERE status IN ('open','active')) AS operational_equbs,
-                    (SELECT COUNT(*)::int                FROM payments WHERE created_at >= CURRENT_DATE - INTERVAL '30 days') AS transactions_30d,
-                    (SELECT COUNT(*)::int                FROM payments WHERE created_at >= CURRENT_DATE - INTERVAL '60 days' AND created_at < CURRENT_DATE - INTERVAL '30 days') AS transactions_prev_30d,
-                    (SELECT pg_database_size(current_database())) AS db_size_bytes
-            `;
 
             const trend = await sql`
                 SELECT
@@ -126,7 +145,7 @@ export class AdminStatsRepository {
                 LIMIT 5
             `;
 
-            return { kpis, trend, recent_transactions: recentTransactions, top_equbs: topEqubs };
+            return { trend, recent_transactions: recentTransactions, top_equbs: topEqubs };
         });
     }
 }

@@ -54,6 +54,11 @@ export function getPool(): Sql {
         );
     }
 
+    // Neon (production/remote) uses TLS — lock it on after reading the host.
+    // Local dev Postgres (localhost) typically has no TLS, so `ssl: false`
+    // avoids the ECONNRESET that a forced SSL handshake triggers against it.
+    const isLocalHost = /localhost|127\.0\.0\.1|::1/i.test(url);
+
     _sql = postgres(url, {
         // Neon recommends a modest pool size for serverless workloads
         max: 10,
@@ -64,8 +69,9 @@ export function getPool(): Sql {
         connect_timeout: 60, // raised from 10s — Neon pooler can take up to ~30s on cold start
 
         // SSL — defer to the connection string flags (sslmode + channel_binding)
-        // Setting ssl:'require' here conflicts with channel_binding=require on the pooler
-        ssl: { rejectUnauthorized: false },
+        // Setting ssl:'require' here conflicts with channel_binding=require on the pooler.
+        // Local dev connections skip TLS entirely; remote hosts use it.
+        ssl: isLocalHost ? false : { rejectUnauthorized: false },
 
         // Log unexpected connection closures (pool reconnects automatically
         // on the next query)

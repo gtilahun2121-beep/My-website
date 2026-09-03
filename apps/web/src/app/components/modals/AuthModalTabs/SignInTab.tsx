@@ -2,11 +2,13 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import { Language, defaultLanguage } from '@/i18n/config';
 import FormInput from '@/app/components/forms/FormInput';
 import FormButton from '@/app/components/forms/FormButton';
 import FormSuccess from '@/app/components/forms/FormSuccess';
 import { useAuth, TwoFactorRequiredError } from '@/app/context/AuthContext';
+import { homePathForStoredUser } from '@/app/lib/roleHome';
 import { ValidationSchema } from '@/app/utils/validation';
 
 interface SignInTabProps {
@@ -17,6 +19,7 @@ interface SignInTabProps {
 
 export default function SignInTab({ lang = defaultLanguage, onSuccess, onError }: SignInTabProps) {
   const { signin, verify2FALogin, isLoading } = useAuth();
+  const router = useRouter();
   const [formData, setFormData] = useState({ phoneNumber: '', pin: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [successMessage, setSuccessMessage] = useState('');
@@ -90,6 +93,7 @@ export default function SignInTab({ lang = defaultLanguage, onSuccess, onError }
       await signin(formData.phoneNumber, formData.pin);
       setSuccessMessage('✓ Signed in successfully!');
       onSuccess?.('Sign In Successful', 'Welcome back to QalNet!', 3000);
+      router.push(homePathForStoredUser());
     } catch (error) {
       if (error instanceof TwoFactorRequiredError) {
         setMfaToken(error.mfaToken);
@@ -124,6 +128,7 @@ export default function SignInTab({ lang = defaultLanguage, onSuccess, onError }
       await verify2FALogin(mfaToken, code);
       setSuccessMessage('✓ Signed in successfully!');
       onSuccess?.('Sign In Successful', 'Welcome back to QalNet!', 3000);
+      router.push(homePathForStoredUser());
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Verification failed';
       setTwoFactorError(message);

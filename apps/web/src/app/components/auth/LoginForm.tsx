@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Language } from '@/i18n/config';
 import { translations } from '@/i18n/translations';
 import { useAuth, TwoFactorRequiredError } from '@/app/context/AuthContext';
+import { homePathForStoredUser } from '@/app/lib/roleHome';
 
 interface LoginFormProps {
   lang: Language;
@@ -30,7 +31,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
   // Auto-redirect on success — immediate, no delay
   useEffect(() => {
     if (step === 'success') {
-      router.push('/');
+      router.push(homePathForStoredUser());
     }
   }, [step, router]);
 
@@ -66,7 +67,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
       // Navigate immediately — don't wait on the success screen.
       // refreshProfile() fires in the background from AuthContext.signin().
       onSuccess?.('🎉 Welcome Back!', 'Redirecting to dashboard…', 3000);
-      router.push('/');
+      router.push(homePathForStoredUser());
     } catch (err) {
       if (err instanceof TwoFactorRequiredError) {
         // 2FA enabled on this account — collect the authenticator code.
@@ -95,7 +96,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
     try {
       await verify2FALogin(mfaToken, code);
       onSuccess?.('🎉 Welcome Back!', 'Redirecting to dashboard…', 3000);
-      router.push('/');
+      router.push(homePathForStoredUser());
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Verification failed');
       setLoading(false);

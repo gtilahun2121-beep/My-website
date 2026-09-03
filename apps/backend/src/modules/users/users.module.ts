@@ -9,6 +9,7 @@ import { AdminFinanceService } from './admin-finance.service';
 import { AdminFinanceRepository } from './admin-finance.repository';
 import { AdminOperationsService } from './admin-operations.service';
 import { AdminOperationsRepository } from './admin-operations.repository';
+import { RedisCache } from '../../common/cache/redis-cache';
 
 @Module({
     controllers: [UsersController, AdminController],
@@ -21,6 +22,7 @@ import { AdminOperationsRepository } from './admin-operations.repository';
         AdminFinanceRepository,
         AdminOperationsService,
         AdminOperationsRepository,
+        RedisCache,
     ],
     exports: [UsersService],
 })

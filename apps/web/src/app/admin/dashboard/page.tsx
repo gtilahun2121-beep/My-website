@@ -111,6 +111,18 @@ interface PendingApprovalRow {
   iconClass: string;
 }
 
+/**
+ * Short-lived client-side cache for the stats payload, keyed by the resolved
+ * range query. Toggling between 7d/30d/90d/custom re-renders instantly the
+ * second time instead of re-fetching the (server-cached) payload. The server
+ * also caches these aggregates ~30s, so both layers agree on freshness.
+ */
+const statsCache =
+  typeof window !== 'undefined'
+    ? new Map<string, { data: AdminStats; at: number }>()
+    : null;
+const STATS_CACHE_TTL = 30_000;
+
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -130,14 +142,28 @@ export default function AdminDashboardPage() {
     if (showSpinner) setLoading(true);
     setError(null);
     const t0 = performance.now();
+    const params =
+      range === 'custom' && startDate && endDate
+        ? { start: startDate, end: endDate }
+        : range === 'custom'
+          ? undefined
+          : { range };
+    const cacheKey = JSON.stringify(params ?? {}) || 'default';
+
+    // Serve a warm copy from the in-memory cache when it is still fresh so
+    // range toggles are instant; fall through to the API on a miss.
+    const cached = statsCache?.get(cacheKey);
+    if (cached && Date.now() - cached.at < STATS_CACHE_TTL) {
+      setStats(cached.data);
+      setApiLatency(0);
+      setLastUpdated(new Date(cached.at));
+      setLoading(false);
+      return;
+    }
+
     try {
-      const params =
-        range === 'custom' && startDate && endDate
-          ? { start: startDate, end: endDate }
-          : range === 'custom'
-            ? undefined
-            : { range };
       const res = await adminAPI.getStats(params);
+      statsCache?.set(cacheKey, { data: res, at: Date.now() });
       setApiLatency(Math.round(performance.now() - t0));
       setStats(res);
       setLastUpdated(new Date());

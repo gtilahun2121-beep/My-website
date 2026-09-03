@@ -355,7 +355,18 @@ export class EqubLifecycleOrchestratorService {
         `SELECT id, name, tier_type, status FROM equbs WHERE status != 'COMPLETED'`,
       );
 
-      const report = {
+      const report: {
+        total_active_equbs: number;
+        equbs_by_status: Record<string, number>;
+        equbs_by_tier: Record<string, number>;
+        critical_issues: {
+          equb_id: string;
+          equb_name: string;
+          health_score: number;
+          issues: string[];
+        }[];
+        phase_distribution: Record<string, number>;
+      } = {
         total_active_equbs: equbs.length,
         equbs_by_status: {},
         equbs_by_tier: {},
