@@ -159,6 +159,34 @@ export interface BidRecord {
     phone?: string;
 }
 
+/** Read-only, user-facing view of the active cycle + the caller's own lottery
+ *  eligibility. All values come from the database — the UI must never compute
+ *  them. See migration 014 for the won_* columns. */
+export interface UserCycleOverview {
+    equb_id: string;
+    current_round: number;
+    total_rounds: number;
+    status: EqubRoundInfo['status'];
+    created_at: Date;
+    updated_at: Date;
+    /** The caller's membership status (e.g. 'approved') or null if not a member. */
+    membership_status: string | null;
+    won_current_cycle: boolean;
+    won_round_number: number | null;
+    /** The caller's payment status for the current round, or null if none. */
+    payment_status: PaymentRecord['payment_status'] | null;
+}
+
+/** A public lottery win — only fields intentionally made public (no phone,
+ *  email, wallet balance, or internal ids). Defensive: the service only ever
+ *  reads first_name/last_name and derives a display name from them. */
+export interface PublicWinnerRecord {
+    round_number: number;
+    first_name: string;
+    last_name: string;
+    draw_timestamp: Date;
+}
+
 // ---------------------------------------------------------------------------
 // Repository
 // ---------------------------------------------------------------------------
@@ -1011,5 +1039,85 @@ export class PaymentsRepository {
           updated_at    = NOW()
       WHERE id = ${equbId}
     `;
+    }
+
+    // ── User-facing read-only lottery views (spec §4 user dashboard) ──────────
+    //
+    // These power the member lottery section. They return NO sensitive user
+    // fields (no phone/email/wallet/internal ids); the service derives a
+    // display name from first_name + last name initial.
+
+    /** Active cycle + the caller's own membership/payment/win state in one row. */
+    async getUserCycleOverview(
+        equbId: string,
+        userId: string,
+    ): Promise<UserCycleOverview | null> {
+        const sql = getPool();
+        const [row] = await sql<UserCycleOverview[]>`
+      SELECT eg.id        AS equb_id,
+             eg.current_round,
+             eg.total_rounds,
+             eg.status::text AS status,
+             eg.created_at,
+             eg.updated_at,
+             m.status     AS membership_status,
+             COALESCE(m.won_current_cycle, FALSE) AS won_current_cycle,
+             m.won_round_number,
+             p.payment_status::text AS payment_status
+      FROM equb_groups eg
+      LEFT JOIN memberships m
+             ON m.equb_id = ${equbId} AND m.user_id = ${userId}
+      LEFT JOIN payments p
+             ON p.equb_id = ${equbId} AND p.user_id = ${userId}
+            AND p.round_number = eg.current_round
+      WHERE eg.id = ${equbId}
+      LIMIT 1
+    `;
+        return row ?? null;
+    }
+
+    /** Most recent public win for an equb (newest round first). */
+    async getLatestPublicWinner(equbId: string): Promise<PublicWinnerRecord | null> {
+        const sql = getPool();
+        const [row] = await sql<PublicWinnerRecord[]>`
+      SELECT d.round_number, u.first_name, u.last_name, d.draw_timestamp
+      FROM lottery_draws d
+      JOIN users u ON u.id = d.winner_id
+      WHERE d.equb_id = ${equbId}
+        AND d.is_purged = FALSE
+      ORDER BY d.round_number DESC
+      LIMIT 1
+    `;
+        return row ?? null;
+    }
+
+    /** Paginated public lottery history for an equb (newest first). */
+    async getPublicLotteryHistory(
+        equbId: string,
+        limit: number,
+        offset: number,
+    ): Promise<PublicWinnerRecord[]> {
+        const sql = getPool();
+        return sql<PublicWinnerRecord[]>`
+      SELECT d.round_number, u.first_name, u.last_name, d.draw_timestamp
+      FROM lottery_draws d
+      JOIN users u ON u.id = d.winner_id
+      WHERE d.equb_id = ${equbId}
+        AND d.is_purged = FALSE
+      ORDER BY d.round_number DESC
+      LIMIT ${limit} OFFSET ${offset}
+    `;
+    }
+
+    /** Total number of public wins for an equb (for pagination). */
+    async countPublicLotteryWins(equbId: string): Promise<number> {
+        const sql = getPool();
+        const [row] = await sql<{ count: number }[]>`
+      SELECT COUNT(*)::int AS count
+      FROM lottery_draws
+      WHERE equb_id = ${equbId}
+        AND is_purged = FALSE
+    `;
+        return row?.count ?? 0;
     }
 }

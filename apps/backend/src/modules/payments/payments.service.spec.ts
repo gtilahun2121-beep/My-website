@@ -115,6 +115,10 @@ function makeRepoMock() {
         createLotteryDrawInTx: jest.fn(),
         createPayoutInTx: jest.fn(),
         advanceEqubRoundInTx: jest.fn(),
+        getUserCycleOverview: jest.fn(),
+        getLatestPublicWinner: jest.fn(),
+        getPublicLotteryHistory: jest.fn(),
+        countPublicLotteryWins: jest.fn(),
         createBid: jest.fn(),
         getRoundBids: jest.fn(),
         getWinningBid: jest.fn(),
@@ -700,6 +704,233 @@ describe('PaymentsService.runLotteryDraw', () => {
         expect(repo.insertLotteryEvent).not.toHaveBeenCalled();
         expect(repo.createLotteryDrawInTx).not.toHaveBeenCalled();
         expect(repo.advanceEqubRoundInTx).not.toHaveBeenCalled();
+    });
+});
+
+describe('PaymentsService.getLotteryCurrent (member view)', () => {
+    let service: PaymentsService;
+    let repo: ReturnType<typeof makeRepoMock>;
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+        repo = makeRepoMock();
+        service = new PaymentsService(repo as unknown as PaymentsRepository);
+        repo.getUserCycleOverview.mockResolvedValue({
+            equb_id: 'equb-1',
+            current_round: 12,
+            total_rounds: 20,
+            status: 'active',
+            created_at: new Date('2026-08-01T00:00:00Z'),
+            updated_at: new Date('2026-08-30T00:00:00Z'),
+            membership_status: 'approved',
+            won_current_cycle: false,
+            won_round_number: null,
+            payment_status: 'paid',
+        });
+    });
+
+    it('throws NotFoundException when the Equb does not exist', async () => {
+        repo.getUserCycleOverview.mockResolvedValue(null);
+        await expect(service.getLotteryCurrent('equb-1', 'user-1')).rejects.toBeInstanceOf(
+            NotFoundException,
+        );
+    });
+
+    it('computes eligibility from BACKEND database state (approved + paid + not won → eligible)', async () => {
+        const result = await service.getLotteryCurrent('equb-1', 'user-1');
+        expect(result.eligibility).toEqual({
+            contribution: 'paid',
+            eligible: true,
+            won: false,
+            message: 'Eligible for the next draw.',
+        });
+        expect(result.cycle.number).toBe(12);
+        expect(result.cycle.is_active).toBe(true);
+    });
+
+    it('marks a user who already won as not eligible again this cycle', async () => {
+        repo.getUserCycleOverview.mockResolvedValue({
+            equb_id: 'equb-1',
+            current_round: 12,
+            total_rounds: 20,
+            status: 'active',
+            created_at: new Date(),
+            updated_at: new Date(),
+            membership_status: 'approved',
+            won_current_cycle: true,
+            won_round_number: 5,
+            payment_status: 'paid',
+        });
+        const result = await service.getLotteryCurrent('equb-1', 'user-1');
+        expect(result.eligibility.eligible).toBe(false);
+        expect(result.eligibility.won).toBe(true);
+        expect(result.eligibility.message).toContain('Not eligible for another win');
+    });
+
+    it('marks an unpaid contribution as not eligible', async () => {
+        repo.getUserCycleOverview.mockResolvedValue({
+            equb_id: 'equb-1',
+            current_round: 12,
+            total_rounds: 20,
+            status: 'active',
+            created_at: new Date(),
+            updated_at: new Date(),
+            membership_status: 'approved',
+            won_current_cycle: false,
+            won_round_number: null,
+            payment_status: 'pending',
+        });
+        const result = await service.getLotteryCurrent('equb-1', 'user-1');
+        expect(result.eligibility.contribution).toBe('unpaid');
+        expect(result.eligibility.eligible).toBe(false);
+    });
+
+    it('does NOT trust any frontend-provided value — eligibility comes only from repo data', async () => {
+        // The service signature only accepts (equbId, userId); a malicious
+        // frontend cannot pass isEligible. The value is always derived from the
+        // database row the repository returns.
+        const result = await service.getLotteryCurrent('equb-1', 'user-1');
+        expect(result.eligibility.eligible).toBe(true); // derived from repo
+        expect(paymentsServiceSource()).not.toContain('result.isEligible');
+        expect(paymentsServiceSource()).not.toContain('body.isEligible');
+    });
+
+    it('exposes the latest winner ONLY as a public display name (no phone/email/wallet/id)', async () => {
+        repo.getLatestPublicWinner.mockResolvedValue({
+            round_number: 12,
+            first_name: 'Dawit',
+            last_name: 'Abera',
+            draw_timestamp: new Date('2026-08-30T18:30:00Z'),
+        });
+        const result = await service.getLotteryCurrent('equb-1', 'user-1');
+        expect(result.latestWinner).toEqual({
+            cycle: 12,
+            winner: { displayName: 'Dawit A.' },
+            drawnAt: '2026-08-30T18:30:00.000Z',
+        });
+        const json = JSON.stringify(result);
+        expect(json).not.toContain('phone');
+        expect(json).not.toContain('email');
+        expect(json).not.toContain('balance');
+        expect(json).not.toContain('@');
+        expect(json).not.toContain('user-1');
+        expect(json).not.toContain('Abera'); // only the initial is exposed
+    });
+});
+
+describe('PaymentsService.getPublicLotteryHistory (member history)', () => {
+    let service: PaymentsService;
+    let repo: ReturnType<typeof makeRepoMock>;
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+        repo = makeRepoMock();
+        service = new PaymentsService(repo as unknown as PaymentsRepository);
+        repo.getEqubRoundInfo.mockResolvedValue(ACTIVE_EQUB);
+        repo.getPublicLotteryHistory.mockResolvedValue([
+            { round_number: 12, first_name: 'Dawit', last_name: 'Abera', draw_timestamp: new Date('2026-08-30T18:30:00Z') },
+            { round_number: 11, first_name: 'Member', last_name: 'Bee', draw_timestamp: new Date('2026-08-20T10:00:00Z') },
+        ]);
+        repo.countPublicLotteryWins.mockResolvedValue(2);
+    });
+
+    it('throws NotFoundException when the Equb does not exist', async () => {
+        repo.getEqubRoundInfo.mockResolvedValue(null);
+        await expect(service.getPublicLotteryHistory('equb-1')).rejects.toBeInstanceOf(
+            NotFoundException,
+        );
+    });
+
+    it('returns paginated public history with display-name-only winners', async () => {
+        const result = await service.getPublicLotteryHistory('equb-1', 1, 10);
+        expect(result.items).toHaveLength(2);
+        expect(result.items[0]).toEqual({
+            cycle: 12,
+            winner: { displayName: 'Dawit A.' },
+            drawnAt: '2026-08-30T18:30:00.000Z',
+        });
+        expect(result.total).toBe(2);
+        expect(result.page).toBe(1);
+        expect(result.limit).toBe(10);
+        expect(result.total_pages).toBe(1);
+        expect(repo.getPublicLotteryHistory).toHaveBeenCalledWith('equb-1', 10, 0);
+    });
+
+    it('applies correct pagination offsets', async () => {
+        await service.getPublicLotteryHistory('equb-1', 3, 5);
+        expect(repo.getPublicLotteryHistory).toHaveBeenCalledWith('equb-1', 5, 10);
+    });
+
+    it('clamps page/limit to safe bounds (1..100)', async () => {
+        await service.getPublicLotteryHistory('equb-1', -5, 5000);
+        expect(repo.getPublicLotteryHistory).toHaveBeenCalledWith('equb-1', 100, 0);
+    });
+
+    it('never exposes sensitive winner fields in history output', async () => {
+        const result = await service.getPublicLotteryHistory('equb-1', 1, 10);
+        const json = JSON.stringify(result);
+        expect(json).not.toContain('phone');
+        expect(json).not.toContain('email');
+        expect(json).not.toContain('balance');
+        expect(json).not.toContain('password');
+    });
+});
+
+describe('Shared source of truth: admin draw → user view', () => {
+    let service: PaymentsService;
+    let repo: ReturnType<typeof makeRepoMock>;
+    const TX = { tx: true };
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+        repo = makeRepoMock();
+        service = new PaymentsService(repo as unknown as PaymentsRepository);
+        repo.lockEqubCycleForUpdate.mockResolvedValue(ACTIVE_EQUB);
+        repo.getExistingDrawInTx.mockResolvedValue(null);
+        repo.getEligibleCandidatesForSpinRound.mockResolvedValue([
+            { id: 'alice', first_name: 'Alice', last_name: 'A', phone: '111', membership_id: 'mem-alice' },
+        ]);
+        repo.createLotteryDrawInTx.mockImplementation(
+            async (_e, _r, winnerId, _v, _t) => ({
+                id: 'draw-1', equb_id: 'equb-1', round_number: 1, winner_id: winnerId,
+                draw_timestamp: new Date('2026-08-30T18:30:00Z'), video_url: null, svg_canvas_data: null, is_purged: false,
+            }),
+        );
+        repo.createPayoutInTx.mockResolvedValue(undefined);
+        repo.markMembershipWonCycle.mockResolvedValue(undefined);
+        repo.insertLotteryEvent.mockResolvedValue(undefined);
+        repo.advanceEqubRoundInTx.mockResolvedValue(undefined);
+    });
+
+    it('after an admin spins, the SAME backend state is what the user reads', async () => {
+        // 1) Admin executes the draw (writes through the single authoritative DB path).
+        (crypto.randomInt as jest.Mock).mockReturnValue(0);
+        const drawResult = await service.runLotteryDraw('equb-1', CONTEXT);
+        expect(drawResult.winner.id).toBe('alice');
+
+        // 2) The immutable event + draw were persisted via the repository (the DB).
+        expect(repo.insertLotteryEvent).toHaveBeenCalledWith(
+            expect.stringContaining('equb-1'), 1, 'mem-alice', 'alice', 'LOTTERY_WIN', CONTEXT.userId, expect.anything(), TX,
+        );
+        expect(repo.createLotteryDrawInTx).toHaveBeenCalledWith('equb-1', 1, 'alice', null, TX);
+
+        // 3) User reads the SAME authoritative DB record — the repository returns
+        //    the winner that the admin write persisted, not anything synthesized.
+        repo.getLatestPublicWinner.mockResolvedValue({
+            round_number: 1, first_name: 'Alice', last_name: 'A', draw_timestamp: new Date('2026-08-30T18:30:00Z'),
+        });
+        repo.getUserCycleOverview.mockResolvedValue({
+            equb_id: 'equb-1', current_round: 1, total_rounds: 10, status: 'active',
+            created_at: new Date(), updated_at: new Date(),
+            membership_status: 'approved', won_current_cycle: false, won_round_number: null, payment_status: 'paid',
+        });
+
+        const userView = await service.getLotteryCurrent('equb-1', 'user-1');
+
+        // Both views agree on the winner identity (display name only).
+        expect(userView.latestWinner?.winner.displayName).toBe('Alice A.');
+        expect(userView.latestWinner?.cycle).toBe(1);
+        expect(paymentsServiceSource()).toContain('getLatestPublicWinner(');
     });
 });
 

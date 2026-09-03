@@ -11,6 +11,7 @@
 import { Module } from '@nestjs/common';
 import { PaymentsController } from './payments.controller';
 import { LotteryController } from './lottery.controller';
+import { UserLotteryController } from './user-lottery.controller';
 import { AuctionController } from './auction.controller';
 import { PaymentsService } from './payments.service';
 import { PaymentsRepository } from './payments.repository';
@@ -21,7 +22,7 @@ import { TelebirrPaymentProvider } from './providers/telebirr.provider';
 import { SandboxPaymentProvider } from './providers/sandbox.provider';
 
 @Module({
-    controllers: [PaymentsController, LotteryController, AuctionController],
+    controllers: [PaymentsController, LotteryController, UserLotteryController, AuctionController],
     providers: [
         PaymentsService,
         PaymentsRepository,
