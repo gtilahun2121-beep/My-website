@@ -156,28 +156,28 @@ export default function DepositForm({
       <div className="bg-white rounded-lg shadow-lg p-6 md:p-8">
         {/* Header */}
         <div className="mb-6">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Make a Deposit</h2>
+          <h2 className="text-2xl md:text-3xl font-bold text-[#00d9ff]">Make a Deposit</h2>
           <p className="text-gray-600 mt-1">Add funds to your wallet</p>
         </div>
 
         {/* Success Message */}
         {success && (
-          <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3">
-            <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+          <div className="mb-4 p-4 bg-brand-50 border border-brand-200 rounded-lg flex items-start gap-3">
+            <CheckCircle className="w-5 h-5 text-brand-600 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-green-800 font-medium">Success</p>
-              <p className="text-green-700 text-sm">{message}</p>
+              <p className="text-brand-800 font-medium">Success</p>
+              <p className="text-brand-700 text-sm">{message}</p>
             </div>
           </div>
         )}
 
         {/* Error Message */}
         {message && !success && (
-          <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+          <div className="mb-4 p-4 bg-brand-50 border border-brand-200 rounded-lg flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-brand-600 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-amber-800 font-medium">Notice</p>
-              <p className="text-amber-700 text-sm">{message}</p>
+              <p className="text-brand-800 font-medium">Notice</p>
+              <p className="text-brand-700 text-sm">{message}</p>
             </div>
           </div>
         )}
@@ -186,8 +186,8 @@ export default function DepositForm({
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Phone Number */}
           <div>
-            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-              Phone Number <span className="text-red-500">*</span>
+            <label htmlFor="phone" className="block text-sm font-medium text-[#00d9ff] mb-1">
+              Phone Number <span className="text-brand-500">*</span>
             </label>
             <input
               type="tel"
@@ -197,21 +197,21 @@ export default function DepositForm({
               placeholder="+251904556677"
               className={`w-full px-4 py-2 border rounded-lg font-mono text-sm md:text-base transition-colors ${
                 errors.phone
-                  ? 'border-amber-500 bg-amber-50 focus:outline-none focus:ring-2 focus:ring-amber-500'
+                  ? 'border-brand-500 bg-brand-50 focus:outline-none focus:ring-2 focus:ring-amber-500'
                   : 'border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500'
               }`}
               disabled={submitLoading || isLoading}
             />
             {errors.phone && (
-              <p className="text-amber-600 text-xs md:text-sm mt-1">{errors.phone}</p>
+              <p className="text-brand-600 text-xs md:text-sm mt-1">{errors.phone}</p>
             )}
             <p className="text-gray-500 text-xs mt-1">Format: +251XXXXXXXXX</p>
           </div>
 
           {/* PIN */}
           <div>
-            <label htmlFor="pin" className="block text-sm font-medium text-gray-700 mb-1">
-              PIN <span className="text-red-500">*</span>
+            <label htmlFor="pin" className="block text-sm font-medium text-[#00d9ff] mb-1">
+              PIN <span className="text-brand-500">*</span>
             </label>
             <input
               type="password"
@@ -222,21 +222,21 @@ export default function DepositForm({
               maxLength={4}
               className={`w-full px-4 py-2 border rounded-lg text-center text-lg tracking-widest font-mono transition-colors ${
                 errors.pin
-                  ? 'border-amber-500 bg-amber-50 focus:outline-none focus:ring-2 focus:ring-amber-500'
+                  ? 'border-brand-500 bg-brand-50 focus:outline-none focus:ring-2 focus:ring-amber-500'
                   : 'border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500'
               }`}
               disabled={submitLoading || isLoading}
             />
             {errors.pin && (
-              <p className="text-amber-600 text-xs md:text-sm mt-1">{errors.pin}</p>
+              <p className="text-brand-600 text-xs md:text-sm mt-1">{errors.pin}</p>
             )}
             <p className="text-gray-500 text-xs mt-1">4-digit PIN</p>
           </div>
 
           {/* Amount */}
           <div>
-            <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1">
-              Amount (ETB) <span className="text-red-500">*</span>
+            <label htmlFor="amount" className="block text-sm font-medium text-[#00d9ff] mb-1">
+              Amount (ETB) <span className="text-brand-500">*</span>
             </label>
             <div className="relative">
               <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-600 font-medium">
@@ -250,26 +250,26 @@ export default function DepositForm({
                 placeholder="0"
                 className={`w-full pl-12 pr-4 py-2 border rounded-lg text-right text-sm md:text-base transition-colors ${
                   errors.amount
-                    ? 'border-amber-500 bg-amber-50 focus:outline-none focus:ring-2 focus:ring-amber-500'
+                    ? 'border-brand-500 bg-brand-50 focus:outline-none focus:ring-2 focus:ring-amber-500'
                     : 'border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500'
                 }`}
                 disabled={submitLoading || isLoading}
               />
             </div>
             {errors.amount && (
-              <p className="text-amber-600 text-xs md:text-sm mt-1">{errors.amount}</p>
+              <p className="text-brand-600 text-xs md:text-sm mt-1">{errors.amount}</p>
             )}
             {formData.amount && !errors.amount && (
               <p className="text-gray-500 text-xs mt-1">
-                You will deposit: <span className="font-semibold text-gray-700">{parseInt(formData.amount).toLocaleString()} ETB</span>
+                You will deposit: <span className="font-semibold text-[#00d9ff]">{parseInt(formData.amount).toLocaleString()} ETB</span>
               </p>
             )}
           </div>
 
           {/* Payment Method */}
           <div>
-            <label htmlFor="paymentMethod" className="block text-sm font-medium text-gray-700 mb-1">
-              Payment Method <span className="text-red-500">*</span>
+            <label htmlFor="paymentMethod" className="block text-sm font-medium text-[#00d9ff] mb-1">
+              Payment Method <span className="text-brand-500">*</span>
             </label>
             <select
               id="paymentMethod"
@@ -282,7 +282,7 @@ export default function DepositForm({
               }}
               className={`w-full px-4 py-2 border rounded-lg text-sm md:text-base transition-colors ${
                 errors.paymentMethod
-                  ? 'border-amber-500 bg-amber-50 focus:outline-none focus:ring-2 focus:ring-amber-500'
+                  ? 'border-brand-500 bg-brand-50 focus:outline-none focus:ring-2 focus:ring-amber-500'
                   : 'border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500'
               }`}
               disabled={submitLoading || isLoading}
@@ -295,7 +295,7 @@ export default function DepositForm({
               ))}
             </select>
             {errors.paymentMethod && (
-              <p className="text-amber-600 text-xs md:text-sm mt-1">{errors.paymentMethod}</p>
+              <p className="text-brand-600 text-xs md:text-sm mt-1">{errors.paymentMethod}</p>
             )}
           </div>
 
@@ -305,14 +305,14 @@ export default function DepositForm({
               type="button"
               onClick={onCancel}
               disabled={submitLoading || isLoading}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg font-medium text-[#00d9ff] hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitLoading || isLoading}
-              className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm md:text-base"
+              className="flex-1 px-4 py-2 bg-brand-900 hover:bg-brand-950 text-[#00d9ff] font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm md:text-base"
             >
               {submitLoading || isLoading ? (
                 <>
@@ -328,7 +328,7 @@ export default function DepositForm({
           {/* Terms */}
           <p className="text-gray-600 text-xs md:text-sm text-center">
             By depositing, you agree to our{' '}
-            <a href="/terms" className="text-blue-600 hover:underline">
+            <a href="/terms" className="text-brand-600 hover:underline">
               Terms of Service
             </a>
           </p>
@@ -336,9 +336,9 @@ export default function DepositForm({
       </div>
 
       {/* Info Box */}
-      <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4 md:p-6">
-        <h3 className="text-sm md:text-base font-semibold text-blue-900 mb-2">Transaction Information</h3>
-        <ul className="text-xs md:text-sm text-blue-800 space-y-2">
+      <div className="mt-6 bg-brand-50 border border-brand-200 rounded-lg p-4 md:p-6">
+        <h3 className="text-sm md:text-base font-semibold text-brand-900 mb-2">Transaction Information</h3>
+        <ul className="text-xs md:text-sm text-brand-800 space-y-2">
           <li className="flex gap-2">
             <span className="flex-shrink-0">•</span>
             <span>Deposits are processed within 30 seconds</span>

@@ -104,7 +104,7 @@ function ResetPinModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-gray-950/70 p-4"
       role="dialog"
       aria-modal="true"
     >
@@ -166,7 +166,7 @@ function ResetPinModal({
             type="button"
             onClick={() => void submit()}
             disabled={busy || done}
-            className="px-4 py-2 rounded-lg bg-gradient-to-r from-brand-600 to-brand-500 text-sm font-bold text-white hover:from-brand-500 hover:to-brand-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2 rounded-lg bg-gradient-to-r from-brand-600 to-brand-500 text-sm font-bold text-[#00d9ff] hover:from-brand-500 hover:to-brand-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {busy ? 'Resetting…' : 'Reset PIN'}
           </button>
@@ -222,7 +222,7 @@ function RoleModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-gray-950/70 p-4"
       role="dialog"
       aria-modal="true"
     >
@@ -275,7 +275,7 @@ function RoleModal({
             type="button"
             onClick={() => void submit()}
             disabled={busy || role === customer.role}
-            className="px-4 py-2 rounded-lg bg-gradient-to-r from-brand-600 to-brand-500 text-sm font-bold text-white hover:from-brand-500 hover:to-brand-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2 rounded-lg bg-gradient-to-r from-brand-600 to-brand-500 text-sm font-bold text-[#00d9ff] hover:from-brand-500 hover:to-brand-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {busy ? 'Saving…' : role === 'admin' ? 'Make admin' : 'Update role'}
           </button>
@@ -426,7 +426,7 @@ export default function AdminMemberAccessPage() {
                           type="button"
                           onClick={() => act(m.id, () => adminAPI.approveMembership(m.id), 'Join request approved.')}
                           disabled={busyId !== null}
-                          className="px-4 py-2 rounded-lg bg-success-600 text-white text-sm font-bold hover:bg-success-500 disabled:opacity-50 transition-colors"
+                          className="px-4 py-2 rounded-lg bg-success-600 text-[#00d9ff] text-sm font-bold hover:bg-success-500 disabled:opacity-50 transition-colors"
                         >
                           {busyId === m.id ? 'Working…' : '✅ Approve'}
                         </button>

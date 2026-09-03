@@ -52,9 +52,9 @@ export default function RecentActivity({ transactions, loading }: RecentActivity
   const items = transactions.slice(0, 6);
 
   return (
-    <section className="bg-card rounded-card border border-slate-200">
+    <section className="bg-card rounded-card border border-gray-200">
       <div className="px-5 pt-5 pb-3">
-        <h2 className="text-lg font-black text-slate-900">Recent Activity</h2>
+        <h2 className="text-lg font-black text-[#00d9ff]">Recent Activity</h2>
       </div>
 
       <div className="px-5 pb-5">
@@ -62,17 +62,17 @@ export default function RecentActivity({ transactions, loading }: RecentActivity
           <div className="space-y-3" aria-busy="true">
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-slate-100 animate-pulse" />
+                <div className="w-9 h-9 rounded-full bg-gray-100 animate-pulse" />
                 <div className="flex-1 space-y-1.5">
-                  <div className="h-3 w-2/3 rounded bg-slate-100 animate-pulse" />
-                  <div className="h-3 w-1/3 rounded bg-slate-100 animate-pulse" />
+                  <div className="h-3 w-2/3 rounded bg-gray-100 animate-pulse" />
+                  <div className="h-3 w-1/3 rounded bg-gray-100 animate-pulse" />
                 </div>
-                <div className="h-3 w-14 rounded bg-slate-100 animate-pulse" />
+                <div className="h-3 w-14 rounded bg-gray-100 animate-pulse" />
               </div>
             ))}
           </div>
         ) : items.length === 0 ? (
-          <p className="text-sm text-slate-500">No activity yet. Your wallet transactions will appear here.</p>
+          <p className="text-sm text-gray-500">No activity yet. Your wallet transactions will appear here.</p>
         ) : (
           <div className="divide-y divide-slate-100">
             {items.map((txn) => {
@@ -85,11 +85,11 @@ export default function RecentActivity({ transactions, loading }: RecentActivity
                     {meta.icon}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-bold text-slate-900 truncate">
+                    <p className="text-sm font-bold text-[#00d9ff] truncate">
                       {meta.label}
                       {txn.equb_name ? ` · ${txn.equb_name}` : ''}
                     </p>
-                    <p className="text-xs text-slate-400">{time}</p>
+                    <p className="text-xs text-gray-400">{time}</p>
                   </div>
                   <p className={`text-sm font-black whitespace-nowrap ${meta.tone.amount}`}>
                     {outgoing ? '−' : '+'}

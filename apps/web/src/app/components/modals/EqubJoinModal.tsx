@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import { EqubTierType } from '../EqubTierCard';
 
 interface EqubJoinModalProps {
@@ -15,6 +16,7 @@ export default function EqubJoinModal({
   onClose,
   tierType,
 }: EqubJoinModalProps) {
+  const router = useRouter();
   const [step, setStep] = useState<'confirm' | 'joining' | 'success'>('confirm');
   const [error, setError] = useState('');
 
@@ -44,47 +46,18 @@ export default function EqubJoinModal({
 
   const info = tierInfo[tierType];
   const colorMap = {
-    blue: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-600', button: 'bg-blue-600 hover:bg-blue-700' },
-    amber: { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-600', button: 'bg-amber-600 hover:bg-amber-700' },
-    green: { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-600', button: 'bg-green-600 hover:bg-green-700' },
+    blue: { bg: 'bg-brand-50', border: 'border-brand-200', text: 'text-brand-600', button: 'bg-brand-900 hover:bg-brand-950' },
+    amber: { bg: 'bg-brand-50', border: 'border-brand-200', text: 'text-brand-600', button: 'bg-brand-900 hover:bg-brand-950' },
+    green: { bg: 'bg-brand-50', border: 'border-brand-200', text: 'text-brand-600', button: 'bg-brand-900 hover:bg-brand-950' },
   };
 
   const colors = colorMap[info.color as keyof typeof colorMap];
 
   const handleJoin = async () => {
-    setStep('joining');
-    setError('');
-
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
-
-      // Call API to join equb
-      const response = await fetch('/api/equbs/join', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          tier_type: tierType,
-        }),
-      });
-
-      const responseData = await response.json();
-
-      if (!response.ok) {
-        throw new Error(responseData.error || `Request failed with status ${response.status}`);
-      }
-
-      setStep('success');
-    } catch (err: any) {
-      console.error('Join error:', err);
-      setError(err.message || 'An error occurred');
-      setStep('confirm');
-    }
+    // Joining happens against a specific Equb (see /join-equb and
+    // api.equbAPI.join(equbId)), so route the user there to pick one.
+    router.push('/join-equb');
+    onClose();
   };
 
   const handleClose = () => {
@@ -112,7 +85,7 @@ export default function EqubJoinModal({
           >
             {/* Header */}
             <div className={`${colors.bg} border-b ${colors.border} px-3 py-2 flex items-center justify-between`}>
-              <h3 className="text-sm font-bold text-gray-900">{info.title}</h3>
+              <h3 className="text-sm font-bold text-[#00d9ff]">{info.title}</h3>
               <button
                 onClick={handleClose}
                 className="text-gray-400 hover:text-gray-600 text-lg"
@@ -136,38 +109,38 @@ export default function EqubJoinModal({
                     <div className="space-y-1.5 mb-3">
                       <div className={`p-2 ${colors.bg} border ${colors.border} rounded`}>
                         <p className="text-xs text-gray-600 font-semibold">Contribution</p>
-                        <p className="text-sm font-bold text-gray-900">{info.contribution}</p>
+                        <p className="text-sm font-bold text-[#00d9ff]">{info.contribution}</p>
                       </div>
 
                       <div className={`p-2 ${colors.bg} border ${colors.border} rounded`}>
                         <p className="text-xs text-gray-600 font-semibold">Duration</p>
-                        <p className="text-sm font-bold text-gray-900">{info.duration}</p>
+                        <p className="text-sm font-bold text-[#00d9ff]">{info.duration}</p>
                       </div>
 
                       <div className={`p-2 ${colors.bg} border ${colors.border} rounded`}>
                         <p className="text-xs text-gray-600 font-semibold">Payout</p>
-                        <p className="text-sm font-bold text-gray-900">{info.potSize}</p>
+                        <p className="text-sm font-bold text-[#00d9ff]">{info.potSize}</p>
                       </div>
                     </div>
 
                     {/* Terms */}
                     <div className="bg-gray-50 p-2 rounded border border-gray-200 mb-3">
-                      <p className="text-xs font-semibold text-gray-900 mb-1">Agree to:</p>
-                      <ul className="space-y-0.5 text-xs text-gray-700">
+                      <p className="text-xs font-semibold text-[#00d9ff] mb-1">Agree to:</p>
+                      <ul className="space-y-0.5 text-xs text-[#00d9ff]">
                         <li className="flex items-start gap-1">
-                          <span className="text-green-600">✓</span>
+                          <span className="text-brand-600">✓</span>
                           <span>Contributions on time</span>
                         </li>
                         <li className="flex items-start gap-1">
-                          <span className="text-green-600">✓</span>
+                          <span className="text-brand-600">✓</span>
                           <span>Accept winners</span>
                         </li>
                         <li className="flex items-start gap-1">
-                          <span className="text-green-600">✓</span>
+                          <span className="text-brand-600">✓</span>
                           <span>Continue after winning</span>
                         </li>
                         <li className="flex items-start gap-1">
-                          <span className="text-green-600">✓</span>
+                          <span className="text-brand-600">✓</span>
                           <span>Follow rules</span>
                         </li>
                       </ul>
@@ -175,8 +148,8 @@ export default function EqubJoinModal({
 
                     {/* Error */}
                     {error && (
-                      <div className="p-2 bg-red-50 border border-red-200 rounded mb-2">
-                        <p className="text-xs text-red-700 font-semibold">{error}</p>
+                      <div className="p-2 bg-brand-50 border border-brand-200 rounded mb-2">
+                        <p className="text-xs text-brand-700 font-semibold">{error}</p>
                       </div>
                     )}
 
@@ -184,13 +157,13 @@ export default function EqubJoinModal({
                     <div className="flex gap-2">
                       <button
                         onClick={handleClose}
-                        className="flex-1 px-2 py-1.5 border border-gray-300 rounded font-bold text-xs text-gray-700 hover:bg-gray-50"
+                        className="flex-1 px-2 py-1.5 border border-gray-300 rounded font-bold text-xs text-[#00d9ff] hover:bg-gray-50"
                       >
                         Cancel
                       </button>
                       <button
                         onClick={handleJoin}
-                        className={`flex-1 px-2 py-1.5 ${colors.button} text-white font-bold text-xs rounded`}
+                        className={`flex-1 px-2 py-1.5 ${colors.button} text-[#00d9ff] font-bold text-xs rounded`}
                       >
                         Join Now
                       </button>
@@ -213,7 +186,7 @@ export default function EqubJoinModal({
                     >
                       ⏳
                     </motion.div>
-                    <p className="text-xs font-bold text-gray-900">Processing...</p>
+                    <p className="text-xs font-bold text-[#00d9ff]">Processing...</p>
                   </motion.div>
                 )}
 
@@ -231,20 +204,25 @@ export default function EqubJoinModal({
                       transition={{ type: 'spring', delay: 0.2 }}
                       className="text-3xl mb-2"
                     >
-                      ✅
+                      ✓
                     </motion.div>
 
-                    <h4 className="text-sm font-bold text-gray-900 text-center mb-1">
+                    <h4 className="text-sm font-bold text-[#00d9ff] text-center mb-1">
                       Success!
                     </h4>
 
                     <div className={`w-full p-2 ${colors.bg} border ${colors.border} rounded mb-2`}>
-                      <p className="text-xs font-bold text-gray-900">Next: Make first contribution</p>
+                      <p className="text-xs font-bold text-[#00d9ff]">Next: Make first contribution</p>
                     </div>
 
                     <button
-                      onClick={handleClose}
-                      className={`w-full px-2 py-1.5 ${colors.button} text-white font-bold text-xs rounded`}
+                      onClick={() => {
+                        handleClose();
+                        setTimeout(() => {
+                          router.push('/dashboard');
+                        }, 300);
+                      }}
+                      className={`w-full px-2 py-1.5 ${colors.button} text-[#00d9ff] font-bold text-xs rounded`}
                     >
                       Go to Dashboard
                     </button>

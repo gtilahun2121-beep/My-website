@@ -6,8 +6,11 @@
 
 import * as path from 'path';
 import { Module } from '@nestjs/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
+
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 
 import { AuthModule } from './modules/auth/auth.module';
 import { PaymentsModule } from './modules/payments/payments.module';
@@ -47,6 +50,12 @@ import { WeeklyCycleModule } from './modules/weekly-cycle/weekly-cycle.module';
         ReconciliationModule,
         DailyCycleModule,
         WeeklyCycleModule,
+    ],
+    providers: [
+        {
+            provide: APP_INTERCEPTOR,
+            useClass: LoggingInterceptor,
+        },
     ],
 })
 export class AppModule { }

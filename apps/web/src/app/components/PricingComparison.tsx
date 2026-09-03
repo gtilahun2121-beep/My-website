@@ -42,15 +42,15 @@ export default function PricingComparison({
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-4xl md:text-5xl font-black text-[#314fa0] mb-4">
-            ⚖️ {title}
+          <h2 className="text-4xl md:text-5xl font-black text-[#00d9ff] mb-4">
+            {title}
           </h2>
-          <p className="text-xl text-[#5a5a5a]">{subtitle}</p>
+          <p className="text-xl text-[#ffffff]">{subtitle}</p>
         </motion.div>
 
         {/* Comparison Table */}
         <motion.div
-          className="overflow-hidden rounded-3xl border-2 border-[#d4af37]"
+          className="overflow-hidden rounded-3xl border-2 border-[#001f3f]"
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8 }}
@@ -60,13 +60,13 @@ export default function PricingComparison({
             {/* Desktop Table */}
             <div className="grid grid-cols-3 gap-0">
               {/* Header */}
-              <div className="bg-gradient-to-r from-[#314fa0] to-[#0a5f3d] text-white p-6 font-black text-center border-r-2 border-[#d4af37]">
+              <div className="bg-gradient-to-r from-[#001f3f] to-[#003a66] text-[#00d9ff] p-6 font-black text-center border-r-2 border-[#001f3f]">
                 Feature
               </div>
-              <div className="bg-gray-100 p-6 font-black text-center text-[#5a5a5a] border-r-2 border-[#d4af37]">
+              <div className="bg-gray-100 p-6 font-black text-center text-[#ffffff] border-r-2 border-[#001f3f]">
                 Traditional Equb 📋
               </div>
-              <div className="bg-gradient-to-r from-[#d4af37] to-[#c99d2e] p-6 font-black text-center text-[#314fa0]">
+              <div className="bg-gradient-to-r from-[#001f3f] to-brand-500 p-6 font-black text-center text-[#00d9ff]">
                 QalNet ⭐
               </div>
 
@@ -81,17 +81,17 @@ export default function PricingComparison({
                   whileInView="visible"
                   viewport={{ once: true }}
                 >
-                  <div className={`p-6 font-bold text-center border-r-2 border-[#d4af37] ${
+                  <div className={`p-6 font-bold text-center border-r-2 border-[#001f3f] ${
                     idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                   }`}>
                     {item.feature}
                   </div>
-                  <div className={`p-6 text-center text-gray-600 border-r-2 border-[#d4af37] ${
+                  <div className={`p-6 text-center text-gray-600 border-r-2 border-[#001f3f] ${
                     idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                   }`}>
                     {item.traditional}
                   </div>
-                  <div className={`p-6 text-center font-bold text-[#314fa0] ${
+                  <div className={`p-6 text-center font-bold text-[#00d9ff] ${
                     idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                   }`}>
                     {item.qalnet}
@@ -113,15 +113,15 @@ export default function PricingComparison({
                 whileInView="visible"
                 viewport={{ once: true }}
               >
-                <h4 className="font-black text-lg text-[#314fa0] mb-4">{item.feature}</h4>
+                <h4 className="font-black text-lg text-[#00d9ff] mb-4">{item.feature}</h4>
                 <div className="space-y-3">
                   <div>
-                    <p className="text-xs font-bold text-[#5a5a5a] mb-1">Traditional Equb 📋</p>
-                    <p className="text-gray-700">{item.traditional}</p>
+                    <p className="text-xs font-bold text-[#ffffff] mb-1">Traditional Equb 📋</p>
+                    <p className="text-[#00d9ff]">{item.traditional}</p>
                   </div>
-                  <div className="pt-3 border-t border-[#d4af37]">
-                    <p className="text-xs font-bold text-[#d4af37] mb-1">QalNet ⭐</p>
-                    <p className="font-bold text-[#314fa0]">{item.qalnet}</p>
+                  <div className="pt-3 border-t border-[#001f3f]">
+                    <p className="text-xs font-bold text-[#00d9ff] mb-1">QalNet ⭐</p>
+                    <p className="font-bold text-[#00d9ff]">{item.qalnet}</p>
                   </div>
                 </div>
               </motion.div>
@@ -137,18 +137,19 @@ export default function PricingComparison({
           transition={{ duration: 0.8, delay: 0.3 }}
           viewport={{ once: true }}
         >
-          <p className="text-lg text-[#5a5a5a] mb-6 font-semibold">
+          <p className="text-lg text-[#ffffff] mb-6 font-semibold">
             Ready to experience the future of Equb? Join thousands of satisfied members today!
           </p>
           <motion.button
-            className="px-10 py-4 bg-gradient-to-r from-[#314fa0] to-[#ce1126] text-white font-black rounded-full hover:shadow-2xl transition-all duration-300 text-lg drop-shadow-lg"
+            className="px-10 py-4 bg-gradient-to-r from-[#001f3f] to-[#001f3f] text-[#00d9ff] font-black rounded-full hover:shadow-2xl transition-all duration-300 text-lg drop-shadow-lg"
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.95 }}
           >
-            Get Started Free 🚀
+            Get Started Free
           </motion.button>
         </motion.div>
       </div>
     </section>
   );
 }
+

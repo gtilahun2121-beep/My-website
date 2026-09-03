@@ -94,10 +94,10 @@ export default function ChoiceFlow({
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="bg-gradient-to-r from-[#314fa0] to-[#2a4183] px-8 py-6 flex justify-between items-center">
+              <div className="bg-gradient-to-r from-[#001f3f] to-[#001f3f] px-8 py-6 flex justify-between items-center">
                 <div>
-                  <h2 className="text-2xl font-black text-white">QalNet</h2>
-                  <p className="text-sm text-white/80 font-semibold mt-1">
+                  <h2 className="text-2xl font-black text-[#00d9ff]">QalNet</h2>
+                  <p className="text-sm text-[#00d9ff]/80 font-semibold mt-1">
                     {lang === 'en'
                       ? "Ethiopia's Digital Equb"
                       : 'የኢትዮጵያ ዲጂታል Equb'}
@@ -106,7 +106,7 @@ export default function ChoiceFlow({
                 <div className="flex gap-2">
                   <button
                     onClick={handleBackToChoice}
-                    className="text-xl text-white hover:opacity-70 transition-all px-3 py-2 rounded-lg hover:bg-white/20"
+                    className="text-xl text-[#00d9ff] hover:opacity-70 transition-all px-3 py-2 rounded-lg hover:bg-white/20"
                     title={lang === 'en' ? 'Back' : 'ተመለስ'}
                   >
                     ←
@@ -120,7 +120,7 @@ export default function ChoiceFlow({
                       );
                       if (shouldClose) onClose();
                     }}
-                    className="text-2xl text-white hover:opacity-70 transition-all"
+                    className="text-2xl text-[#00d9ff] hover:opacity-70 transition-all"
                   >
                     ✕
                   </button>
@@ -157,10 +157,10 @@ export default function ChoiceFlow({
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="bg-gradient-to-r from-[#314fa0] to-[#2a4183] px-8 py-6 flex justify-between items-center">
+              <div className="bg-gradient-to-r from-[#001f3f] to-[#001f3f] px-8 py-6 flex justify-between items-center">
                 <div>
-                  <h2 className="text-2xl font-black text-white">QalNet</h2>
-                  <p className="text-sm text-white/80 font-semibold mt-1">
+                  <h2 className="text-2xl font-black text-[#00d9ff]">QalNet</h2>
+                  <p className="text-sm text-[#00d9ff]/80 font-semibold mt-1">
                     {lang === 'en'
                       ? "Ethiopia's Digital Equb"
                       : 'የኢትዮጵያ ዲጂታል Equb'}
@@ -169,7 +169,7 @@ export default function ChoiceFlow({
                 <div className="flex gap-2">
                   <button
                     onClick={handleBackToChoice}
-                    className="text-xl text-white hover:opacity-70 transition-all px-3 py-2 rounded-lg hover:bg-white/20"
+                    className="text-xl text-[#00d9ff] hover:opacity-70 transition-all px-3 py-2 rounded-lg hover:bg-white/20"
                     title={lang === 'en' ? 'Back' : 'ተመለስ'}
                   >
                     ←
@@ -183,7 +183,7 @@ export default function ChoiceFlow({
                       );
                       if (shouldClose) onClose();
                     }}
-                    className="text-2xl text-white hover:opacity-70 transition-all"
+                    className="text-2xl text-[#00d9ff] hover:opacity-70 transition-all"
                   >
                     ✕
                   </button>
@@ -205,3 +205,4 @@ export default function ChoiceFlow({
     </>
   );
 }
+

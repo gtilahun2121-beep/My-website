@@ -54,7 +54,7 @@ function smoothPath(points: { x: number; y: number }[]): string {
 export function AreaChart({
   data,
   height = 240,
-  color = '#314fa0',
+  color = '#001f3f',
   valueFormatter,
 }: AreaChartProps) {
   const H = height;
@@ -311,4 +311,5 @@ export function TrendingChip({ direction, children }: { direction: 'up' | 'down'
     </span>
   );
 }
+
 

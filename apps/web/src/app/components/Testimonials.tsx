@@ -46,10 +46,10 @@ export default function Testimonials({ testimonials }: TestimonialsProps) {
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-4xl md:text-5xl font-black text-[#314fa0] mb-4">
+          <h2 className="text-4xl md:text-5xl font-black text-[#00d9ff] mb-4">
             💬 What Our Members Say
           </h2>
-          <p className="text-xl text-[#5a5a5a]">
+          <p className="text-xl text-[#ffffff]">
             Real stories from Ethiopian savers transforming their lives
           </p>
         </motion.div>
@@ -77,18 +77,18 @@ export default function Testimonials({ testimonials }: TestimonialsProps) {
               </div>
 
               {/* Quote */}
-              <p className="text-gray-700 mb-6 italic font-semibold">
+              <p className="text-[#00d9ff] mb-6 italic font-semibold">
                 &ldquo;{testimonial.quote}&rdquo;
               </p>
 
               {/* Author */}
-              <div className="flex items-center gap-4 pt-6 border-t border-[#d4af37]/30">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#314fa0] to-[#d4af37] flex items-center justify-center text-white text-xl font-black">
+              <div className="flex items-center gap-4 pt-6 border-t border-[#001f3f]/30">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#001f3f] to-[#001f3f] flex items-center justify-center text-[#00d9ff] text-xl font-black">
                   {testimonial.image}
                 </div>
                 <div>
-                  <p className="font-black text-[#314fa0]">{testimonial.name}</p>
-                  <p className="text-sm text-[#5a5a5a]">{testimonial.role}</p>
+                  <p className="font-black text-[#00d9ff]">{testimonial.name}</p>
+                  <p className="text-sm text-[#ffffff]">{testimonial.role}</p>
                 </div>
               </div>
             </motion.div>
@@ -98,3 +98,4 @@ export default function Testimonials({ testimonials }: TestimonialsProps) {
     </section>
   );
 }
+

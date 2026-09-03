@@ -158,7 +158,7 @@ export default function ForgotPinTab({ lang = defaultLanguage, onSuccess, onErro
 
   return (
     <div>
-      <h3 className="text-lg font-bold text-gray-800 mb-4">Reset Your PIN</h3>
+      <h3 className="text-lg font-bold text-[#00d9ff] mb-4">Reset Your PIN</h3>
 
       {/* Step 1: Phone */}
       {step === 'phone' && (
@@ -202,8 +202,8 @@ export default function ForgotPinTab({ lang = defaultLanguage, onSuccess, onErro
           <p className="text-sm text-gray-600 mb-4">
             Enter the 6-digit OTP sent to {phone}
           </p>
-          <div className="bg-amber-50 border border-amber-300 rounded-lg p-3 mb-2">
-            <p className="text-xs text-amber-900 font-semibold">
+          <div className="bg-brand-50 border border-brand-300 rounded-lg p-3 mb-2">
+            <p className="text-xs text-brand-900 font-semibold">
               🟡 Testing only: enter code 818959 for any phone number (valid until SMS delivery is approved).
             </p>
           </div>
@@ -231,7 +231,7 @@ export default function ForgotPinTab({ lang = defaultLanguage, onSuccess, onErro
           <button
             type="button"
             onClick={() => setStep('phone')}
-            className="text-sm text-[#314fa0] hover:underline w-full text-center"
+            className="text-sm text-[#00d9ff] hover:underline w-full text-center"
           >
             ← Back to phone
           </button>
@@ -287,7 +287,7 @@ export default function ForgotPinTab({ lang = defaultLanguage, onSuccess, onErro
           <button
             type="button"
             onClick={() => setStep('otp')}
-            className="text-sm text-[#314fa0] hover:underline w-full text-center"
+            className="text-sm text-[#00d9ff] hover:underline w-full text-center"
           >
             ← Back to OTP
           </button>
@@ -296,3 +296,4 @@ export default function ForgotPinTab({ lang = defaultLanguage, onSuccess, onErro
     </div>
   );
 }
+

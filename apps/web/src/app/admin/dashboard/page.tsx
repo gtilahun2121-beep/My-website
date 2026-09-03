@@ -181,7 +181,7 @@ export default function AdminDashboardPage() {
           category: 'Member',
           date: m.joined_at,
           icon: 'M16 11a3 3 0 1 0-6 0m6 0a3 3 0 1 1-6 0m6 0h.01M10 11h-.01M12 14c-3.87 0-7 1.57-7 3.5V21h14v-3.5C19 15.57 15.87 14 12 14Z',
-          iconClass: 'bg-blue-100 text-blue-500',
+          iconClass: 'bg-brand-100 text-brand-500',
         })),
       ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       setApprovals(rows);
@@ -353,7 +353,7 @@ export default function AdminDashboardPage() {
               onClick={() => setExportOpen((v) => !v)}
               aria-haspopup="menu"
               aria-expanded={exportOpen}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-brand-600 text-white text-sm font-bold hover:bg-brand-700 transition-colors shadow-sm"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-brand-600 text-[#00d9ff] text-sm font-bold hover:bg-brand-700 transition-colors shadow-sm"
             >
               <svg viewBox="0 0 24 24" className="w-4 h-4" {...stroke}>
                 <path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
@@ -490,7 +490,7 @@ export default function AdminDashboardPage() {
                     onClick={() => setRange(r.key)}
                     className={`px-3 py-1 rounded-md text-xs font-bold transition-colors ${
                       range === r.key
-                        ? 'bg-brand-600 text-white shadow'
+                        ? 'bg-brand-600 text-[#00d9ff] shadow'
                         : 'text-admin-muted hover:text-admin-text'
                     }`}
                   >
@@ -868,7 +868,7 @@ function TopEqubsCard({ loading, equbs }: { loading: boolean; equbs: AdminTopEqu
                 href={`/equbs/${e.id}`}
                 className="flex items-center gap-3 p-3 rounded-xl border border-admin-border hover:border-brand-500/40 hover:bg-admin-elevated transition-colors"
               >
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-600 to-brand-800 text-white flex items-center justify-center font-black shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-600 to-brand-800 text-[#00d9ff] flex items-center justify-center font-black shrink-0">
                   {e.name?.[0]?.toUpperCase() ?? 'E'}
                 </div>
                 <div className="min-w-0 flex-1">

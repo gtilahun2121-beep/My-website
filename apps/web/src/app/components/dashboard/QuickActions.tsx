@@ -75,10 +75,10 @@ export default function QuickActions() {
       );
 
   return (
-    <section className="bg-card rounded-card border border-slate-200">
+    <section className="bg-card rounded-card border border-gray-200">
       <div className="px-5 pt-5 pb-3">
-        <h2 className="text-lg font-black text-slate-900">Quick Actions</h2>
-        <p className="mt-0.5 text-xs text-slate-500">What would you like to do next?</p>
+        <h2 className="text-lg font-black text-[#00d9ff]">Quick Actions</h2>
+        <p className="mt-0.5 text-xs text-gray-500">What would you like to do next?</p>
       </div>
 
       <div className="px-5 pb-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -86,14 +86,14 @@ export default function QuickActions() {
           <Link
             key={action.label}
             href={action.href}
-            className="flex items-start gap-3 rounded-xl border border-slate-200 p-4 hover:border-brand-300 hover:shadow-sm transition-all"
+            className="flex items-start gap-3 rounded-xl border border-gray-200 p-4 hover:border-brand-300 hover:shadow-sm transition-all"
           >
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${action.iconBg}`}>
               {action.icon}
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-bold text-slate-900">{action.label}</p>
-              <p className="mt-0.5 text-xs text-slate-500">{action.description}</p>
+              <p className="text-sm font-bold text-[#00d9ff]">{action.label}</p>
+              <p className="mt-0.5 text-xs text-gray-500">{action.description}</p>
             </div>
           </Link>
         ))}

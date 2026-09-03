@@ -42,16 +42,16 @@ export function Toast({ toast, onClose }: ToastProps) {
   };
 
   const colorMap = {
-    success: 'from-[#314fa0] to-[#d4af37]',
-    error: 'from-[#314fa0] to-[#2a4183]',
+    success: 'from-[#001f3f] to-[#001f3f]',
+    error: 'from-[#001f3f] to-[#001f3f]',
     info: 'from-blue-500 to-blue-600',
     warning: 'from-yellow-500 to-yellow-600',
   };
 
   const bgColorMap = {
-    success: 'bg-[#314fa0]/10 border-[#314fa0]',
-    error: 'bg-amber-100 border-amber-500',
-    info: 'bg-blue-100 border-blue-500',
+    success: 'bg-[#001f3f]/10 border-[#001f3f]',
+    error: 'bg-brand-100 border-brand-500',
+    info: 'bg-brand-100 border-brand-500',
     warning: 'bg-yellow-100 border-yellow-500',
   };
 
@@ -161,3 +161,4 @@ export function useToast() {
     warning,
   };
 }
+

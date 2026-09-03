@@ -36,9 +36,9 @@ export const EqubCard: React.FC<EqubCardProps> = ({
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
-        return 'text-emerald-600 bg-emerald-50';
+        return 'text-brand-600 bg-brand-50';
       case 'pending':
-        return 'text-blue-600 bg-blue-50';
+        return 'text-brand-600 bg-brand-50';
       case 'completed':
         return 'text-gray-600 bg-gray-50';
       default:
@@ -63,7 +63,7 @@ export const EqubCard: React.FC<EqubCardProps> = ({
         </p>
         <div className="w-full bg-gray-200 rounded-full h-2">
           <div
-            className="bg-emerald-600 h-2 rounded-full"
+            className="bg-brand-900 h-2 rounded-full"
             style={{ width: `${equb.progressPercent}%` }}
             role="progressbar"
             aria-valuenow={equb.progressPercent}
@@ -78,7 +78,7 @@ export const EqubCard: React.FC<EqubCardProps> = ({
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
       {/* Header */}
-      <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white p-4">
+      <div className="bg-gradient-to-r from-brand-900 to-accent-600 text-[#00d9ff] p-4">
         <div className="flex justify-between items-start mb-2">
           <div>
             <h2 className="text-lg font-bold">{equb.name}</h2>
@@ -105,7 +105,7 @@ export const EqubCard: React.FC<EqubCardProps> = ({
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
             <p className="text-xs text-gray-600 mb-1">Contribution</p>
-            <p className="font-semibold text-emerald-600">
+            <p className="font-semibold text-brand-600">
               {equb.contributionSize.toLocaleString()} ETB
             </p>
           </div>
@@ -135,7 +135,7 @@ export const EqubCard: React.FC<EqubCardProps> = ({
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div
-              className="bg-emerald-600 h-2 rounded-full transition-all"
+              className="bg-brand-900 h-2 rounded-full transition-all"
               style={{ width: `${equb.progressPercent}%` }}
               role="progressbar"
               aria-valuenow={equb.progressPercent}
@@ -147,20 +147,20 @@ export const EqubCard: React.FC<EqubCardProps> = ({
 
         {/* Payment Info */}
         {equb.unpaidRoundsCount > 0 && (
-          <div className="bg-amber-50 border border-amber-300 rounded-lg p-3 mb-4">
-            <p className="text-sm text-amber-700">
+          <div className="bg-brand-50 border border-brand-300 rounded-lg p-3 mb-4">
+            <p className="text-sm text-brand-700">
               ⚠️ {equb.unpaidRoundsCount} {translations.unpaid_rounds[language]}
             </p>
-            <p className="text-xs text-amber-600 mt-1">
+            <p className="text-xs text-brand-600 mt-1">
               Due: {equb.nextDeadline}
             </p>
           </div>
         )}
 
         {/* Deadline */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-          <p className="text-xs text-blue-600">{translations.next_deadline[language]}</p>
-          <p className="text-sm font-semibold text-blue-700">{equb.nextDeadline}</p>
+        <div className="bg-brand-50 border border-brand-200 rounded-lg p-3 mb-4">
+          <p className="text-xs text-brand-600">{translations.next_deadline[language]}</p>
+          <p className="text-sm font-semibold text-brand-700">{equb.nextDeadline}</p>
         </div>
 
         {/* Payout Mechanism */}
@@ -176,8 +176,8 @@ export const EqubCard: React.FC<EqubCardProps> = ({
 
         {/* Auto Debit Status */}
         {equb.autoDebitEnabled && (
-          <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 mb-4">
-            <p className="text-sm text-emerald-700">
+          <div className="bg-brand-50 border border-brand-200 rounded-lg p-3 mb-4">
+            <p className="text-sm text-brand-700">
               ✅ {translations.auto_debit[language]} Enabled
             </p>
           </div>
@@ -188,7 +188,7 @@ export const EqubCard: React.FC<EqubCardProps> = ({
           {equb.unpaidRoundsCount > 0 && onPayNow && (
             <button
               onClick={() => onPayNow(equb.id)}
-              className="flex-1 bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-emerald-700 transition-colors"
+              className="flex-1 bg-brand-900 text-[#00d9ff] px-4 py-2 rounded-lg font-semibold hover:bg-brand-950 transition-colors"
             >
               {translations.pay_now[language]}
             </button>
@@ -196,14 +196,14 @@ export const EqubCard: React.FC<EqubCardProps> = ({
           {equb.payoutMechanism === 'auction' && onPlaceBid && (
             <button
               onClick={() => onPlaceBid(equb.id)}
-              className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+              className="flex-1 bg-brand-900 text-[#00d9ff] px-4 py-2 rounded-lg font-semibold hover:bg-brand-950 transition-colors"
             >
               {translations.place_bid[language]}
             </button>
           )}
           <button
             onClick={() => onViewDetails(equb.id)}
-            className="flex-1 border border-emerald-600 text-emerald-600 px-4 py-2 rounded-lg font-semibold hover:bg-emerald-50 transition-colors"
+            className="flex-1 border border-brand-900 text-brand-600 px-4 py-2 rounded-lg font-semibold hover:bg-brand-50 transition-colors"
           >
             View Details
           </button>

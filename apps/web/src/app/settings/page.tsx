@@ -72,8 +72,8 @@ function Toggle({ label, description, checked, onChange }: ToggleProps) {
   return (
     <div className="flex items-center justify-between gap-4 py-3">
       <div>
-        <p className="text-sm font-bold text-slate-800">{label}</p>
-        <p className="text-xs text-slate-500">{description}</p>
+        <p className="text-sm font-bold text-[#00d9ff]">{label}</p>
+        <p className="text-xs text-gray-500">{description}</p>
       </div>
       <button
         type="button"
@@ -81,7 +81,7 @@ function Toggle({ label, description, checked, onChange }: ToggleProps) {
         aria-checked={checked}
         onClick={() => onChange(!checked)}
         className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${
-          checked ? 'bg-brand-600' : 'bg-slate-300'
+          checked ? 'bg-brand-600' : 'bg-gray-300'
         }`}
       >
         <span
@@ -274,7 +274,7 @@ export default function SettingsPage() {
     <AppShell title="Settings" subtitle="Customise your QalNet experience" variant="member">
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* ── Category rail ───────────────────────────────────────────── */}
-        <nav className="lg:col-span-1 bg-card rounded-card border border-slate-200 p-2 h-fit" aria-label="Settings sections">
+        <nav className="lg:col-span-1 bg-card rounded-card border border-gray-200 p-2 h-fit" aria-label="Settings sections">
           {SECTIONS.map((s) => {
             const active = section === s.id;
             return (
@@ -283,10 +283,10 @@ export default function SettingsPage() {
                 type="button"
                 onClick={() => setSection(s.id)}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
-                  active ? 'bg-brand-100 text-brand-800' : 'text-slate-600 hover:bg-slate-100'
+                  active ? 'bg-brand-100 text-brand-800' : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
-                <span className={active ? 'text-brand-600' : 'text-slate-400'}>{s.icon}</span>
+                <span className={active ? 'text-brand-600' : 'text-gray-400'}>{s.icon}</span>
                 {s.label}
               </button>
             );
@@ -296,13 +296,13 @@ export default function SettingsPage() {
         {/* ── Active section ───────────────────────────────────────────── */}
         <div className="lg:col-span-3">
           {section === 'profile' && (
-            <div className="bg-card rounded-card border border-slate-200 p-6">
-              <h2 className="text-lg font-black text-slate-900">Profile</h2>
-              <p className="mt-0.5 text-xs text-slate-500">
+            <div className="bg-card rounded-card border border-gray-200 p-6">
+              <h2 className="text-lg font-black text-[#00d9ff]">Profile</h2>
+              <p className="mt-0.5 text-xs text-gray-500">
                 View and manage your account identity.
               </p>
 
-              <div className="mt-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <div className="mt-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
                 {user.profilePhoto ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -311,20 +311,20 @@ export default function SettingsPage() {
                     className="w-14 h-14 rounded-full object-cover"
                   />
                 ) : (
-                  <div className="w-14 h-14 rounded-full bg-accent-600 text-white flex items-center justify-center text-lg font-black shrink-0">
+                  <div className="w-14 h-14 rounded-full bg-accent-600 text-[#00d9ff] flex items-center justify-center text-lg font-black shrink-0">
                     {initials(user.firstName, user.lastName)}
                   </div>
                 )}
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-bold text-slate-900">{fullName}</p>
-                  <p className="text-xs text-slate-500 capitalize">{roleLabel(user.role)}</p>
-                  <p className="mt-1 text-xs text-slate-400">
+                  <p className="text-sm font-bold text-[#00d9ff]">{fullName}</p>
+                  <p className="text-xs text-gray-500 capitalize">{roleLabel(user.role)}</p>
+                  <p className="mt-1 text-xs text-gray-400">
                     {user.phoneNumber || user.email || '—'}
                   </p>
                 </div>
                 <Link
                   href="/profile"
-                  className="px-4 py-2 rounded-lg bg-brand-600 text-white text-sm font-bold hover:bg-brand-700 transition-colors shrink-0"
+                  className="px-4 py-2 rounded-lg bg-brand-600 text-[#00d9ff] text-sm font-bold hover:bg-brand-700 transition-colors shrink-0"
                 >
                   View full profile
                 </Link>
@@ -333,9 +333,9 @@ export default function SettingsPage() {
           )}
 
           {section === 'notifications' && (
-            <div className="bg-card rounded-card border border-slate-200 p-6">
-              <h2 className="text-lg font-black text-slate-900">Notifications</h2>
-              <p className="mt-0.5 text-xs text-slate-500">
+            <div className="bg-card rounded-card border border-gray-200 p-6">
+              <h2 className="text-lg font-black text-[#00d9ff]">Notifications</h2>
+              <p className="mt-0.5 text-xs text-gray-500">
                 Choose how QalNet reaches you about payments, payouts, and group activity.
               </p>
 
@@ -366,16 +366,16 @@ export default function SettingsPage() {
                 />
               </div>
 
-              <p className="mt-4 text-xs text-slate-400">
+              <p className="mt-4 text-xs text-gray-400">
                 Your preferences are saved on this device.
               </p>
             </div>
           )}
 
           {section === 'language' && (
-            <div className="bg-card rounded-card border border-slate-200 p-6">
-              <h2 className="text-lg font-black text-slate-900">Language</h2>
-              <p className="mt-0.5 text-xs text-slate-500">
+            <div className="bg-card rounded-card border border-gray-200 p-6">
+              <h2 className="text-lg font-black text-[#00d9ff]">Language</h2>
+              <p className="mt-0.5 text-xs text-gray-500">
                 Choose your preferred display language.
               </p>
 
@@ -390,7 +390,7 @@ export default function SettingsPage() {
                       className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border text-sm font-bold transition-colors ${
                         active
                           ? 'border-brand-500 bg-brand-50 text-brand-800'
-                          : 'border-slate-200 text-slate-700 hover:bg-slate-50'
+                          : 'border-gray-200 text-[#00d9ff] hover:bg-gray-50'
                       }`}
                     >
                       <span>{languages[code]}</span>
@@ -407,32 +407,32 @@ export default function SettingsPage() {
           )}
 
           {section === 'security' && (
-            <div className="bg-card rounded-card border border-slate-200 p-6">
-              <h2 className="text-lg font-black text-slate-900">Security &amp; Privacy</h2>
-              <p className="mt-0.5 text-xs text-slate-500">
+            <div className="bg-card rounded-card border border-gray-200 p-6">
+              <h2 className="text-lg font-black text-[#00d9ff]">Security &amp; Privacy</h2>
+              <p className="mt-0.5 text-xs text-gray-500">
                 Keep your account secure.
               </p>
 
               <div className="mt-5 space-y-3">
-                <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <div className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-gray-50 p-4">
                   <div>
-                    <p className="text-sm font-bold text-slate-800">Change PIN</p>
-                    <p className="text-xs text-slate-500">Reset your 6-digit login PIN via SMS OTP</p>
+                    <p className="text-sm font-bold text-[#00d9ff]">Change PIN</p>
+                    <p className="text-xs text-gray-500">Reset your 6-digit login PIN via SMS OTP</p>
                   </div>
                   <Link
                     href="/profile"
-                    className="px-4 py-2 rounded-lg border border-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-100 transition-colors shrink-0"
+                    className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-bold text-[#00d9ff] hover:bg-gray-100 transition-colors shrink-0"
                   >
                     Go to profile
                   </Link>
                 </div>
 
                 {/* Two-factor authentication */}
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
                   <div className="flex items-center justify-between gap-4">
                     <div>
-                      <p className="text-sm font-bold text-slate-800">Two-factor authentication</p>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-sm font-bold text-[#00d9ff]">Two-factor authentication</p>
+                      <p className="text-xs text-gray-500">
                         {tfaLoading
                           ? 'Checking your 2FA status…'
                           : tfaEnabled
@@ -448,7 +448,7 @@ export default function SettingsPage() {
                           <button
                             type="button"
                             onClick={() => void start2FADisable()}
-                            className="px-4 py-2 rounded-lg border border-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-100 transition-colors shrink-0"
+                            className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-bold text-[#00d9ff] hover:bg-gray-100 transition-colors shrink-0"
                           >
                             Disable
                           </button>
@@ -457,7 +457,7 @@ export default function SettingsPage() {
                             type="button"
                             onClick={() => void start2FASetup()}
                             disabled={tfaBusy}
-                            className="px-4 py-2 rounded-lg bg-brand-600 text-white text-sm font-bold hover:bg-brand-700 disabled:opacity-50 transition-colors shrink-0"
+                            className="px-4 py-2 rounded-lg bg-brand-600 text-[#00d9ff] text-sm font-bold hover:bg-brand-700 disabled:opacity-50 transition-colors shrink-0"
                           >
                             {tfaBusy ? 'Preparing…' : 'Enable'}
                           </button>
@@ -468,17 +468,17 @@ export default function SettingsPage() {
                   {/* Setup / disable panels */}
                   {tfaStep === 'setup' && (
                     <div className="mt-4 rounded-xl border border-brand-200 bg-white p-4 space-y-3">
-                      <p className="text-xs font-bold text-slate-700">
+                      <p className="text-xs font-bold text-[#00d9ff]">
                         Step 1 — Scan or enter this secret in your authenticator app (Google Authenticator, Authy, etc.)
                       </p>
-                      <div className="rounded-lg bg-slate-100 p-3 font-mono text-xs break-all text-slate-700">
+                      <div className="rounded-lg bg-gray-100 p-3 font-mono text-xs break-all text-[#00d9ff]">
                         {tfaOtpauthUrl}
                       </div>
-                      <p className="text-xs text-slate-500">
-                        Secret key: <span className="font-mono font-bold text-slate-700">{tfaSecret}</span>
+                      <p className="text-xs text-gray-500">
+                        Secret key: <span className="font-mono font-bold text-[#00d9ff]">{tfaSecret}</span>
                       </p>
 
-                      <p className="text-xs font-bold text-slate-700">Step 2 — Enter the 6-digit code shown by the app</p>
+                      <p className="text-xs font-bold text-[#00d9ff]">Step 2 — Enter the 6-digit code shown by the app</p>
                       <input
                         type="text"
                         inputMode="numeric"
@@ -486,7 +486,7 @@ export default function SettingsPage() {
                         value={tfaCode}
                         onChange={(e) => setTfaCode(e.target.value.replace(/\D/g, ''))}
                         placeholder="000000"
-                        className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-brand-500 focus:outline-none text-center text-2xl tracking-widest font-bold"
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-brand-500 focus:outline-none text-center text-2xl tracking-widest font-bold"
                       />
 
                       {tfaError && <p className="text-xs font-semibold text-danger-600">{tfaError}</p>}
@@ -496,14 +496,14 @@ export default function SettingsPage() {
                           type="button"
                           onClick={() => void confirm2FASetup()}
                           disabled={tfaBusy || !/^\d{6}$/.test(tfaCode)}
-                          className="flex-1 px-4 py-2 rounded-lg bg-brand-600 text-white text-sm font-bold hover:bg-brand-700 disabled:opacity-50 transition-colors"
+                          className="flex-1 px-4 py-2 rounded-lg bg-brand-600 text-[#00d9ff] text-sm font-bold hover:bg-brand-700 disabled:opacity-50 transition-colors"
                         >
                           {tfaBusy ? 'Verifying…' : 'Verify & Enable'}
                         </button>
                         <button
                           type="button"
                           onClick={cancel2FA}
-                          className="px-4 py-2 rounded-lg border border-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-100 transition-colors"
+                          className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-bold text-[#00d9ff] hover:bg-gray-100 transition-colors"
                         >
                           Cancel
                         </button>
@@ -513,7 +513,7 @@ export default function SettingsPage() {
 
                   {tfaStep === 'verify-disable' && (
                     <div className="mt-4 rounded-xl border border-danger-200 bg-white p-4 space-y-3">
-                      <p className="text-xs font-bold text-slate-700">
+                      <p className="text-xs font-bold text-[#00d9ff]">
                         Enter a current code from your authenticator app (or a backup code) to disable 2FA.
                       </p>
                       <input
@@ -522,7 +522,7 @@ export default function SettingsPage() {
                         value={tfaCode}
                         onChange={(e) => setTfaCode(e.target.value.replace(/[^A-Za-z0-9-]/g, '').slice(0, 20))}
                         placeholder="000000"
-                        className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-brand-500 focus:outline-none text-center text-2xl tracking-widest font-bold"
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-brand-500 focus:outline-none text-center text-2xl tracking-widest font-bold"
                       />
 
                       {tfaError && <p className="text-xs font-semibold text-danger-600">{tfaError}</p>}
@@ -532,14 +532,14 @@ export default function SettingsPage() {
                           type="button"
                           onClick={() => void confirm2FADisable()}
                           disabled={tfaBusy}
-                          className="flex-1 px-4 py-2 rounded-lg bg-danger-600 text-white text-sm font-bold hover:bg-danger-700 disabled:opacity-50 transition-colors"
+                          className="flex-1 px-4 py-2 rounded-lg bg-danger-600 text-[#00d9ff] text-sm font-bold hover:bg-danger-700 disabled:opacity-50 transition-colors"
                         >
                           {tfaBusy ? 'Disabling…' : 'Disable 2FA'}
                         </button>
                         <button
                           type="button"
                           onClick={cancel2FA}
-                          className="px-4 py-2 rounded-lg border border-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-100 transition-colors"
+                          className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-bold text-[#00d9ff] hover:bg-gray-100 transition-colors"
                         >
                           Cancel
                         </button>
@@ -550,23 +550,23 @@ export default function SettingsPage() {
                   {tfaInfo && <p className="mt-3 text-xs font-semibold text-success-600">{tfaInfo}</p>}
 
                   {tfaBackupCodes.length > 0 && (
-                    <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                    <div className="mt-4 rounded-xl border border-brand-200 bg-brand-50 p-4">
                       <div className="flex items-center justify-between gap-2">
-                        <p className="text-xs font-black text-amber-800">Your one-time backup codes</p>
+                        <p className="text-xs font-black text-brand-800">Your one-time backup codes</p>
                         <button
                           type="button"
                           onClick={() => void copyBackupCodes()}
-                          className="text-xs font-bold text-amber-700 hover:underline"
+                          className="text-xs font-bold text-brand-700 hover:underline"
                         >
                           Copy all
                         </button>
                       </div>
-                      <p className="mt-1 text-xs text-amber-700">
+                      <p className="mt-1 text-xs text-brand-700">
                         Store these somewhere safe. Each code works only once and can sign you in if you lose your device.
                       </p>
                       <div className="mt-3 grid grid-cols-2 gap-2">
                         {tfaBackupCodes.map((code) => (
-                          <code key={code} className="rounded bg-white px-2 py-1.5 text-center text-xs font-mono font-bold text-slate-700 border border-amber-200">
+                          <code key={code} className="rounded bg-white px-2 py-1.5 text-center text-xs font-mono font-bold text-[#00d9ff] border border-brand-200">
                             {code}
                           </code>
                         ))}
@@ -575,31 +575,31 @@ export default function SettingsPage() {
                   )}
                 </div>
 
-                <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 opacity-60">
+                <div className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-gray-50 p-4 opacity-60">
                   <div>
-                    <p className="text-sm font-bold text-slate-800">Login alerts</p>
-                    <p className="text-xs text-slate-500">Notify me when a new device signs in</p>
+                    <p className="text-sm font-bold text-[#00d9ff]">Login alerts</p>
+                    <p className="text-xs text-gray-500">Notify me when a new device signs in</p>
                   </div>
-                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Coming soon</span>
+                  <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wide">Coming soon</span>
                 </div>
               </div>
             </div>
           )}
 
           {section === 'help' && (
-            <div className="bg-card rounded-card border border-slate-200 p-6">
-              <h2 className="text-lg font-black text-slate-900">Help &amp; Support</h2>
-              <p className="mt-0.5 text-xs text-slate-500">
+            <div className="bg-card rounded-card border border-gray-200 p-6">
+              <h2 className="text-lg font-black text-[#00d9ff]">Help &amp; Support</h2>
+              <p className="mt-0.5 text-xs text-gray-500">
                 Find answers and get in touch with our team.
               </p>
 
               <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Link
                   href="/security"
-                  className="rounded-xl border border-slate-200 bg-slate-50 p-4 hover:border-brand-300 transition-colors"
+                  className="rounded-xl border border-gray-200 bg-gray-50 p-4 hover:border-brand-300 transition-colors"
                 >
-                  <p className="text-sm font-bold text-slate-800">Help Center</p>
-                  <p className="mt-0.5 text-xs text-slate-500">
+                  <p className="text-sm font-bold text-[#00d9ff]">Help Center</p>
+                  <p className="mt-0.5 text-xs text-gray-500">
                     Guides on Equbs, payments, and trust scores.
                   </p>
                 </Link>
@@ -607,21 +607,21 @@ export default function SettingsPage() {
                   type="button"
                   disabled
                   title="Coming soon"
-                  className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-left cursor-not-allowed opacity-60"
+                  className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-left cursor-not-allowed opacity-60"
                 >
-                  <p className="text-sm font-bold text-slate-800">Live Chat</p>
-                  <p className="mt-0.5 text-xs text-slate-500">Chat with a support agent.</p>
+                  <p className="text-sm font-bold text-[#00d9ff]">Live Chat</p>
+                  <p className="mt-0.5 text-xs text-gray-500">Chat with a support agent.</p>
                 </button>
                 <button
                   type="button"
                   disabled
                   title="Coming soon"
-                  className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-left cursor-not-allowed opacity-60"
+                  className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-left cursor-not-allowed opacity-60"
                 >
-                  <p className="text-sm font-bold text-slate-800">Report an Issue</p>
-                  <p className="mt-0.5 text-xs text-slate-500">Flag a problem with your account.</p>
+                  <p className="text-sm font-bold text-[#00d9ff]">Report an Issue</p>
+                  <p className="mt-0.5 text-xs text-gray-500">Flag a problem with your account.</p>
                 </button>
-                <div className="rounded-xl bg-gradient-to-br from-brand-700 to-brand-600 text-white p-4">
+                <div className="rounded-xl bg-gradient-to-br from-brand-700 to-brand-600 text-[#00d9ff] p-4">
                   <p className="text-sm font-bold">Contact Support</p>
                   <p className="mt-0.5 text-xs text-brand-100">
                     Our team typically replies within 24 hours.

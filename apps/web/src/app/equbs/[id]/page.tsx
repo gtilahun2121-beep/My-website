@@ -106,7 +106,7 @@ export default function EqubDetailPage() {
             <p className="text-xl font-bold text-gray-800 mb-4">
               {lang === 'en' ? 'Please log in' : 'ይግቡ'}
             </p>
-            <Link href="/" className="text-blue-600 hover:underline">
+            <Link href="/" className="text-[#00d9ff] hover:underline">
               {lang === 'en' ? 'Go to Home' : 'ወደ ቤት ሂድ'}
             </Link>
           </div>
@@ -124,7 +124,7 @@ export default function EqubDetailPage() {
         <div className="max-w-4xl mx-auto">
           <button
             onClick={() => router.back()}
-            className="text-sm text-[#314fa0] font-bold hover:underline mb-6"
+            className="text-sm text-[#00d9ff] font-bold hover:underline mb-6"
           >
             ← {lang === 'en' ? 'Back' : 'ተመለስ'}
           </button>
@@ -132,7 +132,7 @@ export default function EqubDetailPage() {
           {loading ? (
             <p className="text-gray-500">{lang === 'en' ? 'Loading...' : 'በመጫን ላይ...'}</p>
           ) : error ? (
-            <div className="bg-amber-50 border border-amber-300 text-amber-700 rounded-lg p-6">
+            <div className="bg-[#0066ff]/10 border border-[#0066ff] text-[#0066ff] rounded-lg p-6">
               <p className="font-bold mb-2">{lang === 'en' ? 'Something went wrong' : 'ስህተት ተከስቷል'}</p>
               <p className="text-sm">{error}</p>
             </div>
@@ -149,9 +149,9 @@ export default function EqubDetailPage() {
                   <span
                     className={`px-3 py-1 rounded-full text-xs font-black uppercase ${
                       equb.status === 'open'
-                        ? 'bg-green-100 text-green-700'
+                        ? 'bg-[#00d9ff]/20 text-[#00d9ff]'
                         : equb.status === 'active'
-                          ? 'bg-blue-100 text-blue-700'
+                          ? 'bg-[#0066ff]/20 text-[#0066ff]'
                           : 'bg-gray-100 text-gray-500'
                     }`}
                   >
@@ -168,7 +168,7 @@ export default function EqubDetailPage() {
                     <p className="text-xs text-gray-500 uppercase font-bold mb-1">
                       {lang === 'en' ? 'Contribution' : 'መዋጮ'}
                     </p>
-                    <p className="text-lg sm:text-xl font-black text-[#314fa0] break-all">
+                    <p className="text-lg sm:text-xl font-black text-[#00d9ff] break-all">
                       ETB {Number(equb.contribution_amount).toLocaleString()}
                     </p>
                   </div>
@@ -213,7 +213,7 @@ export default function EqubDetailPage() {
                 </div>
 
                 {notice && (
-                  <div className={`border rounded-lg p-4 mb-4 ${notice.startsWith('Failed') || notice.startsWith('You are already') ? 'bg-amber-50 border-amber-300 text-amber-700' : 'bg-green-50 border-green-300 text-green-800'}`}>
+                  <div className={`border rounded-lg p-4 mb-4 ${notice.startsWith('Failed') || notice.startsWith('You are already') ? 'bg-[#0066ff]/10 border-[#0066ff] text-[#0066ff]' : 'bg-[#00d9ff]/10 border-[#00d9ff] text-[#00d9ff]'}`}>
                     {notice}
                   </div>
                 )}
@@ -229,8 +229,8 @@ export default function EqubDetailPage() {
                   let label = lang === 'en' ? 'Request to Join' : 'መቀላቀል ጠይቅ';
                   const disabled = isFull || isPending || isMember || joining;
                   if (isHost) label = lang === 'en' ? 'You host this Equb' : 'ይህን እቁብ ያስተናግዳሉ';
-                  else if (isMember) label = lang === 'en' ? '✅ You are a member' : '✅ አባል ነዎት';
-                  else if (isPending) label = lang === 'en' ? '⏳ Awaiting admin approval' : '⏳ የአስተዳዳሪ ማጽደቅ በመጠበቅ ላይ';
+                  else if (isMember) label = lang === 'en' ? 'You are a member' : 'አባል ነዎት';
+                  else if (isPending) label = lang === 'en' ? 'Awaiting admin approval' : 'የአስተዳዳሪ ማጽደቅ በመጠበቅ ላይ';
                   else if (isFull) label = lang === 'en' ? 'Equb is Full' : 'እቁቡ ሞልቷል';
 
                   return (
@@ -241,7 +241,7 @@ export default function EqubDetailPage() {
                         className={`w-full py-3 font-black rounded-lg transition-all ${
                           disabled
                             ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                            : 'bg-[#314fa0] text-white hover:bg-[#2a4183]'
+                            : 'bg-[#0066ff] text-white hover:bg-[#00d9ff] hover:text-[#0a1f3f]'
                         }`}
                       >
                         {joining ? (lang === 'en' ? 'Submitting...' : 'በመላክ ላይ...') : label}
@@ -254,21 +254,21 @@ export default function EqubDetailPage() {
                           className={`w-full py-3 font-black rounded-lg transition-all ${
                             activating
                               ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                              : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                              : 'bg-[#00d9ff] text-[#0a1f3f] hover:bg-[#0066ff] hover:text-white'
                           }`}
                         >
                           {activating
                             ? (lang === 'en' ? 'Activating...' : 'በማግበር ላይ...')
-                            : (lang === 'en' ? '🚀 Activate Equb' : 'እቁቡን አግብር')}
+                            : (lang === 'en' ? 'Activate Equb' : 'እቁቡን አግብር')}
                         </button>
                       )}
 
                       {isMember && equb.status === 'active' && equb.current_round >= 1 && (
                         <button
                           onClick={() => setShowPayment(true)}
-                          className="w-full py-3 font-black rounded-lg bg-[#314fa0] text-white hover:bg-[#2a4183] transition-all"
+                          className="w-full py-3 font-black rounded-lg bg-[#0066ff] text-white hover:bg-[#00d9ff] hover:text-[#0a1f3f] transition-all"
                         >
-                          💳 {lang === 'en' ? `Pay for Round ${equb.current_round}` : `ለዙር ${equb.current_round} ይክፈሉ`}
+                          {lang === 'en' ? `Pay for Round ${equb.current_round}` : `ለዙር ${equb.current_round} ይክፈሉ`}
                         </button>
                       )}
                     </div>

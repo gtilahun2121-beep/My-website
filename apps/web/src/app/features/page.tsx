@@ -121,10 +121,10 @@ function FeaturesContent() {
       {/* Hero */}
       <section className="bg-white/40 backdrop-blur-md py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold text-[#00d9ff] mb-4">
             {t.features}
           </h1>
-          <p className="text-xl text-gray-700">
+          <p className="text-xl text-[#00d9ff]">
             Comprehensive feature set designed for Ethiopian market
           </p>
         </div>
@@ -133,18 +133,18 @@ function FeaturesContent() {
       {/* Navigation Tabs */}
       <section className="py-20 md:py-32 bg-white/60 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center mb-16 text-gray-900">
+          <h2 className="text-3xl font-bold text-center mb-16 text-[#00d9ff]">
             {t.uxTitle}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
             {navTabs.map((tab) => (
-              <div key={tab.id} className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-8 border border-gray-200 hover:border-emerald-400 transition-colors">
+              <div key={tab.id} className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-8 border border-gray-200 hover:border-brand-400 transition-colors">
                 <div className="text-4xl mb-4">{tab.icon}</div>
-                <h3 className="font-bold text-lg mb-4 text-gray-900">{tab.title}</h3>
+                <h3 className="font-bold text-lg mb-4 text-[#00d9ff]">{tab.title}</h3>
                 <ul className="space-y-2">
                   {tab.features.map((feature, idx) => (
                     <li key={idx} className="text-sm text-gray-600 flex items-start">
-                      <span className="text-emerald-500 mr-2">•</span>
+                      <span className="text-brand-500 mr-2">•</span>
                       <span>{feature}</span>
                     </li>
                   ))}
@@ -158,14 +158,14 @@ function FeaturesContent() {
       {/* UX Principles */}
       <section className="py-20 md:py-32 bg-white/60 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center mb-16 text-gray-900">
+          <h2 className="text-3xl font-bold text-center mb-16 text-[#00d9ff]">
             {t.uxTitle}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {uxPrinciples.map((principle, idx) => (
               <div key={idx} className="bg-white rounded-lg p-8 shadow-sm hover:shadow-lg transition-shadow">
                 <div className="text-4xl mb-4">{principle.icon}</div>
-                <h3 className="font-bold text-xl mb-2 text-gray-900">{principle.title}</h3>
+                <h3 className="font-bold text-xl mb-2 text-[#00d9ff]">{principle.title}</h3>
                 <p className="text-gray-600">{principle.desc}</p>
               </div>
             ))}
@@ -178,7 +178,7 @@ function FeaturesContent() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-3xl font-bold mb-6 text-gray-900">
+              <h2 className="text-3xl font-bold mb-6 text-[#00d9ff]">
                 {t.offlineTitle}
               </h2>
               <p className="text-lg text-gray-600 mb-8">
@@ -187,8 +187,8 @@ function FeaturesContent() {
               <ul className="space-y-4">
                 {offlineFeatures.map((feature, idx) => (
                   <li key={idx} className="flex items-start">
-                    <span className="text-emerald-600 font-bold mr-3">✓</span>
-                    <span className="text-gray-700">{feature}</span>
+                    <span className="text-brand-600 font-bold mr-3">✓</span>
+                    <span className="text-[#00d9ff]">{feature}</span>
                   </li>
                 ))}
               </ul>
@@ -196,7 +196,7 @@ function FeaturesContent() {
             <div className="bg-gradient-to-br from-emerald-100 to-teal-100 rounded-lg h-96 flex items-center justify-center">
               <div className="text-center">
                 <div className="text-6xl mb-4">📱</div>
-                <p className="text-gray-700 font-semibold">Offline-First Architecture</p>
+                <p className="text-[#00d9ff] font-semibold">Offline-First Architecture</p>
               </div>
             </div>
           </div>

@@ -32,9 +32,9 @@ export default function EqubTierCard({
         'Quick liquidity',
         'Small daily amounts',
       ],
-      color: 'from-blue-500 to-blue-600',
-      lightColor: 'bg-blue-50',
-      borderColor: 'border-blue-200',
+      color: 'from-brand-900 to-accent-600',
+      lightColor: 'bg-brand-50',
+      borderColor: 'border-brand-200',
       badge: 'Most Popular',
     },
     WEEKLY: {
@@ -52,9 +52,9 @@ export default function EqubTierCard({
         'Balanced pace',
         'Moderate amounts',
       ],
-      color: 'from-amber-500 to-amber-600',
-      lightColor: 'bg-amber-50',
-      borderColor: 'border-amber-200',
+      color: 'from-brand-900 to-accent-600',
+      lightColor: 'bg-brand-50',
+      borderColor: 'border-brand-200',
       badge: 'Best Balance',
     },
     MONTHLY: {
@@ -72,9 +72,9 @@ export default function EqubTierCard({
         'Larger capital',
         'Premium members',
       ],
-      color: 'from-green-500 to-green-600',
-      lightColor: 'bg-green-50',
-      borderColor: 'border-green-200',
+      color: 'from-brand-900 to-accent-600',
+      lightColor: 'bg-brand-50',
+      borderColor: 'border-brand-200',
       badge: 'Premium',
     },
   };
@@ -94,18 +94,15 @@ export default function EqubTierCard({
       >
         {/* Premium Badge */}
         {isPopular && (
-          <div className={`absolute top-0 right-0 bg-gradient-to-r ${data.color} text-white px-4 py-1 rounded-bl-lg text-sm font-bold`}>
+          <div className={`absolute top-0 right-0 bg-gradient-to-r ${data.color} text-[#00d9ff] px-4 py-1 rounded-bl-lg text-sm font-bold`}>
             {data.badge}
           </div>
         )}
 
-        {/* Header with Icon and Title */}
-        <div className={`bg-gradient-to-r ${data.color} text-white p-6`}>
-          <div className="flex items-center gap-3 mb-2">
-            <span className="text-4xl">{data.icon}</span>
-            <h3 className="text-2xl font-black">{data.title}</h3>
-          </div>
-          <p className="text-white/90 text-sm font-semibold">{data.targetUsers}</p>
+        {/* Header with Title */}
+        <div className={`bg-gradient-to-r ${data.color} text-[#00d9ff] p-6`}>
+          <h3 className="text-2xl font-black mb-2">{data.title}</h3>
+          <p className="text-[#00d9ff]/90 text-sm font-semibold">{data.targetUsers}</p>
         </div>
 
         {/* Content */}
@@ -113,40 +110,28 @@ export default function EqubTierCard({
           {/* Key Metrics */}
           <div className="grid grid-cols-2 gap-4">
             {/* Duration */}
-            <div className="flex items-start gap-3">
-              <span className="text-2xl">📅</span>
-              <div>
-                <p className="text-xs text-gray-600 font-semibold">Duration</p>
-                <p className="text-sm font-bold text-gray-900">{data.duration}</p>
-              </div>
+            <div>
+              <p className="text-xs text-gray-600 font-semibold">Duration</p>
+              <p className="text-sm font-bold text-[#00d9ff]">{data.duration}</p>
             </div>
 
             {/* Contribution */}
-            <div className="flex items-start gap-3">
-              <span className="text-2xl">💵</span>
-              <div>
-                <p className="text-xs text-gray-600 font-semibold">Contribution</p>
-                <p className="text-sm font-bold text-gray-900">{data.contribution}</p>
-                <p className="text-xs text-gray-500">{data.frequency}</p>
-              </div>
+            <div>
+              <p className="text-xs text-gray-600 font-semibold">Contribution</p>
+              <p className="text-sm font-bold text-[#00d9ff]">{data.contribution}</p>
+              <p className="text-xs text-gray-500">{data.frequency}</p>
             </div>
 
             {/* Members */}
-            <div className="flex items-start gap-3">
-              <span className="text-2xl">👥</span>
-              <div>
-                <p className="text-xs text-gray-600 font-semibold">Members</p>
-                <p className="text-sm font-bold text-gray-900">{data.members}</p>
-              </div>
+            <div>
+              <p className="text-xs text-gray-600 font-semibold">Members</p>
+              <p className="text-sm font-bold text-[#00d9ff]">{data.members}</p>
             </div>
 
             {/* Pot Size */}
-            <div className="flex items-start gap-3">
-              <span className="text-2xl">📈</span>
-              <div>
-                <p className="text-xs text-gray-600 font-semibold">Pot Size</p>
-                <p className="text-sm font-bold text-gray-900">{data.potSize}</p>
-              </div>
+            <div>
+              <p className="text-xs text-gray-600 font-semibold">Pot Size</p>
+              <p className="text-sm font-bold text-[#00d9ff]">{data.potSize}</p>
             </div>
           </div>
 
@@ -155,10 +140,10 @@ export default function EqubTierCard({
 
           {/* Features */}
           <div>
-            <p className="text-xs font-bold text-gray-700 mb-3">What you get:</p>
+            <p className="text-xs font-bold text-[#00d9ff] mb-3">What you get:</p>
             <ul className="space-y-2">
               {data.features.map((feature, idx) => (
-                <li key={idx} className="flex items-center gap-2 text-sm text-gray-700">
+                <li key={idx} className="flex items-center gap-2 text-sm text-[#00d9ff]">
                   <span className={`w-2 h-2 rounded-full bg-gradient-to-r ${data.color}`}></span>
                   {feature}
                 </li>
@@ -169,9 +154,9 @@ export default function EqubTierCard({
           {/* Join Button */}
           <button
             onClick={() => onJoin?.(tier)}
-            className={`w-full py-3 px-4 bg-gradient-to-r ${data.color} text-white font-bold rounded-lg hover:shadow-lg transition-all hover:scale-105 flex items-center justify-center gap-2`}
+            className={`w-full py-3 px-4 bg-gradient-to-r ${data.color} text-[#00d9ff] font-bold rounded-lg hover:shadow-lg transition-all hover:scale-105 flex items-center justify-center gap-2`}
           >
-            <span>🚀 Join {tier === 'DAILY' ? 'Daily' : tier === 'WEEKLY' ? 'Weekly' : 'Monthly'} Equb</span>
+            <span>Join {tier === 'DAILY' ? 'Daily' : tier === 'WEEKLY' ? 'Weekly' : 'Monthly'} Equb</span>
           </button>
 
           {/* Info Text */}

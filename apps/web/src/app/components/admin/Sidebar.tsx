@@ -171,7 +171,7 @@ export default function Sidebar({
         item.disabled
           ? 'text-admin-nav-muted/50 cursor-not-allowed'
           : active
-            ? 'bg-brand-600 text-white'
+            ? 'bg-brand-600 text-[#00d9ff]'
             : 'text-admin-nav-muted hover:text-admin-nav-text hover:bg-brand-50'
       }`;
 
@@ -194,7 +194,7 @@ export default function Sidebar({
               <span className={labelHidden}>{item.label}</span>
               {badge != null && (
                 <span
-                  className={`ml-auto inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-brand-500 text-white text-[11px] font-black ${
+                  className={`ml-auto inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-brand-500 text-[#00d9ff] text-[11px] font-black ${
                     collapsed ? 'lg:hidden' : ''
                   }`}
                   aria-label={`${badge} pending ${item.label.toLowerCase()} items`}
@@ -237,7 +237,7 @@ export default function Sidebar({
           }`}
           aria-label="QalNet Admin Console — Dashboard"
         >
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white font-black text-lg shadow-lg shadow-brand-950/40 shrink-0">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-[#00d9ff] font-black text-lg shadow-lg shadow-brand-950/40 shrink-0">
             Q
           </div>
           <div className={labelHidden}>
@@ -334,7 +334,7 @@ export default function Sidebar({
                     className="w-9 h-9 rounded-full object-cover shrink-0"
                   />
                 ) : (
-                  <div className="w-9 h-9 rounded-full bg-brand-600 text-white flex items-center justify-center text-sm font-bold shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-brand-600 text-[#00d9ff] flex items-center justify-center text-sm font-bold shrink-0">
                     {initials(user.firstName, user.lastName)}
                   </div>
                 )}
@@ -387,9 +387,9 @@ export default function Sidebar({
     const active = !!item.href && item.href === pathname;
     const base =
       'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors';
-    if (item.disabled) return `${base} text-slate-300 cursor-not-allowed`;
+    if (item.disabled) return `${base} text-gray-300 cursor-not-allowed`;
     if (active) return `${base} bg-brand-100 text-brand-800`;
-    return `${base} text-slate-600 hover:bg-slate-100 hover:text-slate-900`;
+    return `${base} text-gray-600 hover:bg-gray-100 hover:text-[#00d9ff]`;
   };
 
   const renderMemberItem = (item: NavItem) =>
@@ -401,33 +401,33 @@ export default function Sidebar({
         className={memberItemCls(item)}
         aria-current={item.href === pathname ? 'page' : undefined}
       >
-        <span className={item.href === pathname ? 'text-brand-600' : 'text-slate-400'}>{item.icon}</span>
+        <span className={item.href === pathname ? 'text-brand-600' : 'text-gray-400'}>{item.icon}</span>
         {item.label}
       </Link>
     ) : (
       <span key={item.label} className={memberItemCls(item)} aria-disabled="true" title="Coming soon">
-        <span className="text-slate-300">{item.icon}</span>
+        <span className="text-gray-300">{item.icon}</span>
         {item.label}
       </span>
     );
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-40 w-60 flex flex-col transition-transform duration-300 lg:translate-x-0 lg:static bg-card border-r border-slate-200 ${open ? 'translate-x-0' : '-translate-x-full'}`}
+      className={`fixed inset-y-0 left-0 z-40 w-60 flex flex-col transition-transform duration-300 lg:translate-x-0 lg:static bg-card border-r border-gray-200 ${open ? 'translate-x-0' : '-translate-x-full'}`}
       aria-label="Sidebar navigation"
     >
       {/* Brand */}
       <Link
         href="/dashboard"
-        className="flex items-center gap-3 px-5 h-16 border-b border-slate-100"
+        className="flex items-center gap-3 px-5 h-16 border-b border-gray-100"
         onClick={onClose}
       >
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white font-black text-lg shadow-lg shadow-brand-900/50">
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-[#00d9ff] font-black text-lg shadow-lg shadow-brand-900/50">
           Q
         </div>
         <div>
-          <p className="font-black leading-none text-slate-900">QalNet</p>
-          <p className="text-xs mt-0.5 text-slate-400">{'Ethiopia\'s Digital Equb'}</p>
+          <p className="font-black leading-none text-[#00d9ff]">QalNet</p>
+          <p className="text-xs mt-0.5 text-gray-400">{'Ethiopia\'s Digital Equb'}</p>
         </div>
       </Link>
 
@@ -436,7 +436,7 @@ export default function Sidebar({
         ref={closeButtonRef}
         type="button"
         onClick={onClose}
-        className="lg:hidden absolute top-4 right-3 p-1.5 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+        className="lg:hidden absolute top-4 right-3 p-1.5 rounded-lg text-gray-400 hover:text-[#00d9ff] hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
         aria-label="Close navigation"
       >
         <svg viewBox="0 0 24 24" className="w-5 h-5" {...stroke}>
@@ -451,14 +451,14 @@ export default function Sidebar({
 
       {/* Help card */}
       <div className="px-3 pb-3">
-        <div className="rounded-card p-4 bg-slate-50 border border-slate-100">
-          <p className="text-sm font-bold text-slate-700">Need help?</p>
-          <p className="text-xs mt-1 text-slate-500">
+        <div className="rounded-card p-4 bg-gray-50 border border-gray-100">
+          <p className="text-sm font-bold text-[#00d9ff]">Need help?</p>
+          <p className="text-xs mt-1 text-gray-500">
             Our support team is ready to help you.
           </p>
           <button
             type="button"
-            className="mt-3 w-full py-2 rounded-lg bg-gradient-to-r from-brand-600 to-brand-500 text-white text-xs font-bold hover:from-brand-500 hover:to-brand-400 transition-all"
+            className="mt-3 w-full py-2 rounded-lg bg-gradient-to-r from-brand-600 to-brand-500 text-[#00d9ff] text-xs font-bold hover:from-brand-500 hover:to-brand-400 transition-all"
           >
             Contact Support
           </button>
@@ -466,7 +466,7 @@ export default function Sidebar({
       </div>
 
       {/* Footer nav */}
-      <div className="px-3 pb-4 space-y-1 pt-3 border-t border-slate-100">
+      <div className="px-3 pb-4 space-y-1 pt-3 border-t border-gray-100">
         {MEMBER_FOOTER.map(renderMemberItem)}
       </div>
     </aside>

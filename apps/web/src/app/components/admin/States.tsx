@@ -8,8 +8,8 @@ export function SkeletonTable({ rows = 6, columns = 6, variant = 'light' }: Skel
   const cardCls =
     variant === 'dark'
       ? 'bg-admin-card border-admin-border'
-      : 'bg-card border-slate-200';
-  const barCls = variant === 'dark' ? 'bg-admin-elevated' : 'bg-slate-100';
+      : 'bg-card border-gray-200';
+  const barCls = variant === 'dark' ? 'bg-admin-elevated' : 'bg-gray-100';
 
   return (
     <div className={`rounded-card border overflow-hidden ${cardCls}`} aria-busy="true">
@@ -40,17 +40,17 @@ export function EmptyState({ title, description, variant = 'light' }: EmptyState
       className={`rounded-card border py-16 px-6 text-center ${
         dark
           ? 'bg-admin-card border-dashed border-admin-border-strong'
-          : 'bg-card border-dashed border-slate-300'
+          : 'bg-card border-dashed border-gray-300'
       }`}
     >
       <div
         className={`mx-auto w-14 h-14 rounded-2xl flex items-center justify-center ${
-          dark ? 'bg-admin-elevated' : 'bg-slate-100'
+          dark ? 'bg-admin-elevated' : 'bg-gray-100'
         }`}
       >
         <svg
           viewBox="0 0 24 24"
-          className={`w-7 h-7 ${dark ? 'text-admin-muted' : 'text-slate-400'}`}
+          className={`w-7 h-7 ${dark ? 'text-admin-muted' : 'text-gray-400'}`}
           fill="none"
           stroke="currentColor"
           strokeWidth={1.6}
@@ -61,10 +61,10 @@ export function EmptyState({ title, description, variant = 'light' }: EmptyState
           <path d="m20 20-3.2-3.2M8.5 11h5" />
         </svg>
       </div>
-      <p className={`mt-4 text-base font-bold ${dark ? 'text-admin-text' : 'text-slate-800'}`}>
+      <p className={`mt-4 text-base font-bold ${dark ? 'text-admin-text' : 'text-[#00d9ff]'}`}>
         {title}
       </p>
-      <p className={`mt-1 text-sm max-w-sm mx-auto ${dark ? 'text-admin-muted' : 'text-slate-500'}`}>
+      <p className={`mt-1 text-sm max-w-sm mx-auto ${dark ? 'text-admin-muted' : 'text-gray-500'}`}>
         {description}
       </p>
     </div>
@@ -106,17 +106,17 @@ export function ErrorState({ title, description, onRetry, variant = 'light' }: E
           <path d="M12 8v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" />
         </svg>
       </div>
-      <p className={`mt-4 text-base font-bold ${dark ? 'text-admin-text' : 'text-slate-800'}`}>
+      <p className={`mt-4 text-base font-bold ${dark ? 'text-admin-text' : 'text-[#00d9ff]'}`}>
         {title}
       </p>
-      <p className={`mt-1 text-sm max-w-sm mx-auto ${dark ? 'text-admin-muted' : 'text-slate-500'}`}>
+      <p className={`mt-1 text-sm max-w-sm mx-auto ${dark ? 'text-admin-muted' : 'text-gray-500'}`}>
         {description}
       </p>
       {onRetry && (
         <button
           type="button"
           onClick={onRetry}
-          className="mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-600 text-white text-sm font-bold hover:bg-brand-700 transition-colors"
+          className="mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-600 text-[#00d9ff] text-sm font-bold hover:bg-brand-700 transition-colors"
         >
           <svg
             viewBox="0 0 24 24"

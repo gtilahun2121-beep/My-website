@@ -19,8 +19,8 @@ const stroke = {
 function Field({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">{label}</p>
-      <p className="mt-1 text-sm font-bold text-slate-800">{value || '—'}</p>
+      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{label}</p>
+      <p className="mt-1 text-sm font-bold text-[#00d9ff]">{value || '—'}</p>
     </div>
   );
 }
@@ -148,7 +148,7 @@ export default function ProfilePage() {
     <AppShell title="My Profile" subtitle="Manage your personal information and security" variant="member">
       {/* ── Photo + identity card ─────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-card rounded-card border border-slate-200 p-6">
+        <div className="bg-card rounded-card border border-gray-200 p-6">
           <div className="flex flex-col items-center text-center">
             <div className="relative">
               {user.profilePhoto ? (
@@ -159,14 +159,14 @@ export default function ProfilePage() {
                   className="w-28 h-28 rounded-full object-cover ring-4 ring-brand-100"
                 />
               ) : (
-                <div className="w-28 h-28 rounded-full bg-accent-600 text-white flex items-center justify-center text-3xl font-black ring-4 ring-brand-100">
+                <div className="w-28 h-28 rounded-full bg-accent-600 text-[#00d9ff] flex items-center justify-center text-3xl font-black ring-4 ring-brand-100">
                   {initials(user.firstName, user.lastName)}
                 </div>
               )}
               <button
                 type="button"
                 onClick={() => setPhotoOpen(true)}
-                className="absolute -bottom-1 -right-1 w-9 h-9 rounded-full bg-brand-600 text-white flex items-center justify-center border-4 border-card hover:bg-brand-700 transition-colors"
+                className="absolute -bottom-1 -right-1 w-9 h-9 rounded-full bg-brand-600 text-[#00d9ff] flex items-center justify-center border-4 border-card hover:bg-brand-700 transition-colors"
                 aria-label="Change profile photo"
               >
                 <svg viewBox="0 0 24 24" className="w-4 h-4" {...stroke}>
@@ -175,8 +175,8 @@ export default function ProfilePage() {
               </button>
             </div>
 
-            <h2 className="mt-4 text-xl font-black text-slate-900">{fullName}</h2>
-            <p className="text-sm text-slate-500">{roleLabel(user.role)}</p>
+            <h2 className="mt-4 text-xl font-black text-[#00d9ff]">{fullName}</h2>
+            <p className="text-sm text-gray-500">{roleLabel(user.role)}</p>
 
             <div className="mt-3 flex items-center gap-2">
               <StatusBadge tone="success">Active</StatusBadge>
@@ -184,10 +184,10 @@ export default function ProfilePage() {
             </div>
 
             {photoError && <p className="mt-3 text-xs font-semibold text-danger-600">{photoError}</p>}
-            {photoSaving && <p className="mt-3 text-xs font-semibold text-slate-400">Saving…</p>}
+            {photoSaving && <p className="mt-3 text-xs font-semibold text-gray-400">Saving…</p>}
           </div>
 
-          <div className="mt-6 border-t border-slate-100 pt-4 grid grid-cols-1 gap-3">
+          <div className="mt-6 border-t border-gray-100 pt-4 grid grid-cols-1 gap-3">
             <Field label="Member since" value={formatDateLong(user.createdAt)} />
             <Field label="Phone" value={user.phoneNumber} />
             <Field label="Email" value={user.email} />
@@ -197,57 +197,57 @@ export default function ProfilePage() {
 
         {/* ── Personal details + security ─────────────────────────────── */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-card rounded-card border border-slate-200 p-6">
-            <h3 className="text-lg font-black text-slate-900">Personal Details</h3>
-            <p className="mt-0.5 text-xs text-slate-500">
+          <div className="bg-card rounded-card border border-gray-200 p-6">
+            <h3 className="text-lg font-black text-[#00d9ff]">Personal Details</h3>
+            <p className="mt-0.5 text-xs text-gray-500">
               Update the contact information attached to your QalNet account.
             </p>
 
             <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
               <label className="block">
-                <span className="text-xs font-semibold text-slate-500">First name</span>
+                <span className="text-xs font-semibold text-gray-500">First name</span>
                 <input
                   value={form.firstName}
                   onChange={(e) => setForm((f) => ({ ...f, firstName: e.target.value }))}
-                  className="mt-1.5 w-full px-3 py-2.5 rounded-lg bg-slate-50 border border-slate-200 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500"
+                  className="mt-1.5 w-full px-3 py-2.5 rounded-lg bg-gray-50 border border-gray-200 text-sm font-semibold text-[#00d9ff] focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500"
                 />
               </label>
               <label className="block">
-                <span className="text-xs font-semibold text-slate-500">Last name</span>
+                <span className="text-xs font-semibold text-gray-500">Last name</span>
                 <input
                   value={form.lastName}
                   onChange={(e) => setForm((f) => ({ ...f, lastName: e.target.value }))}
-                  className="mt-1.5 w-full px-3 py-2.5 rounded-lg bg-slate-50 border border-slate-200 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500"
+                  className="mt-1.5 w-full px-3 py-2.5 rounded-lg bg-gray-50 border border-gray-200 text-sm font-semibold text-[#00d9ff] focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500"
                 />
               </label>
               <label className="block">
-                <span className="text-xs font-semibold text-slate-500">Phone number</span>
+                <span className="text-xs font-semibold text-gray-500">Phone number</span>
                 <input
                   value={form.phone}
                   onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-                  className="mt-1.5 w-full px-3 py-2.5 rounded-lg bg-slate-50 border border-slate-200 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500"
+                  className="mt-1.5 w-full px-3 py-2.5 rounded-lg bg-gray-50 border border-gray-200 text-sm font-semibold text-[#00d9ff] focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500"
                 />
               </label>
               <label className="block">
-                <span className="text-xs font-semibold text-slate-500">Email</span>
+                <span className="text-xs font-semibold text-gray-500">Email</span>
                 <input
                   type="email"
                   value={form.email}
                   onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                  className="mt-1.5 w-full px-3 py-2.5 rounded-lg bg-slate-50 border border-slate-200 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500"
+                  className="mt-1.5 w-full px-3 py-2.5 rounded-lg bg-gray-50 border border-gray-200 text-sm font-semibold text-[#00d9ff] focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500"
                 />
               </label>
               <label className="block sm:col-span-2">
-                <span className="text-xs font-semibold text-slate-500">Telegram username</span>
+                <span className="text-xs font-semibold text-gray-500">Telegram username</span>
                 <div className="relative mt-1.5">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-slate-400">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-gray-400">
                     @
                   </span>
                   <input
                     value={telegramHandle}
                     onChange={(e) => setTelegramHandle(e.target.value.replace(/^@/, ''))}
                     placeholder="username"
-                    className="w-full pl-8 pr-3 py-2.5 rounded-lg bg-slate-50 border border-slate-200 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500"
+                    className="w-full pl-8 pr-3 py-2.5 rounded-lg bg-gray-50 border border-gray-200 text-sm font-semibold text-[#00d9ff] focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500"
                   />
                 </div>
               </label>
@@ -264,21 +264,21 @@ export default function ProfilePage() {
               type="button"
               onClick={handleSaveDetails}
               disabled={saving}
-              className="mt-5 px-5 py-2.5 rounded-lg bg-brand-600 text-white text-sm font-bold hover:bg-brand-700 transition-colors disabled:opacity-60"
+              className="mt-5 px-5 py-2.5 rounded-lg bg-brand-600 text-[#00d9ff] text-sm font-bold hover:bg-brand-700 transition-colors disabled:opacity-60"
             >
               {saving ? 'Saving…' : 'Save Changes'}
             </button>
           </div>
 
           {/* ── Security ─────────────────────────────────────────────── */}
-          <div className="bg-card rounded-card border border-slate-200 p-6">
-            <h3 className="text-lg font-black text-slate-900">Security</h3>
-            <p className="mt-0.5 text-xs text-slate-500">
+          <div className="bg-card rounded-card border border-gray-200 p-6">
+            <h3 className="text-lg font-black text-[#00d9ff]">Security</h3>
+            <p className="mt-0.5 text-xs text-gray-500">
               Manage your PIN and trusted devices.
             </p>
 
             <div className="mt-5 space-y-3">
-              <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <div className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-gray-50 p-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-brand-100 text-brand-700 flex items-center justify-center">
                     <svg viewBox="0 0 24 24" className="w-5 h-5" {...stroke}>
@@ -286,37 +286,37 @@ export default function ProfilePage() {
                     </svg>
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-slate-800">Change PIN</p>
-                    <p className="text-xs text-slate-500">Reset your 6-digit login PIN via SMS OTP</p>
+                    <p className="text-sm font-bold text-[#00d9ff]">Change PIN</p>
+                    <p className="text-xs text-gray-500">Reset your 6-digit login PIN via SMS OTP</p>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={handleChangePin}
                   disabled={pinBusy}
-                  className="px-4 py-2 rounded-lg border border-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-100 transition-colors disabled:opacity-60 shrink-0"
+                  className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-bold text-[#00d9ff] hover:bg-gray-100 transition-colors disabled:opacity-60 shrink-0"
                 >
                   {pinBusy ? '…' : 'Change'}
                 </button>
               </div>
 
-              <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <div className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-gray-50 p-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-gray-100 text-gray-500 flex items-center justify-center">
                     <svg viewBox="0 0 24 24" className="w-5 h-5" {...stroke}>
                       <path d="M19 11a7 7 0 0 0-14 0M5 11H4v10h16V11h-1" />
                     </svg>
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-slate-800">Trusted devices</p>
-                    <p className="text-xs text-slate-500">Review devices signed in to your account</p>
+                    <p className="text-sm font-bold text-[#00d9ff]">Trusted devices</p>
+                    <p className="text-xs text-gray-500">Review devices signed in to your account</p>
                   </div>
                 </div>
                 <button
                   type="button"
                   disabled
                   title="Coming soon"
-                  className="px-4 py-2 rounded-lg border border-slate-200 text-sm font-bold text-slate-400 cursor-not-allowed shrink-0"
+                  className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-bold text-gray-400 cursor-not-allowed shrink-0"
                 >
                   Manage
                 </button>

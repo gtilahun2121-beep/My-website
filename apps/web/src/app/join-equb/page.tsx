@@ -55,7 +55,7 @@ export default function JoinEqubPage() {
 
       <div className="flex-grow py-8 px-4">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-3xl sm:text-4xl font-black text-[#314fa0] mb-2">
+          <h1 className="text-3xl sm:text-4xl font-black text-[#00d9ff] mb-2">
             {lang === 'en' ? 'Join an Equb ➕' : 'Equb ይቀላቀሉ ➕'}
           </h1>
           <p className="text-gray-600 mb-8">
@@ -78,7 +78,7 @@ export default function JoinEqubPage() {
                 <option>Business</option>
                 <option>Education</option>
               </select>
-              <button className="bg-[#314fa0] text-white font-bold px-6 py-2 rounded-lg hover:bg-[#2a4183]">
+              <button className="bg-[#001f3f] text-[#00d9ff] font-bold px-6 py-2 rounded-lg hover:bg-[#001f3f] hover:text-[#00d9ff]">
                 {lang === 'en' ? 'Search' : 'ፈልግ'}
               </button>
             </div>
@@ -87,8 +87,8 @@ export default function JoinEqubPage() {
           {/* Equb Listings */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {equbs.length > 0 ? equbs.map((equb, idx) => (
-              <div key={idx} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all border-t-4 border-[#314fa0]">
-                <h3 className="text-lg font-bold text-gray-900 mb-3">{equb.name || 'Unnamed Equb'}</h3>
+              <div key={idx} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all border-t-4 border-[#001f3f]">
+                <h3 className="text-lg font-bold text-[#00d9ff] mb-3">{equb.name || 'Unnamed Equb'}</h3>
                 <div className="space-y-2 text-sm mb-4">
                   <div className="flex justify-between">
                     <span className="text-gray-600">{lang === 'en' ? 'Members' : 'አባሎች'}</span>
@@ -96,7 +96,7 @@ export default function JoinEqubPage() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">{lang === 'en' ? 'Monthly Contribution' : 'ወር መዋጮ'}</span>
-                    <span className="font-bold text-[#314fa0]">ETB {equb.contribution_amount}</span>
+                    <span className="font-bold text-[#00d9ff]">ETB {equb.contribution_amount}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">{lang === 'en' ? 'Duration' : 'ጊዜ'}</span>
@@ -104,7 +104,7 @@ export default function JoinEqubPage() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">{lang === 'en' ? 'Open Slots' : 'ክፍት ቦታ'}</span>
-                    <span className={`font-bold ${equb.open_slots === 0 ? 'text-amber-600' : 'text-green-600'}`}>
+                    <span className={`font-bold ${equb.open_slots === 0 ? 'text-gray-400' : 'text-brand-600'}`}>
                       {equb.open_slots}
                     </span>
                   </div>
@@ -115,7 +115,7 @@ export default function JoinEqubPage() {
                   className={`w-full font-bold py-2 rounded-lg transition-all ${
                     equb.open_slots === 0
                       ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                      : 'bg-[#314fa0] text-white hover:bg-[#2a4183]'
+                      : 'bg-[#001f3f] text-[#00d9ff] hover:bg-[#001f3f] hover:text-[#00d9ff]'
                   }`}
                 >
                   {equb.open_slots === 0 ? (lang === 'en' ? 'Full' : 'ሙላ') : (lang === 'en' ? 'Join Now' : 'ተቀላቀል')}

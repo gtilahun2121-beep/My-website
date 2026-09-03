@@ -1,16 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  /* QalNet brand - Navy primary + Ethiopian-inspired accents */
-  --background: #faf9f7;
-  --foreground: #1a1a1a;
-  --primary-navy: #314fa0;
-  --primary-emerald: #314fa0;
-  --primary-gold: #d4af37;
-  --primary-red: #ce1126;
-  --accent-orange: #ff8c00;
-  --accent-purple: #7b2cbf;
-  --secondary-slate: #5a5a5a;
+  /* QalNet brand - Navy background with Cyan accents for contrast */
+  --background: #001f3f;
+  --foreground: #00d9ff;
+  --primary-navy: #001f3f;
+  --primary-cyan: #00d9ff;
   --font-sans: var(--font-geist-sans), system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), monospace;
 }
@@ -23,140 +18,115 @@
 }
 
 /* ---------------------------------------------------------------------------
- * QalNet fintech design tokens (per Qalnet_DESIGN_SPEC.md §4–§5)
- * Primary navy · secondary navy-blue · warning orange · success green · danger red
- * Usage: bg-brand-600, text-warning-600, bg-surface, rounded-card, etc.
+ * QalNet Brand System
+ * A coherent 3-hue palette built from the brand identity:
+ *   - Brand (cyan)        #00d9ff  → bright, energetic, primary accent
+ *   - Accent (deep blue)  #0066ff  → trust, secondary action
+ *   - Navy (dark)         #001f3f  → backgrounds, depth
+ * Each scale has a full range of distinct shades (50 = lightest, 950 = darkest)
+ * so light/dark backgrounds, text, and status badges stay readable and clear.
  * ------------------------------------------------------------------------- */
 @theme {
-  --color-brand-50: #f0f4fa;
-  --color-brand-100: #dbe6f5;
-  --color-brand-200: #b9cce9;
-  --color-brand-300: #8ba8d9;
-  --color-brand-400: #5c7fc5;
-  --color-brand-500: #3f62b6;
-  --color-brand-600: #314fa0;
-  --color-brand-700: #2a4183;
-  --color-brand-800: #26396d;
-  --color-brand-900: #20305a;
-  --color-brand-950: #141d36;
+  /* ── Brand (cyan) scale: 50–400 bright tints, 500 primary cyan,
+   *    600–950 deep navy tones for text & action surfaces ─────────────── */
+  --color-brand-50: #e6fbff;
+  --color-brand-100: #ccf6ff;
+  --color-brand-200: #99edff;
+  --color-brand-300: #4de2ff;
+  --color-brand-400: #1adcff;
+  --color-brand-500: #00d9ff;
+  --color-brand-600: #00b3d6;
+  --color-brand-700: #0091b0;
+  --color-brand-800: #006f8a;
+  --color-brand-900: #004d61;
+  --color-brand-950: #00394a;
 
-  /* ── Primary re-mapped to Navy system-wide
-   * App's functional UI used the default emerald/teal scales as its
-   * primary color (buttons, bottom-nav active state, cards, footers).
-   * Rebinding them to the navy brand palette turns the whole system navy
-   * without touching every hardcoded utility in every component.
-   * green-* (success) and blue-* (Fayda verify) are left untouched. */
-  --color-emerald-50: #f0f4fa;
-  --color-emerald-100: #dbe6f5;
-  --color-emerald-200: #b9cce9;
-  --color-emerald-300: #8ba8d9;
-  --color-emerald-400: #5c7fc5;
-  --color-emerald-500: #3f62b6;
-  --color-emerald-600: #314fa0;
-  --color-emerald-700: #2a4183;
-  --color-emerald-800: #26396d;
-  --color-emerald-900: #20305a;
+  /* ── Accent (deep blue) scale: read as trust / secondary action ─────── */
+  --color-accent-50: #eff4ff;
+  --color-accent-100: #dbe8ff;
+  --color-accent-200: #bfd5ff;
+  --color-accent-300: #93b8ff;
+  --color-accent-400: #5f93ff;
+  --color-accent-500: #0066ff;
+  --color-accent-600: #0052d6;
+  --color-accent-700: #0040a6;
+  --color-accent-800: #00337d;
+  --color-accent-900: #00295c;
+  --color-accent-950: #001a3a;
 
-  --color-teal-50: #f0f4fa;
-  --color-teal-100: #dbe6f5;
-  --color-teal-200: #b9cce9;
-  --color-teal-300: #8ba8d9;
-  --color-teal-400: #5c7fc5;
-  --color-teal-500: #3f62b6;
-  --color-teal-600: #314fa0;
-  --color-teal-700: #2a4183;
-  --color-teal-800: #26396d;
-  --color-teal-900: #20305a;
+  /* ── Emerald (success-oriented green) scale ─────────────────────────── */
+  --color-emerald-50: #ecfdf5;
+  --color-emerald-100: #d1fae5;
+  --color-emerald-200: #a7f3d0;
+  --color-emerald-300: #6ee7b7;
+  --color-emerald-400: #34d399;
+  --color-emerald-500: #10b981;
+  --color-emerald-600: #059669;
+  --color-emerald-700: #047857;
+  --color-emerald-800: #065f46;
+  --color-emerald-900: #064e3b;
 
-  --color-accent-50: #faf5ff;
-  --color-accent-100: #f3e8ff;
-  --color-accent-200: #e9d5ff;
-  --color-accent-300: #d8b4fe;
-  --color-accent-400: #c084fc;
-  --color-accent-500: #a855f7;
-  --color-accent-600: #9333ea;
-  --color-accent-700: #7e22ce;
-  --color-accent-800: #6b21a8;
-  --color-accent-900: #581c87;
+  /* ── Teal scale ─────────────────────────────────────────────────────── */
+  --color-teal-50: #f0fdfa;
+  --color-teal-100: #ccfbf1;
+  --color-teal-200: #99f6e4;
+  --color-teal-300: #5eead4;
+  --color-teal-400: #2dd4bf;
+  --color-teal-500: #14b8a6;
+  --color-teal-600: #0d9488;
+  --color-teal-700: #0f766e;
+  --color-teal-800: #115e59;
+  --color-teal-900: #134e4a;
 
+  /* ── Success scale ──────────────────────────────────────────────────── */
+  --color-success-50: #ecfdf5;
+  --color-success-100: #d1fae5;
+  --color-success-200: #a7f3d0;
+  --color-success-300: #6ee7b7;
+  --color-success-400: #34d399;
+  --color-success-500: #10b981;
+  --color-success-600: #059669;
+  --color-success-700: #047857;
+  --color-success-800: #065f46;
+  --color-success-900: #064e3b;
+
+  /* ── Warning scale ──────────────────────────────────────────────────── */
   --color-warning-50: #fffbeb;
   --color-warning-100: #fef3c7;
+  --color-warning-200: #fde68a;
   --color-warning-300: #fcd34d;
   --color-warning-400: #fbbf24;
   --color-warning-500: #f59e0b;
   --color-warning-600: #d97706;
   --color-warning-700: #b45309;
+  --color-warning-800: #92400e;
+  --color-warning-900: #78350f;
 
-  --color-success-50: #f0fdf4;
-  --color-success-100: #dcfce7;
-  --color-success-300: #86efac;
-  --color-success-400: #4ade80;
-  --color-success-500: #22c55e;
-  --color-success-600: #16a34a;
-  --color-success-700: #15803d;
-
+  /* ── Danger scale ───────────────────────────────────────────────────── */
   --color-danger-50: #fef2f2;
   --color-danger-100: #fee2e2;
+  --color-danger-200: #fecaca;
   --color-danger-300: #fca5a5;
   --color-danger-400: #f87171;
   --color-danger-500: #ef4444;
   --color-danger-600: #dc2626;
   --color-danger-700: #b91c1c;
+  --color-danger-800: #991b1b;
+  --color-danger-900: #7f1d1d;
 
-  --color-surface: #f4f6fb;
-  --color-card: #ffffff;
+  /* ── Gray scale ─────────────────────────────────────────────────────── */
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-900: #111827;
 
-  --radius-card: 16px;
-  --radius-control: 10px;
-
-  /* ── Admin light theme (member & admin console) ───────────────────────── */
-  --color-admin-bg: #f4f6fb;
-  --color-admin-sidebar: #ffffff;
-  --color-admin-header: #ffffff;
-  --color-admin-card: #ffffff;
-  --color-admin-card-hover: #f1f5f9;
-  --color-admin-elevated: #f1f5f9;
-  --color-admin-border: #e2e8f0;
-  --color-admin-border-subtle: #eef2f7;
-  --color-admin-border-strong: #cbd5e1;
-  --color-admin-text: #0f172a;
-  --color-admin-text-secondary: #334155;
-  --color-admin-muted: #64748b;
-  --color-admin-disabled: #94a3b8;
-
-  /* ── Admin drawer (light) — per QalNet Admin Console DESIGN_SPEC.md §5 */
-  --color-admin-nav-bg: #ffffff;
-  --color-admin-nav-border: #eef2f7;
-  --color-admin-nav-elevated: #f1f5f9;
-  --color-admin-nav-text: #e6ecf5;
-  --color-admin-nav-muted: #93a4bd;
-}
-
-/* ---------------------------------------------------------------------------
- * Light dashboard scope
- * Applied to the member & admin dashboard shells (see AppShell / admin
- * layout). Rebinds the Tailwind `slate` scale, `surface`, `card`, `accent`
- * and `foreground` tokens to a light theme so hardcoded utilities
- * (text-slate-900, bg-slate-50, border-slate-200, bg-card, …) resolve to
- * light values everywhere inside the console — without touching the
- * landing/auth pages. The financial-growth image stays as a faint backdrop.
- * ------------------------------------------------------------------------- */
-.dark-navy {
-  --foreground: #0f172a;
-
-  --color-surface: #f4f6fb;
-  --color-card: #ffffff;
-
-  /* Financial-growth background image (fixed), clear with no overlay so the
-     image shows at full quality. Cards/headers keep their own opaque white
-     surfaces on top of it for readability. */
-  background-color: #f4f6fb;
-  background-image: url('/financial-bg.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-
+  /* ── Slate scale ────────────────────────────────────────────────────── */
   --color-slate-50: #f8fafc;
   --color-slate-100: #f1f5f9;
   --color-slate-200: #e2e8f0;
@@ -168,39 +138,96 @@
   --color-slate-800: #1e293b;
   --color-slate-900: #0f172a;
 
-  /* accent → brand navy shades */
-  --color-accent-50: #eef3fa;
-  --color-accent-100: #dbe6f5;
-  --color-accent-200: #c0d0ec;
-  --color-accent-300: #9db6de;
-  --color-accent-400: #6f8fc6;
-  --color-accent-500: #4a68ad;
-  --color-accent-600: #314fa0;
-  --color-accent-700: #2a4183;
-  --color-accent-800: #26396d;
-  --color-accent-900: #20305a;
+  /* ── Surfaces ───────────────────────────────────────────────────────── */
+  --color-surface: #001f3f;
+  --color-card: #0a3456;
 
-  --color-admin-bg: #f4f6fb;
-  --color-admin-sidebar: #ffffff;
-  --color-admin-header: #ffffff;
-  --color-admin-card: #ffffff;
-  --color-admin-card-hover: #f1f5f9;
-  --color-admin-elevated: #f1f5f9;
-  --color-admin-border: #e2e8f0;
-  --color-admin-border-subtle: #eef2f7;
-  --color-admin-border-strong: #cbd5e1;
-  --color-admin-text: #0f172a;
-  --color-admin-text-secondary: #334155;
-  --color-admin-muted: #64748b;
-  --color-admin-disabled: #94a3b8;
+  --radius-card: 16px;
+  --radius-control: 10px;
+
+  /* ── Admin dark theme ────────────────────────────────────────────────── */
+  --color-admin-bg: #001f3f;
+  --color-admin-sidebar: #00284a;
+  --color-admin-header: #00284a;
+  --color-admin-card: #0a3456;
+  --color-admin-card-hover: #0a4d7a;
+  --color-admin-elevated: #0e3f66;
+  --color-admin-border: #0e4b70;
+  --color-admin-border-subtle: #1a5f8a;
+  --color-admin-border-strong: #0066ff;
+  --color-admin-text: #ffffff;
+  --color-admin-text-secondary: #9fd8e8;
+  --color-admin-muted: #8ab3cc;
+  --color-admin-disabled: #4a6a80;
+
+  /* ── Admin drawer (dark) ─────────────────────────────────────────────── */
+  --color-admin-nav-bg: #001f3f;
+  --color-admin-nav-border: #0e4b70;
+  --color-admin-nav-elevated: #0a3456;
+  --color-admin-nav-text: #ffffff;
+  --color-admin-nav-muted: #8ab3cc;
+}
+
+/* ---------------------------------------------------------------------------
+ * Dark dashboard scope
+ * Applied to the member & admin dashboard shells. Uses the brand navy
+ * background with a subtle bright cyan glow at the top.
+ * ------------------------------------------------------------------------- */
+.dark-navy {
+  --foreground: #ffffff;
+
+  --color-surface: #001f3f;
+  --color-card: #0a3456;
+
+  /* Dark background with cyan glow at top */
+  background-color: #001f3f;
+  background-image:
+    linear-gradient(180deg, #003d66 0%, #001f3f 40%),
+    linear-gradient(90deg, transparent 0%, rgba(0, 217, 255, 0.1) 50%, transparent 100%);
+  background-attachment: fixed;
+
+  --color-slate-50: #0a2a44;
+  --color-slate-100: #0e3453;
+  --color-slate-200: #143f63;
+  --color-slate-300: #1a4a70;
+  --color-slate-400: #2a5f85;
+  --color-slate-500: #8ab3cc;
+  --color-slate-600: #9fd8e8;
+  --color-slate-700: #c2ecf5;
+  --color-slate-800: #e6fbff;
+  --color-slate-900: #ffffff;
+
+  --color-accent-50: #0a2a44;
+  --color-accent-100: #143f63;
+  --color-accent-200: #1f5275;
+  --color-accent-300: #2a6590;
+  --color-accent-400: #3b7bb0;
+  --color-accent-500: #5f93ff;
+  --color-accent-600: #0066ff;
+  --color-accent-700: #85aaff;
+  --color-accent-800: #bfd5ff;
+  --color-accent-900: #dbe8ff;
+
+  --color-admin-bg: #001f3f;
+  --color-admin-sidebar: #00284a;
+  --color-admin-header: #00284a;
+  --color-admin-card: #0a3456;
+  --color-admin-card-hover: #0a4d7a;
+  --color-admin-elevated: #0e3f66;
+  --color-admin-border: #0e4b70;
+  --color-admin-border-subtle: #1a5f8a;
+  --color-admin-border-strong: #0066ff;
+  --color-admin-text: #ffffff;
+  --color-admin-text-secondary: #9fd8e8;
+  --color-admin-muted: #8ab3cc;
+  --color-admin-disabled: #4a6a80;
 }
 
 body {
-  background-color: #faf9f7;
-  background-image: url('/financial-bg.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  background-color: #001f3f;
+  background-image:
+    linear-gradient(180deg, #003d66 0%, #001f3f 40%),
+    linear-gradient(90deg, transparent 0%, rgba(0, 217, 255, 0.1) 50%, transparent 100%);
   background-attachment: fixed;
   color: var(--foreground);
   font-family: var(--font-sans);
@@ -208,32 +235,20 @@ body {
   min-height: 100vh;
 }
 
-/* Ethiopian pattern background - inspired by Addis Ababa cityscape */
-.pattern-eth {
-  background: 
-    repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(210, 175, 55, 0.03) 2px, rgba(210, 175, 55, 0.03) 4px),
-    repeating-linear-gradient(-45deg, transparent, transparent 2px, rgba(206, 17, 38, 0.02) 2px, rgba(206, 17, 38, 0.02) 4px);
+/* Neon glow effects */
+.glow-cyan {
+  text-shadow: 0 0 10px rgba(0, 217, 255, 0.8), 0 0 20px rgba(0, 217, 255, 0.4);
+  color: #00d9ff;
 }
 
-/* Ethiopian cross pattern inspired by traditional designs */
-.pattern-cross {
-  background-image:
-    linear-gradient(0deg, rgba(49, 79, 160, 0.05) 2px, transparent 2px),
-    linear-gradient(90deg, rgba(212, 175, 55, 0.05) 2px, transparent 2px);
-  background-size: 40px 40px;
+.glow-blue {
+  text-shadow: 0 0 10px rgba(0, 102, 255, 0.8), 0 0 20px rgba(0, 102, 255, 0.4);
+  color: #0066ff;
 }
 
-/* Neon glow effects for Ethiopian aesthetics */
-.glow-eth-emerald {
-  text-shadow: 0 0 10px rgba(49, 79, 160, 0.5), 0 0 20px rgba(49, 79, 160, 0.3);
-}
-
-.glow-eth-gold {
-  text-shadow: 0 0 10px rgba(212, 175, 55, 0.6), 0 0 20px rgba(212, 175, 55, 0.3);
-}
-
-.glow-eth-red {
-  text-shadow: 0 0 10px rgba(206, 17, 38, 0.5), 0 0 20px rgba(206, 17, 38, 0.2);
+.glow-bright-blue {
+  text-shadow: 0 0 10px rgba(30, 127, 255, 0.8), 0 0 20px rgba(30, 127, 255, 0.4);
+  color: #1e7fff;
 }
 
 /* Custom Scrollbar for Code/Logs windows */
@@ -242,110 +257,156 @@ body {
   height: 6px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: #0f172a;
+  background: #001f3f;
   border-radius: 4px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #0066ff;
   border-radius: 4px;
+  box-shadow: 0 0 10px rgba(0, 102, 255, 0.6);
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: #00d9ff;
+  box-shadow: 0 0 15px rgba(0, 217, 255, 0.8);
 }
 
-/* Glassmorphism Classes — light, no black */
+/* Glassmorphism Classes — dark neon style */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.9);
-  border: 2px solid rgba(212, 175, 55, 0.3);
-  box-shadow: 0 8px 32px rgba(49, 79, 160, 0.15);
+  background: rgba(15, 40, 71, 0.8);
+  border: 2px solid rgba(0, 217, 255, 0.4);
+  box-shadow: 0 8px 32px rgba(0, 102, 255, 0.25), inset 0 1px 0 rgba(0, 217, 255, 0.2);
 }
 
 .glass-panel-light {
-  background: rgba(255, 255, 255, 0.92);
-  border: 2px solid rgba(49, 79, 160, 0.25);
-  box-shadow: 0 4px 15px rgba(49, 79, 160, 0.12);
+  background: rgba(26, 58, 82, 0.9);
+  border: 2px solid rgba(0, 217, 255, 0.5);
+  box-shadow: 0 4px 15px rgba(0, 217, 255, 0.3), inset 0 1px 0 rgba(0, 217, 255, 0.2);
 }
 
-/* Water-transparent form surface — background image shows through clearly */
+/* Water-transparent form surface — with neon glow */
 .glass-form {
-  background: rgba(255, 255, 255, 0.30);
-  border: 1px solid rgba(255, 255, 255, 0.55);
-  box-shadow: 0 8px 32px rgba(49, 79, 160, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  background: rgba(10, 31, 63, 0.6);
+  border: 2px solid rgba(0, 217, 255, 0.5);
+  box-shadow: 0 8px 32px rgba(0, 102, 255, 0.4), 0 0 30px rgba(0, 217, 255, 0.2), inset 0 1px 0 rgba(0, 217, 255, 0.3);
 }
 
-/* Darker overlay helper so page background stays visible behind modals */
+/* Darker overlay helper for modals */
 .glass-backdrop {
-  background: rgba(10, 15, 30, 0.35);
+  background: rgba(10, 15, 30, 0.6);
+  backdrop-filter: blur(4px);
 }
 
-/* Financial image backdrop for the home page (clear, no overlay) */
+/* Neon glow home background */
 .home-bg {
-  background-color: transparent;
-  background-image: url('/financial-bg.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  background-color: #001f3f;
+  background-image:
+    linear-gradient(180deg, #003d66 0%, #001f3f 40%),
+    linear-gradient(90deg, transparent 0%, rgba(0, 217, 255, 0.1) 50%, transparent 100%);
   background-attachment: fixed;
 }
 
-/* Ethiopian card hover effects */
-.card-eth {
-  background: linear-gradient(135deg, #ffffff 0%, #f5f3f0 100%);
+/* Neon card effects */
+.card-neon {
+  background: linear-gradient(135deg, rgba(26, 58, 82, 0.9) 0%, rgba(15, 40, 71, 0.9) 100%);
   border: 2px solid transparent;
-  border-image: linear-gradient(135deg, #314fa0, #d4af37) 1;
+  border-image: linear-gradient(135deg, #0066ff, #00d9ff) 1;
   transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   position: relative;
   overflow: hidden;
+  box-shadow: 0 0 20px rgba(0, 102, 255, 0.2);
 }
 
-.card-eth::before {
+.card-neon::before {
   content: '';
   position: absolute;
   top: -2px;
   left: -2px;
   right: -2px;
   bottom: -2px;
-  background: linear-gradient(135deg, #314fa0, #d4af37, #ce1126);
+  background: linear-gradient(135deg, #0066ff, #00d9ff, #1e7fff);
   border-radius: inherit;
   opacity: 0;
   z-index: -1;
   transition: opacity 0.4s ease;
 }
 
-.card-eth:hover {
+.card-neon:hover {
   transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 20px 40px rgba(49, 79, 160, 0.25), 0 0 30px rgba(212, 175, 55, 0.15);
-  border-color: #314fa0;
+  box-shadow: 0 20px 40px rgba(0, 102, 255, 0.5), 0 0 30px rgba(0, 217, 255, 0.4);
+  border-color: #00d9ff;
 }
 
-.card-eth:hover::before {
-  opacity: 0.1;
+.card-neon:hover::before {
+  opacity: 0.15;
 }
 
-/* Phone Bezel Shadow - Enhanced for Ethiopian theme */
+/* Neon button glow */
+.btn-neon {
+  background: linear-gradient(135deg, #0066ff, #00a8d6);
+  color: #ffffff;
+  border: 2px solid #00d9ff;
+  box-shadow: 0 0 15px rgba(0, 102, 255, 0.5), inset 0 0 10px rgba(0, 217, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.btn-neon:hover {
+  box-shadow: 0 0 25px rgba(0, 217, 255, 0.8), 0 0 15px rgba(0, 102, 255, 0.6), inset 0 0 15px rgba(0, 217, 255, 0.3);
+  transform: translateY(-2px);
+  border-color: #00d9ff;
+}
+
+.btn-neon:active {
+  transform: translateY(0);
+}
+
+/* Neon input focus */
+.input-neon:focus {
+  border-color: #00d9ff;
+  box-shadow: 0 0 20px rgba(0, 217, 255, 0.6), 0 0 10px rgba(0, 102, 255, 0.4);
+  outline: none;
+}
+
+/* Neon text effect */
+.text-neon-cyan {
+  color: #00d9ff;
+  text-shadow: 0 0 10px rgba(0, 217, 255, 0.8);
+}
+
+.text-neon-blue {
+  color: #0066ff;
+  text-shadow: 0 0 10px rgba(0, 102, 255, 0.8);
+}
+
+/* Neon border glow */
+.border-neon {
+  border-color: #00d9ff;
+  box-shadow: 0 0 10px rgba(0, 217, 255, 0.5), inset 0 0 10px rgba(0, 217, 255, 0.1);
+}
+
+/* Phone Bezel Shadow - Neon style */
 .phone-shadow {
-  box-shadow: 0 25px 50px -12px rgba(49, 79, 160, 0.4), 0 0 40px 2px rgba(212, 175, 55, 0.2), 0 0 60px 4px rgba(206, 17, 38, 0.1);
+  box-shadow: 0 25px 50px -12px rgba(0, 102, 255, 0.6), 0 0 40px 2px rgba(0, 217, 255, 0.3), 0 0 60px 4px rgba(30, 127, 255, 0.2);
 }
 
-/* Ethiopian celebration pulse */
-@keyframes pulse-eth-celebration {
+/* Neon pulse animation */
+@keyframes pulse-neon {
   0% {
-    box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.8), 0 0 0 0 rgba(49, 79, 160, 0.6), 0 0 0 0 rgba(206, 17, 38, 0.4);
+    box-shadow: 0 0 0 0 rgba(0, 217, 255, 0.8), 0 0 0 0 rgba(0, 102, 255, 0.6);
   }
   50% {
-    box-shadow: 0 0 0 10px rgba(212, 175, 55, 0), 0 0 0 20px rgba(49, 79, 160, 0), 0 0 0 30px rgba(206, 17, 38, 0);
+    box-shadow: 0 0 0 10px rgba(0, 217, 255, 0), 0 0 0 20px rgba(0, 102, 255, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(212, 175, 55, 0), 0 0 0 0 rgba(49, 79, 160, 0), 0 0 0 0 rgba(206, 17, 38, 0);
+    box-shadow: 0 0 0 0 rgba(0, 217, 255, 0), 0 0 0 0 rgba(0, 102, 255, 0);
   }
 }
 
-.animate-eth-celebration {
-  animation: pulse-eth-celebration 1.8s infinite;
+.animate-neon-pulse {
+  animation: pulse-neon 2s infinite;
 }
 
-/* Vibrant entrance animation - like Ethiopia's energy */
-@keyframes eth-bounce-in {
+/* Vibrant entrance animation - neon style */
+@keyframes neon-bounce-in {
   0% {
     opacity: 0;
     transform: translateY(20px) scale(0.95);
@@ -359,26 +420,25 @@ body {
   }
 }
 
-.animate-eth-bounce-in {
-  animation: eth-bounce-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+.animate-neon-bounce-in {
+  animation: neon-bounce-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
-/* Rainbow wave effect inspired by Ethiopian textiles */
-@keyframes rainbow-wave {
+/* Neon glow wave effect */
+@keyframes neon-glow-wave {
   0% {
-    background-position: 0% 50%;
+    box-shadow: 0 0 5px rgba(0, 102, 255, 0.5);
   }
   50% {
-    background-position: 100% 50%;
+    box-shadow: 0 0 20px rgba(0, 217, 255, 0.8), 0 0 10px rgba(0, 102, 255, 0.6);
   }
   100% {
-    background-position: 0% 50%;
+    box-shadow: 0 0 5px rgba(0, 102, 255, 0.5);
   }
 }
 
-.animate-rainbow-wave {
-  background-size: 200% 200%;
-  animation: rainbow-wave 8s ease infinite;
+.animate-neon-glow {
+  animation: neon-glow-wave 3s ease-in-out infinite;
 }
 
 /* Scroll reveal animation */
@@ -400,7 +460,9 @@ body {
 /* USSD Screen styling */
 .ussd-screen {
   font-family: 'Courier New', Courier, monospace;
-  background-color: #556b2f;
-  color: #000000;
-  text-shadow: 0.5px 0.5px 0px rgba(255, 255, 255, 0.2);
+  background-color: #001f3f;
+  color: #00d9ff;
+  text-shadow: 0.5px 0.5px 2px rgba(0, 217, 255, 0.5);
+  border: 2px solid #0e4b70;
+  box-shadow: inset 0 0 10px rgba(0, 102, 255, 0.3);
 }

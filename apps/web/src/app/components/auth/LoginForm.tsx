@@ -54,9 +54,9 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
   // Step 2: Verify PIN against the real backend
   const handlePinSubmit = async () => {
     setError('');
-    if (pin.length !== 6 || !/^\d+$/.test(pin)) {
-      setError('PIN must be exactly 6 digits');
-      onError?.('Invalid PIN', 'PIN must be exactly 6 digits', 3000);
+    if (!/^\d{4,6}$/.test(pin)) {
+      setError('PIN must be 4-6 digits');
+      onError?.('Invalid PIN', 'PIN must be 4-6 digits', 3000);
       return;
     }
 
@@ -121,7 +121,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
       {/* Step 1: Phone Number */}
       {step === 'phone' && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <h3 className="text-2xl font-black text-[#314fa0] mb-2 text-center">
+          <h3 className="text-2xl font-black text-[#00d9ff] mb-2 text-center">
             🔐 Sign In
           </h3>
           <p className="text-center text-sm text-gray-600 mb-6">
@@ -130,7 +130,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-bold text-[#314fa0] mb-2">
+              <label className="block text-sm font-bold text-[#00d9ff] mb-2">
                 Phone Number or Email
               </label>
               <input
@@ -138,9 +138,9 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
                 placeholder="+251911223344 or email@example.com"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-[#314fa0] font-bold text-lg"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#001f3f] font-bold text-lg"
               />
-              <p className="text-xs text-[#5a5a5a] mt-1">
+              <p className="text-xs text-[#ffffff] mt-1">
                 Same phone or email you used to register
               </p>
             </div>
@@ -149,7 +149,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-amber-100 border-l-4 border-amber-500 text-amber-700 p-4 rounded"
+                className="bg-brand-100 border-l-4 border-brand-500 text-brand-700 p-4 rounded"
               >
                 {error}
               </motion.div>
@@ -160,14 +160,14 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
               disabled={loading}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="w-full py-3 bg-gradient-to-r from-[#314fa0] to-[#2a4183] text-white font-black rounded-full hover:shadow-lg transition-all duration-300 disabled:opacity-50"
+              className="w-full py-3 bg-gradient-to-r from-[#001f3f] to-[#001f3f] text-[#00d9ff] font-black rounded-full hover:shadow-lg transition-all duration-300 disabled:opacity-50"
             >
               {loading ? '⏳ Verifying...' : '✓ Continue'}
             </motion.button>
 
-            <p className="text-center text-sm text-[#5a5a5a] mb-6">
+            <p className="text-center text-sm text-[#ffffff] mb-6">
               Don&apos;t have an account?{' '}
-              <a href="/auth?mode=register" className="text-[#314fa0] font-black hover:underline">
+              <a href="/auth?mode=register" className="text-[#00d9ff] font-black hover:underline">
                 Sign up here
               </a>
             </p>
@@ -178,16 +178,16 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
       {/* Step 2: PIN Entry */}
       {step === 'pin' && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <h3 className="text-2xl font-black text-[#314fa0] mb-2 text-center">
+          <h3 className="text-2xl font-black text-[#00d9ff] mb-2 text-center">
             🔐 Enter Your PIN
           </h3>
-          <p className="text-sm text-center text-[#5a5a5a] mb-6">
+          <p className="text-sm text-center text-[#ffffff] mb-6">
             Account: {phoneNumber}
           </p>
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-bold text-[#314fa0] mb-2">
+              <label className="block text-sm font-bold text-[#00d9ff] mb-2">
                 6-Digit Security PIN
               </label>
               <div className="relative">
@@ -197,12 +197,12 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
                   maxLength={6}
                   value={pin}
                   onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
-                  className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-[#314fa0] font-bold text-3xl text-center tracking-widest pr-12"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#001f3f] font-bold text-3xl text-center tracking-widest pr-12"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPin((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full text-gray-400 hover:text-[#314fa0] hover:bg-gray-100 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full text-gray-400 hover:text-[#00d9ff] hover:bg-gray-100 transition-colors"
                   aria-label={showPin ? 'Hide PIN' : 'Show PIN'}
                 >
                   {showPin ? (
@@ -220,7 +220,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
                   )}
                 </button>
               </div>
-              <p className="text-xs text-[#5a5a5a] mt-1">
+              <p className="text-xs text-[#ffffff] mt-1">
                 Enter the PIN you set during registration
               </p>
             </div>
@@ -229,7 +229,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-amber-100 border-l-4 border-amber-500 text-amber-700 p-4 rounded"
+                className="bg-brand-100 border-l-4 border-brand-500 text-brand-700 p-4 rounded"
               >
                 {error}
               </motion.div>
@@ -240,7 +240,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
               disabled={loading}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="w-full py-3 bg-gradient-to-r from-[#314fa0] to-[#2a4183] text-white font-black rounded-full hover:shadow-lg transition-all duration-300 disabled:opacity-50"
+              className="w-full py-3 bg-gradient-to-r from-[#001f3f] to-[#001f3f] text-[#00d9ff] font-black rounded-full hover:shadow-lg transition-all duration-300 disabled:opacity-50"
             >
               {loading ? '⏳ Verifying...' : '🔓 Login'}
             </motion.button>
@@ -251,15 +251,15 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
                 setError('');
                 setPin('');
               }}
-              className="w-full py-2 text-[#314fa0] font-bold hover:underline"
+              className="w-full py-2 text-[#00d9ff] font-bold hover:underline"
             >
               ← Use Different Account
             </button>
           </div>
 
           {/* Forgot PIN Section */}
-          <div className="mt-6 pt-6 border-t border-slate-200">
-            <p className="text-center text-sm text-[#5a5a5a] mb-3">
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <p className="text-center text-sm text-[#ffffff] mb-3">
               Forgot your PIN?
             </p>
             <motion.button
@@ -269,7 +269,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
               }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="w-full py-2 border-2 border-slate-300 text-[#314fa0] font-bold rounded-lg hover:bg-[#314fa0]/10 transition-all"
+              className="w-full py-2 border-2 border-gray-300 text-[#00d9ff] font-bold rounded-lg hover:bg-[#001f3f]/10 transition-all"
             >
               🆘 Reset PIN
             </motion.button>
@@ -280,7 +280,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
       {/* Step 3: Two-Factor Authentication */}
       {step === '2fa' && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <h3 className="text-2xl font-black text-[#314fa0] mb-2 text-center">
+          <h3 className="text-2xl font-black text-[#00d9ff] mb-2 text-center">
             🔐 Two-Factor Authentication
           </h3>
           <p className="text-center text-sm text-gray-600 mb-6">
@@ -289,7 +289,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-bold text-[#314fa0] mb-2">
+              <label className="block text-sm font-bold text-[#00d9ff] mb-2">
                 Authentication Code
               </label>
               <input
@@ -299,9 +299,9 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
                 placeholder="000000"
                 value={otpCode}
                 onChange={(e) => setOtpCode(e.target.value.replace(/[^A-Za-z0-9-]/g, '').slice(0, 20))}
-                className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-[#314fa0] font-bold text-3xl text-center tracking-widest"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#001f3f] font-bold text-3xl text-center tracking-widest"
               />
-              <p className="text-xs text-[#5a5a5a] mt-1">
+              <p className="text-xs text-[#ffffff] mt-1">
                 Backup codes are single-use and formatted like XXXX-XXXX.
               </p>
             </div>
@@ -310,7 +310,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded"
+                className="bg-brand-100 border-l-4 border-brand-500 text-brand-700 p-4 rounded"
               >
                 {error}
               </motion.div>
@@ -321,7 +321,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
               disabled={loading}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="w-full py-3 bg-gradient-to-r from-[#314fa0] to-[#2a4183] text-white font-black rounded-full hover:shadow-lg transition-all duration-300 disabled:opacity-50"
+              className="w-full py-3 bg-gradient-to-r from-[#001f3f] to-[#001f3f] text-[#00d9ff] font-black rounded-full hover:shadow-lg transition-all duration-300 disabled:opacity-50"
             >
               {loading ? '⏳ Verifying...' : '🔓 Verify & Sign In'}
             </motion.button>
@@ -332,7 +332,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
                 setOtpCode('');
                 setError('');
               }}
-              className="w-full py-2 text-[#314fa0] font-bold hover:underline"
+              className="w-full py-2 text-[#00d9ff] font-bold hover:underline"
             >
               ← Use a different code
             </button>
@@ -355,15 +355,15 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
             ✅
           </motion.div>
 
-          <h3 className="text-2xl font-black text-[#314fa0] mb-4">
+          <h3 className="text-2xl font-black text-[#00d9ff] mb-4">
             Welcome Back!
           </h3>
           <p className="text-gray-600 mb-6">
             Hello, {`${user.firstName} ${user.lastName}`.trim() || 'QalNet Member'}! 👋
           </p>
 
-          <div className="bg-[#314fa0]/10 border-2 border-[#314fa0] rounded-lg p-4 mb-6 text-left">
-            <p className="text-sm font-bold text-[#314fa0] mb-3">✓ Account Details:</p>
+          <div className="bg-[#001f3f]/10 border-2 border-[#001f3f] rounded-lg p-4 mb-6 text-left">
+            <p className="text-sm font-bold text-[#00d9ff] mb-3">✓ Account Details:</p>
             <div className="space-y-2 text-xs text-gray-600">
               <p>📱 Phone: {user.phoneNumber}</p>
               <p>👤 Name: {`${user.firstName} ${user.lastName}`.trim()}</p>
@@ -376,7 +376,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
             onClick={() => router.push('/')}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="w-full py-3 bg-gradient-to-r from-[#314fa0] to-[#2a4183] text-white font-black rounded-full hover:shadow-lg transition-all duration-300 mb-3"
+            className="w-full py-3 bg-gradient-to-r from-[#001f3f] to-[#001f3f] text-[#00d9ff] font-black rounded-full hover:shadow-lg transition-all duration-300 mb-3"
           >
             🎯 Go to Dashboard
           </motion.button>
@@ -385,7 +385,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
             onClick={() => router.push('/')}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="w-full py-2 border-2 border-[#314fa0] text-[#314fa0] font-bold rounded-full hover:bg-[#314fa0]/10 transition-all"
+            className="w-full py-2 border-2 border-[#001f3f] text-[#00d9ff] font-bold rounded-full hover:bg-[#001f3f]/10 transition-all"
           >
             🏠 Go to Home
           </motion.button>
@@ -394,3 +394,4 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
     </motion.div>
   );
 }
+

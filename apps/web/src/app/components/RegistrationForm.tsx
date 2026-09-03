@@ -196,7 +196,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${
                   s <= step
-                    ? 'bg-[#314fa0] text-white'
+                    ? 'bg-[#001f3f] text-[#00d9ff]'
                     : 'bg-gray-200 text-gray-600'
                 }`}
               >
@@ -205,7 +205,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
               {s < 5 && (
                 <div
                   className={`h-1 flex-grow mx-2 transition-all ${
-                    s < step ? 'bg-[#314fa0]' : 'bg-gray-200'
+                    s < step ? 'bg-[#001f3f]' : 'bg-gray-200'
                   }`}
                 ></div>
               )}
@@ -220,10 +220,10 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
       {/* Step 1: Personal Information */}
       {step === 1 && (
         <div>
-          <h3 className="text-2xl font-bold mb-6 text-gray-900">Personal Information</h3>
+          <h3 className="text-2xl font-bold mb-6 text-[#00d9ff]">Personal Information</h3>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">First Name</label>
+              <label className="block text-sm font-semibold text-[#00d9ff] mb-2">First Name</label>
               <input
                 type="text"
                 name="firstName"
@@ -231,13 +231,13 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                 onChange={handleChange}
                 placeholder="Enter first name"
                 className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-all ${
-                  errors.firstName ? 'border-amber-500' : 'border-gray-200 focus:border-[#314fa0]'
+                  errors.firstName ? 'border-brand-500' : 'border-gray-200 focus:border-[#001f3f]'
                 }`}
               />
-              {errors.firstName && <p className="text-amber-600 text-sm mt-1">{errors.firstName}</p>}
+              {errors.firstName && <p className="text-brand-600 text-sm mt-1">{errors.firstName}</p>}
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Last Name</label>
+              <label className="block text-sm font-semibold text-[#00d9ff] mb-2">Last Name</label>
               <input
                 type="text"
                 name="lastName"
@@ -245,10 +245,10 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                 onChange={handleChange}
                 placeholder="Enter last name"
                 className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-all ${
-                  errors.lastName ? 'border-amber-500' : 'border-gray-200 focus:border-[#314fa0]'
+                  errors.lastName ? 'border-brand-500' : 'border-gray-200 focus:border-[#001f3f]'
                 }`}
               />
-              {errors.lastName && <p className="text-amber-600 text-sm mt-1">{errors.lastName}</p>}
+              {errors.lastName && <p className="text-brand-600 text-sm mt-1">{errors.lastName}</p>}
             </div>
           </div>
         </div>
@@ -257,10 +257,10 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
       {/* Step 2: Contact Information */}
       {step === 2 && (
         <div>
-          <h3 className="text-2xl font-bold mb-6 text-gray-900">Contact Information</h3>
+          <h3 className="text-2xl font-bold mb-6 text-[#00d9ff]">Contact Information</h3>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
+              <label className="block text-sm font-semibold text-[#00d9ff] mb-2">Phone Number</label>
               <input
                 type="tel"
                 name="phoneNumber"
@@ -268,13 +268,13 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                 onChange={handleChange}
                 placeholder="+2519xxxxxxxx"
                 className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-all ${
-                  errors.phoneNumber ? 'border-amber-500' : 'border-gray-200 focus:border-[#314fa0]'
+                  errors.phoneNumber ? 'border-brand-500' : 'border-gray-200 focus:border-[#001f3f]'
                 }`}
               />
-              {errors.phoneNumber && <p className="text-amber-600 text-sm mt-1">{errors.phoneNumber}</p>}
+              {errors.phoneNumber && <p className="text-brand-600 text-sm mt-1">{errors.phoneNumber}</p>}
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+              <label className="block text-sm font-semibold text-[#00d9ff] mb-2">Email</label>
               <input
                 type="email"
                 name="email"
@@ -282,10 +282,10 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                 onChange={handleChange}
                 placeholder="your.email@gmail.com"
                 className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-all ${
-                  errors.email ? 'border-amber-500' : 'border-gray-200 focus:border-[#314fa0]'
+                  errors.email ? 'border-brand-500' : 'border-gray-200 focus:border-[#001f3f]'
                 }`}
               />
-              {errors.email && <p className="text-amber-600 text-sm mt-1">{errors.email}</p>}
+              {errors.email && <p className="text-brand-600 text-sm mt-1">{errors.email}</p>}
             </div>
           </div>
         </div>
@@ -294,10 +294,10 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
       {/* Step 3: Security (Password, PIN) */}
       {step === 3 && (
         <div>
-          <h3 className="text-2xl font-bold mb-6 text-gray-900">Security</h3>
+          <h3 className="text-2xl font-bold mb-6 text-[#00d9ff]">Security</h3>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Create Password</label>
+              <label className="block text-sm font-semibold text-[#00d9ff] mb-2">Create Password</label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -306,14 +306,14 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                   onChange={handleChange}
                   placeholder="At least 8 characters with uppercase, lowercase, digit, special char"
                   className={`w-full px-4 pr-11 py-3 border-2 rounded-lg focus:outline-none transition-all ${
-                    errors.password ? 'border-amber-500' : 'border-gray-200 focus:border-[#314fa0]'
+                    errors.password ? 'border-brand-500' : 'border-gray-200 focus:border-[#001f3f]'
                   }`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
                   aria-label="Show/Hide PIN"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:text-[#314fa0] hover:bg-gray-100 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:text-[#00d9ff] hover:bg-gray-100 transition-colors"
                 >
                   {!showPassword ? (
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -322,30 +322,30 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                   )}
                 </button>
               </div>
-              {errors.password && <p className="text-amber-600 text-sm mt-1">{errors.password}</p>}
+              {errors.password && <p className="text-brand-600 text-sm mt-1">{errors.password}</p>}
               
               {/* Password Validation Checklist */}
               {formData.password && (
                 <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                  <p className="text-xs font-semibold text-gray-700 mb-3">Password Requirements:</p>
+                  <p className="text-xs font-semibold text-[#00d9ff] mb-3">Password Requirements:</p>
                   <div className="space-y-2">
-                    <div className={`flex items-center gap-2 text-sm ${passwordValidation.minLength ? 'text-green-600' : 'text-gray-600'}`}>
-                      <span>{passwordValidation.minLength ? '✅' : '⭕'}</span>
+                    <div className={`flex items-center gap-2 text-sm ${passwordValidation.minLength ? 'text-brand-600' : 'text-gray-600'}`}>
+                      <span>{passwordValidation.minLength ? '' : ''}</span>
                       <span>At least 8 characters</span>
                     </div>
-                    <div className={`flex items-center gap-2 text-sm ${passwordValidation.uppercase ? 'text-green-600' : 'text-gray-600'}`}>
+                    <div className={`flex items-center gap-2 text-sm ${passwordValidation.uppercase ? 'text-brand-600' : 'text-gray-600'}`}>
                       <span>{passwordValidation.uppercase ? '✅' : '⭕'}</span>
                       <span>At least 1 uppercase letter</span>
                     </div>
-                    <div className={`flex items-center gap-2 text-sm ${passwordValidation.lowercase ? 'text-green-600' : 'text-gray-600'}`}>
+                    <div className={`flex items-center gap-2 text-sm ${passwordValidation.lowercase ? 'text-brand-600' : 'text-gray-600'}`}>
                       <span>{passwordValidation.lowercase ? '✅' : '⭕'}</span>
                       <span>At least 1 lowercase letter</span>
                     </div>
-                    <div className={`flex items-center gap-2 text-sm ${passwordValidation.digit ? 'text-green-600' : 'text-gray-600'}`}>
+                    <div className={`flex items-center gap-2 text-sm ${passwordValidation.digit ? 'text-brand-600' : 'text-gray-600'}`}>
                       <span>{passwordValidation.digit ? '✅' : '⭕'}</span>
                       <span>At least 1 digit</span>
                     </div>
-                    <div className={`flex items-center gap-2 text-sm ${passwordValidation.specialChar ? 'text-green-600' : 'text-gray-600'}`}>
+                    <div className={`flex items-center gap-2 text-sm ${passwordValidation.specialChar ? 'text-brand-600' : 'text-gray-600'}`}>
                       <span>{passwordValidation.specialChar ? '✅' : '⭕'}</span>
                       <span>At least 1 special character (!@#$%^&*...)</span>
                     </div>
@@ -354,7 +354,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
               )}
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Create PIN</label>
+              <label className="block text-sm font-semibold text-[#00d9ff] mb-2">Create PIN</label>
               <input
                 type="text"
                 name="pin"
@@ -362,10 +362,10 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                 onChange={handleChange}
                 placeholder="Exactly 6 digits"
                 className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-all ${
-                  errors.pin ? 'border-amber-500' : 'border-gray-200 focus:border-[#314fa0]'
+                  errors.pin ? 'border-brand-500' : 'border-gray-200 focus:border-[#001f3f]'
                 }`}
               />
-              {errors.pin && <p className="text-amber-600 text-sm mt-1">{errors.pin}</p>}
+              {errors.pin && <p className="text-brand-600 text-sm mt-1">{errors.pin}</p>}
             </div>
           </div>
         </div>
@@ -374,10 +374,10 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
       {/* Step 4: Identity Verification (Fayda) */}
       {step === 4 && (
         <div>
-          <h3 className="text-2xl font-bold mb-6 text-gray-900">Identity Verification (Fayda)</h3>
+          <h3 className="text-2xl font-bold mb-6 text-[#00d9ff]">Identity Verification (Fayda)</h3>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Fayda Number</label>
+              <label className="block text-sm font-semibold text-[#00d9ff] mb-2">Fayda Number</label>
               <input
                 type="text"
                 name="fayda"
@@ -385,10 +385,10 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                 onChange={handleChange}
                 placeholder="Enter 16-digit Fayda number"
                 className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-all ${
-                  errors.fayda ? 'border-amber-500' : 'border-gray-200 focus:border-[#314fa0]'
+                  errors.fayda ? 'border-brand-500' : 'border-gray-200 focus:border-[#001f3f]'
                 }`}
               />
-              {errors.fayda && <p className="text-amber-600 text-sm mt-1">{errors.fayda}</p>}
+              {errors.fayda && <p className="text-brand-600 text-sm mt-1">{errors.fayda}</p>}
             </div>
           </div>
         </div>
@@ -397,11 +397,11 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
       {/* Step 5: Fayda OTP Verification */}
       {step === 5 && (
         <div>
-          <h3 className="text-2xl font-bold mb-6 text-gray-900">OTP Verification</h3>
+          <h3 className="text-2xl font-bold mb-6 text-[#00d9ff]">OTP Verification</h3>
           <p className="text-gray-600 mb-6">Verify your Fayda account with OTP</p>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Fayda OTP</label>
+              <label className="block text-sm font-semibold text-[#00d9ff] mb-2">Fayda OTP</label>
               <p className="text-xs text-gray-500 mb-2">Enter the 6-digit OTP sent to your Fayda account</p>
               <input
                 type="text"
@@ -410,10 +410,10 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                 onChange={handleChange}
                 placeholder="Enter 6-digit OTP"
                 className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-all ${
-                  errors.faydaOtp ? 'border-amber-500' : 'border-gray-200 focus:border-[#314fa0]'
+                  errors.faydaOtp ? 'border-brand-500' : 'border-gray-200 focus:border-[#001f3f]'
                 }`}
               />
-              {errors.faydaOtp && <p className="text-amber-600 text-sm mt-1">{errors.faydaOtp}</p>}
+              {errors.faydaOtp && <p className="text-brand-600 text-sm mt-1">{errors.faydaOtp}</p>}
               
               <button
                 onClick={() => {
@@ -424,15 +424,15 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                     setErrors({ faydaOtp: 'Invalid Fayda or OTP format' });
                   }
                 }}
-                className="w-full mt-3 px-4 py-3 bg-[#314fa0] text-white font-bold rounded-lg hover:bg-[#2a4183] transition-all"
+                className="w-full mt-3 px-4 py-3 bg-[#001f3f] text-[#00d9ff] font-bold rounded-lg hover:bg-[#001f3f] transition-all"
               >
                 Verify Fayda
               </button>
             </div>
 
             {formData.faydaVerified && (
-              <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 text-center">
-                <p className="text-green-700 font-semibold">✅ Identity Confirmed</p>
+              <div className="bg-brand-50 border-2 border-brand-200 rounded-lg p-4 text-center">
+                <p className="text-brand-700 font-semibold">✅ Identity Confirmed</p>
               </div>
             )}
           </div>
@@ -441,8 +441,8 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
 
       {/* Error message */}
       {errors.submit && (
-        <div className="mt-6 p-4 bg-amber-50 border-2 border-amber-300 rounded-lg">
-          <p className="text-amber-700 font-semibold">{errors.submit}</p>
+        <div className="mt-6 p-4 bg-brand-50 border-2 border-brand-300 rounded-lg">
+          <p className="text-brand-700 font-semibold">{errors.submit}</p>
         </div>
       )}
 
@@ -452,7 +452,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
           <button
             onClick={() => setStep(step - 1)}
             disabled={submitting}
-            className="flex-1 px-6 py-3 bg-gray-200 text-gray-800 font-bold rounded-lg hover:bg-gray-300 transition-all disabled:opacity-50"
+            className="flex-1 px-6 py-3 bg-gray-200 text-[#00d9ff] font-bold rounded-lg hover:bg-gray-300 transition-all disabled:opacity-50"
           >
             ← Back
           </button>
@@ -460,7 +460,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
         <button
           onClick={handleNextStep}
           disabled={submitting}
-          className="flex-1 px-6 py-3 bg-[#314fa0] text-white font-bold rounded-lg hover:bg-[#2a4183] transition-all disabled:opacity-50"
+          className="flex-1 px-6 py-3 bg-[#001f3f] text-[#00d9ff] font-bold rounded-lg hover:bg-[#001f3f] transition-all disabled:opacity-50"
         >
           {submitting ? '⏳ Processing...' : step === 5 ? '🎉 Create Account' : 'Next →'}
         </button>
@@ -468,3 +468,4 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
     </div>
   );
 }
+

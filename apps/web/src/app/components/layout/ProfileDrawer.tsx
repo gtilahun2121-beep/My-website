@@ -76,19 +76,19 @@ export default function ProfileDrawer({ isOpen, onClose, language }: ProfileDraw
                   className="w-14 h-14 rounded-full object-cover"
                 />
               ) : (
-                <div className="w-14 h-14 bg-accent-600 flex items-center justify-center text-white font-bold text-lg rounded-full shrink-0">
+                <div className="w-14 h-14 bg-accent-600 flex items-center justify-center text-[#00d9ff] font-bold text-lg rounded-full shrink-0">
                   {initials(user?.firstName ?? '', user?.lastName ?? '')}
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <p className="text-lg font-bold text-slate-900 truncate">{fullName}</p>
-                <p className="text-sm text-slate-500 truncate">{phone}</p>
+                <p className="text-lg font-bold text-[#00d9ff] truncate">{fullName}</p>
+                <p className="text-sm text-gray-500 truncate">{phone}</p>
               </div>
               <button
                 type="button"
                 onClick={onClose}
                 aria-label="Close menu"
-                className="p-2 rounded-full hover:bg-slate-100 text-slate-400"
+                className="p-2 rounded-full hover:bg-gray-100 text-gray-400"
               >
                 <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
                   <path d="M18 6 6 18M6 6l12 12" />
@@ -102,7 +102,7 @@ export default function ProfileDrawer({ isOpen, onClose, language }: ProfileDraw
                 <button
                   type="button"
                   onClick={() => go(dashPath)}
-                  className={`${itemBase} bg-[#314fa0] text-white justify-center`}
+                  className={`${itemBase} bg-[#001f3f] text-[#00d9ff] justify-center`}
                 >
                   {language === 'en' ? 'Back to Main Dashboard' : 'ወደ ዋና ዳሽቦርድ ተመለስ'}
                 </button>
@@ -110,7 +110,7 @@ export default function ProfileDrawer({ isOpen, onClose, language }: ProfileDraw
               <Link
                 href="/profile"
                 onClick={onClose}
-                className={`${itemBase} bg-gray-100 text-slate-800`}
+                className={`${itemBase} bg-gray-100 text-[#00d9ff]`}
               >
                 <span className="w-8 h-8 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
                   <svg viewBox="0 0 24 24" className="w-4.5 h-4.5" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
@@ -122,7 +122,7 @@ export default function ProfileDrawer({ isOpen, onClose, language }: ProfileDraw
               <Link
                 href="/settings"
                 onClick={onClose}
-                className={`${itemBase} bg-gray-100 text-slate-800`}
+                className={`${itemBase} bg-gray-100 text-[#00d9ff]`}
               >
                 <span className="w-8 h-8 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
                   <svg viewBox="0 0 24 24" className="w-4.5 h-4.5" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
@@ -134,7 +134,7 @@ export default function ProfileDrawer({ isOpen, onClose, language }: ProfileDraw
               <button
                 type="button"
                 onClick={handleSignOut}
-                className={`${itemBase} bg-amber-50 text-amber-600 justify-center`}
+                className={`${itemBase} bg-brand-50 text-brand-600 justify-center`}
               >
                 {language === 'en' ? 'Sign out' : 'መውጣት'}
               </button>

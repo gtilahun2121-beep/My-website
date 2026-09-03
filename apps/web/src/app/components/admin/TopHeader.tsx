@@ -80,15 +80,15 @@ export default function TopHeader({ title, subtitle, onMenuClick, variant = 'adm
 
   const headerCls = isAdmin
     ? 'bg-admin-header border-admin-border'
-    : 'bg-card border-slate-200';
+    : 'bg-card border-gray-200';
   const iconBtnCls = isAdmin
     ? 'text-admin-muted hover:bg-admin-card hover:text-admin-text'
-    : 'text-slate-500 hover:bg-slate-100';
-  const titleCls = isAdmin ? 'text-admin-text' : 'text-slate-900';
-  const subtitleCls = isAdmin ? 'text-admin-muted' : 'text-slate-400';
+    : 'text-gray-500 hover:bg-gray-100';
+  const titleCls = isAdmin ? 'text-admin-text' : 'text-[#00d9ff]';
+  const subtitleCls = isAdmin ? 'text-admin-muted' : 'text-gray-400';
   const searchCls = isAdmin
     ? 'bg-admin-card border-admin-border placeholder:text-admin-disabled text-admin-text focus:ring-brand-500/40 focus:border-brand-500'
-    : 'bg-slate-50 border-slate-200 text-sm placeholder:text-slate-400 focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500';
+    : 'bg-gray-50 border-gray-200 text-sm placeholder:text-gray-400 focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500';
 
   return (
     <>
@@ -118,7 +118,7 @@ export default function TopHeader({ title, subtitle, onMenuClick, variant = 'adm
             <svg
               viewBox="0 0 24 24"
               className={`w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 ${
-                isAdmin ? 'text-admin-disabled' : 'text-slate-400'
+                isAdmin ? 'text-admin-disabled' : 'text-gray-400'
               }`}
               {...stroke}
             >
@@ -148,7 +148,7 @@ export default function TopHeader({ title, subtitle, onMenuClick, variant = 'adm
               value={lang}
               onChange={(e) => changeLang(e.target.value as Language)}
               aria-label="Language"
-              className="hidden md:block py-1.5 pl-2 pr-7 rounded-lg bg-slate-50 border border-slate-200 text-sm font-semibold text-slate-600 focus:outline-none focus:ring-2 focus:ring-brand-500/40 cursor-pointer"
+              className="hidden md:block py-1.5 pl-2 pr-7 rounded-lg bg-gray-50 border border-gray-200 text-sm font-semibold text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-500/40 cursor-pointer"
             >
               {(Object.keys(languages) as Language[]).map((code) => (
                 <option key={code} value={code}>
@@ -181,7 +181,7 @@ export default function TopHeader({ title, subtitle, onMenuClick, variant = 'adm
               <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5m6 0v1a3 3 0 1 1-6 0v-1m6 0H9" />
             </svg>
             {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-danger-500 border-2 border-white text-[10px] font-black text-white flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-danger-500 border-2 border-white text-[10px] font-black text-[#00d9ff] flex items-center justify-center">
                 {unreadCount > 99 ? '99+' : unreadCount}
               </span>
             )}
@@ -198,7 +198,7 @@ export default function TopHeader({ title, subtitle, onMenuClick, variant = 'adm
           <svg
             viewBox="0 0 24 24"
             className={`w-4 h-4 absolute left-7 top-2.5 ${
-              isAdmin ? 'text-admin-disabled' : 'text-slate-400'
+              isAdmin ? 'text-admin-disabled' : 'text-gray-400'
             }`}
             {...stroke}
           >

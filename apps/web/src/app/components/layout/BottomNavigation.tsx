@@ -40,7 +40,7 @@ export const BottomNavigation: React.FC<BottomNavProps> = ({
           onClick={() => onTabChange(item.id)}
           className={`relative flex flex-col items-center justify-center w-full h-full transition-colors ${
             activeTab === item.id
-              ? 'text-emerald-600 bg-emerald-50'
+              ? 'text-brand-600 bg-brand-50'
               : 'text-gray-600 hover:bg-gray-50'
           }`}
           aria-label={item.label}
@@ -49,7 +49,7 @@ export const BottomNavigation: React.FC<BottomNavProps> = ({
           <span className="text-2xl">{item.icon}</span>
           <span className="text-xs mt-1 line-clamp-1">{item.label}</span>
           {item.id === 'more' && notificationCount > 0 && (
-            <span className="absolute top-1 right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+            <span className="absolute top-1 right-1 bg-brand-500 text-[#00d9ff] text-xs rounded-full w-5 h-5 flex items-center justify-center">
               {notificationCount}
             </span>
           )}

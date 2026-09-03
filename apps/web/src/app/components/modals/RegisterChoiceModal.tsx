@@ -78,9 +78,9 @@ export default function RegisterChoiceModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="bg-gradient-to-r from-[#314fa0] to-[#2a4183] px-8 py-4 text-center">
-          <h2 className="text-xl font-black text-white mb-1">QalNet</h2>
-          <p className="text-white/90 font-semibold text-sm">
+        <div className="bg-gradient-to-r from-[#001f3f] to-[#001f3f] px-8 py-4 text-center">
+          <h2 className="text-xl font-black text-[#00d9ff] mb-1">QalNet</h2>
+          <p className="text-[#00d9ff]/90 font-semibold text-sm">
             {lang === 'en'
               ? 'Ethiopia\'s Digital Equb Platform'
               : lang === 'am'
@@ -92,7 +92,7 @@ export default function RegisterChoiceModal({
         {/* Content */}
         <div className="p-6">
           <div className="mb-6 text-center">
-            <h3 className="text-xl font-bold text-gray-800 mb-1">
+            <h3 className="text-xl font-bold text-[#00d9ff] mb-1">
               {lang === 'en'
                 ? 'Welcome to QalNet'
                 : lang === 'am'
@@ -115,7 +115,7 @@ export default function RegisterChoiceModal({
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={onSignUp}
-              className="w-full bg-white text-[#314fa0] px-6 py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all duration-300"
+              className="w-full bg-white text-[#00d9ff] px-6 py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all duration-300"
             >
               <span>✍️</span>
               <span>{lang === 'en' ? 'Create New Account' : lang === 'am' ? 'አዲስ መስተዋወቅ ፍጠር' : 'Akkaunt Haaraa Uumuu'}</span>
@@ -126,7 +126,7 @@ export default function RegisterChoiceModal({
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={onSignIn}
-              className="w-full bg-white text-[#314fa0] px-6 py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all duration-300"
+              className="w-full bg-white text-[#00d9ff] px-6 py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all duration-300"
             >
               <span>🔐</span>
               <span>{lang === 'en' ? 'I Already Have an Account' : lang === 'am' ? 'ቀድሞ መስተዋወቅ አለብኝ' : 'Akkaunt Jira'}</span>
@@ -167,7 +167,7 @@ export default function RegisterChoiceModal({
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="w-full mt-6 py-2 text-xs text-gray-500 hover:text-gray-700 transition-colors font-medium"
+            className="w-full mt-6 py-2 text-xs text-gray-500 hover:text-[#00d9ff] transition-colors font-medium"
           >
             {lang === 'en' ? '← Back' : lang === 'am' ? '← ተመለስ' : '← Duubatti'}
           </button>
@@ -176,3 +176,4 @@ export default function RegisterChoiceModal({
     </motion.div>
   );
 }
+

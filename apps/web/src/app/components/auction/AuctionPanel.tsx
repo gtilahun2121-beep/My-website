@@ -121,7 +121,7 @@ export const AuctionPanel: React.FC<AuctionPanelProps> = ({
     <div className="bg-white rounded-xl shadow-md p-6 sm:p-8 mt-6">
       <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
         <div>
-          <h2 className="text-xl font-black text-gray-900 mb-1">
+          <h2 className="text-xl font-black text-[#00d9ff] mb-1">
             🏆 {isHost || isAdmin ? 'Auction / Bidding' : 'Round Auction'}
           </h2>
           <p className="text-sm text-gray-500">
@@ -133,10 +133,10 @@ export const AuctionPanel: React.FC<AuctionPanelProps> = ({
           <button
             onClick={handleResolve}
             disabled={resolving}
-            className={`px-5 py-2.5 rounded-lg font-black text-white transition-all ${
+            className={`px-5 py-2.5 rounded-lg font-black text-[#00d9ff] transition-all ${
               resolving
                 ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                : 'bg-emerald-600 hover:bg-emerald-700'
+                : 'bg-brand-900 hover:bg-brand-950'
             }`}
           >
             {resolving ? 'Resolving…' : '🏁 Resolve Auction'}
@@ -145,19 +145,19 @@ export const AuctionPanel: React.FC<AuctionPanelProps> = ({
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-4 mb-6 text-sm">
+        <div className="bg-brand-50 border border-brand-200 text-brand-700 rounded-lg p-4 mb-6 text-sm">
           {error}
         </div>
       )}
 
       {notice && (
-        <div className="bg-green-50 border border-green-300 text-green-800 rounded-lg p-4 mb-6 text-sm">
+        <div className="bg-brand-50 border border-brand-300 text-brand-800 rounded-lg p-4 mb-6 text-sm">
           {notice}
         </div>
       )}
 
       {result && (
-        <div className="bg-blue-50 border border-blue-200 text-blue-900 rounded-lg p-5 mb-6">
+        <div className="bg-brand-50 border border-brand-200 text-brand-900 rounded-lg p-5 mb-6">
           <p className="font-black text-lg mb-1">
             🎉 {result.winner.first_name} {result.winner.last_name} won Round {result.round_number}
           </p>
@@ -186,15 +186,15 @@ export const AuctionPanel: React.FC<AuctionPanelProps> = ({
             value={bidAmount}
             onChange={(e) => setBidAmount(e.target.value)}
             placeholder={`Bid amount in ETB (pot: ${potValue.toLocaleString()})`}
-            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#314fa0]"
+            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#001f3f]"
           />
           <button
             onClick={handleSubmitBid}
             disabled={submitting}
-            className={`px-5 py-3 rounded-lg font-black text-white transition-all ${
+            className={`px-5 py-3 rounded-lg font-black text-[#00d9ff] transition-all ${
               submitting
                 ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                : 'bg-[#314fa0] hover:bg-[#2a4183]'
+                : 'bg-[#001f3f] hover:bg-[#001f3f]'
             }`}
           >
             {submitting ? 'Placing…' : '📈 Place Bid'}
@@ -205,7 +205,7 @@ export const AuctionPanel: React.FC<AuctionPanelProps> = ({
       {/* Leaderboard */}
       {bids.length > 0 && (
         <div>
-          <h3 className="text-sm font-black text-gray-500 uppercase tracking-wide mb-3">
+          <h3 className="text-sm font-black text-[#00d9ff] text-gray-500 uppercase tracking-wide mb-3">
             Leaderboard — Round {roundNumber}
           </h3>
           <ul className="divide-y divide-gray-100 border border-gray-100 rounded-lg overflow-hidden">
@@ -215,15 +215,15 @@ export const AuctionPanel: React.FC<AuctionPanelProps> = ({
                 <li
                   key={b.id}
                   className={`flex items-center justify-between px-4 py-3 text-sm ${
-                    b.status === 'winning' ? 'bg-emerald-50' : 'bg-gray-50'
-                  } ${mine ? 'ring-1 ring-[#314fa0]' : ''}`}
+                    b.status === 'winning' ? 'bg-brand-50' : 'bg-gray-50'
+                  } ${mine ? 'ring-1 ring-[#001f3f]' : ''}`}
                 >
-                  <span className="font-bold text-gray-800">
+                  <span className="font-bold text-[#00d9ff]">
                     {mine ? '⭐ ' : ''}
                     {b.first_name} {b.last_name}
                     {b.status === 'winning' && ' 🏆'}
                   </span>
-                  <span className="text-gray-700">
+                  <span className="text-[#00d9ff]">
                     ETB {Number(b.bid_amount).toLocaleString()}
                     <span className="text-gray-400 text-xs ml-2">
                       → {Number(b.potential_payout).toLocaleString()} payout

@@ -14,33 +14,33 @@ export default function EqubCategoryCard({ equb, onView }: EqubCategoryCardProps
       case 'low':
         return 'bg-yellow-100 text-yellow-700';
       case 'medium':
-        return 'bg-blue-100 text-blue-700';
+        return 'bg-brand-100 text-brand-700';
       case 'high':
-        return 'bg-green-100 text-green-700';
+        return 'bg-brand-100 text-brand-700';
       default:
-        return 'bg-gray-100 text-gray-700';
+        return 'bg-gray-100 text-[#00d9ff]';
     }
   };
 
   return (
     <motion.div
       whileHover={{ scale: 1.02 }}
-      className="bg-white border-2 border-[#d4af37] rounded-lg p-4 hover:shadow-lg transition-all"
+      className="bg-white border-2 border-[#001f3f] rounded-lg p-4 hover:shadow-lg transition-all"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 flex-1">
           <span className="text-3xl">{equb.icon}</span>
           <div className="flex-1">
-            <h4 className="font-black text-[#314fa0] text-sm">{equb.name}</h4>
+            <h4 className="font-black text-[#00d9ff] text-sm">{equb.name}</h4>
             <p className="text-xs text-gray-600 mb-2">{equb.description}</p>
             <div className="flex gap-2 flex-wrap text-xs">
-              <span className="px-2 py-1 bg-[#314fa0]/10 text-[#314fa0] rounded font-bold">
+              <span className="px-2 py-1 bg-[#001f3f]/10 text-[#00d9ff] rounded font-bold">
                 ETB {equb.monthlyPayment}/mo
               </span>
-              <span className="px-2 py-1 bg-[#d4af37]/30 text-[#314fa0] rounded font-bold">
+              <span className="px-2 py-1 bg-[#001f3f]/30 text-[#00d9ff] rounded font-bold">
                 Return: ETB {equb.expectedReturn.toLocaleString()}
               </span>
-              <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded font-bold">
+              <span className="px-2 py-1 bg-brand-100 text-brand-700 rounded font-bold">
                 {equb.members.toLocaleString()} members
               </span>
               <span className={`px-2 py-1 rounded font-bold ${getIncomeBadgeColors(equb.incomeLevel)}`}>
@@ -53,7 +53,7 @@ export default function EqubCategoryCard({ equb, onView }: EqubCategoryCardProps
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
           onClick={onView}
-          className="px-4 py-2 bg-gradient-to-r from-[#314fa0] to-[#d4af37] text-white font-black rounded-lg hover:shadow-md transition-all text-sm flex-shrink-0"
+          className="px-4 py-2 bg-gradient-to-r from-[#001f3f] to-[#001f3f] text-[#00d9ff] font-black rounded-lg hover:shadow-md transition-all text-sm flex-shrink-0"
         >
           View
         </motion.button>
@@ -61,3 +61,4 @@ export default function EqubCategoryCard({ equb, onView }: EqubCategoryCardProps
     </motion.div>
   );
 }
+

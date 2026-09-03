@@ -95,8 +95,8 @@ export default function CompleteProfilePage() {
       />
 
       <div className="flex-grow py-12 px-4">
-        <div className="max-w-md mx-auto glass-form rounded-2xl p-8 border-t-4 border-[#314fa0]">
-          <h1 className="text-2xl font-bold text-[#314fa0] mb-2">
+        <div className="max-w-md mx-auto glass-form rounded-2xl p-8 border-t-4 border-[#001f3f]">
+          <h1 className="text-2xl font-bold text-[#00d9ff] mb-2">
             {lang === 'en' ? 'Complete Your Profile' : lang === 'am' ? 'የእርስዎን መገለጫ ያጠናቅቁ' : 'Madaallii Kee Guuti'}
           </h1>
           <p className="text-gray-600 mb-6">
@@ -140,7 +140,7 @@ export default function CompleteProfilePage() {
 
             {/* Profession */}
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">
+              <label className="block text-sm font-bold text-[#00d9ff] mb-2">
                 {lang === 'en'
                   ? 'Select Profession / Income Category *'
                   : lang === 'am'
@@ -150,7 +150,7 @@ export default function CompleteProfilePage() {
               <select
                 value={formData.profession}
                 onChange={(e) => handleFieldChange('profession', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#314fa0]"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#001f3f]"
               >
                 <option value="">
                   {lang === 'en' ? '-- Choose a category --' : '-- Filadhu --'}
@@ -198,7 +198,7 @@ export default function CompleteProfilePage() {
               variant="primary"
             >
               {isLoading
-                ? '⏳ Saving...'
+                ? 'Saving...'
                 : lang === 'en'
                 ? 'Complete Profile'
                 : lang === 'am'
@@ -213,3 +213,4 @@ export default function CompleteProfilePage() {
     </main>
   );
 }
+

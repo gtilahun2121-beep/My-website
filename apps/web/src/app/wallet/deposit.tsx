@@ -57,7 +57,7 @@ export default function DepositPage() {
       <div className="max-w-md mx-auto px-4 mb-6">
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium mb-4 transition-colors"
+          className="flex items-center gap-2 text-brand-600 hover:text-brand-700 font-medium mb-4 transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
           <span className="text-sm md:text-base">Back</span>
@@ -73,7 +73,7 @@ export default function DepositPage() {
 
       {/* Footer */}
       <div className="max-w-md mx-auto px-4 mt-8 text-center text-gray-600 text-xs md:text-sm">
-        <p>Need help? <a href="/support" className="text-blue-600 hover:underline">Contact support</a></p>
+        <p>Need help? <a href="/support" className="text-brand-600 hover:underline">Contact support</a></p>
       </div>
     </div>
   );

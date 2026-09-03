@@ -71,12 +71,12 @@ export default function NotificationsDrawer({
             aria-label={t.title}
           >
             {/* Header */}
-            <div className="bg-gradient-to-r from-[#314fa0] to-[#ce1126] text-white p-6 shrink-0">
+            <div className="bg-gradient-to-r from-[#001f3f] to-[#001f3f] text-[#00d9ff] p-6 shrink-0">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-black flex items-center gap-2">
                   🔔 {t.title}
                   {unreadCount > 0 && (
-                    <span className="bg-white text-[#ce1126] text-xs font-black rounded-full px-2 py-0.5">
+                    <span className="bg-white text-[#00d9ff] text-xs font-black rounded-full px-2 py-0.5">
                       {unreadCount}
                     </span>
                   )}
@@ -92,7 +92,7 @@ export default function NotificationsDrawer({
               {unreadCount > 0 && (
                 <button
                   onClick={markAllRead}
-                  className="mt-4 text-sm font-bold text-white/90 underline hover:text-white"
+                  className="mt-4 text-sm font-bold text-[#00d9ff]/90 underline hover:text-[#00d9ff]"
                 >
                   ✓ {t.markAllRead}
                 </button>
@@ -118,14 +118,14 @@ export default function NotificationsDrawer({
                       className={`flex items-start gap-3 p-3 rounded-xl border ${
                         notif.is_read
                           ? 'bg-gray-50 border-gray-100'
-                          : 'bg-[#314fa0]/5 border-[#314fa0]/20'
+                          : 'bg-[#001f3f]/5 border-[#001f3f]/20'
                       }`}
                     >
                       <div className="w-9 h-9 shrink-0 rounded-full bg-white shadow-sm flex items-center justify-center text-lg">
                         {notif.is_read ? '🔔' : '🔴'}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="font-bold text-gray-900 text-sm leading-tight">
+                        <p className="font-bold text-[#00d9ff] text-sm leading-tight">
                           {notif.title}
                         </p>
                         {notif.body && (
@@ -134,7 +134,7 @@ export default function NotificationsDrawer({
                         <p className="text-[11px] text-gray-400 mt-1">
                           {timeAgo(notif.created_at, isAmharic)}
                           {!notif.is_read && (
-                            <span className="ml-2 text-[#314fa0] font-bold">
+                            <span className="ml-2 text-[#00d9ff] font-bold">
                               {isAmharic ? 'አዲስ' : 'NEW'}
                             </span>
                           )}
@@ -142,7 +142,7 @@ export default function NotificationsDrawer({
                       </div>
                       <button
                         onClick={() => void remove(notif.id)}
-                        className="shrink-0 p-1.5 rounded-lg text-gray-400 hover:text-[#ce1126] hover:bg-[#ce1126]/10 transition-colors"
+                        className="shrink-0 p-1.5 rounded-lg text-gray-400 hover:text-[#00d9ff] hover:bg-[#001f3f]/10 transition-colors"
                         aria-label={t.delete}
                         title={t.delete}
                       >
@@ -171,3 +171,4 @@ export default function NotificationsDrawer({
     </AnimatePresence>
   );
 }
+

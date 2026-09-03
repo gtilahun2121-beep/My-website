@@ -89,10 +89,10 @@ export default function AuthModal({
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="bg-gradient-to-r from-[#314fa0] to-[#2a4183] px-8 py-6 flex justify-between items-center">
+            <div className="bg-gradient-to-r from-[#001f3f] to-[#001f3f] px-8 py-6 flex justify-between items-center">
               <div>
-                <h2 className="text-2xl font-black text-white">QalNet</h2>
-                <p className="text-sm text-white/80 font-semibold mt-1">
+                <h2 className="text-2xl font-black text-[#00d9ff]">QalNet</h2>
+                <p className="text-sm text-[#00d9ff]/80 font-semibold mt-1">
                   {lang === 'en' ? 'Ethiopia\'s Digital Equb' : 'የኢትዮጵያ ዲጂታል Equb'}
                 </p>
               </div>
@@ -101,7 +101,7 @@ export default function AuthModal({
                   const shouldClose = confirm('Are you sure you want to close? You must register to access the system.');
                   if (shouldClose) onClose();
                 }}
-                className="text-2xl text-white hover:opacity-70 transition-all"
+                className="text-2xl text-[#00d9ff] hover:opacity-70 transition-all"
               >
                 ✕
               </button>
@@ -115,8 +115,8 @@ export default function AuthModal({
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex-1 py-4 px-4 font-bold text-sm transition-all flex items-center justify-center gap-2 ${
                     activeTab === tab.id
-                      ? 'bg-[#314fa0] text-white border-b-4 border-[#2a4183]'
-                      : 'bg-transparent text-gray-700 hover:bg-white/30'
+                      ? 'bg-[#001f3f] text-[#00d9ff] border-b-4 border-[#001f3f]'
+                      : 'bg-transparent text-[#00d9ff] hover:bg-white/30'
                   }`}
                 >
                   <span className="text-lg">{tab.icon}</span>
@@ -166,3 +166,4 @@ export default function AuthModal({
     </AnimatePresence>
   );
 }
+

@@ -64,10 +64,10 @@ export default function ProfileMenu({ variant = 'light' }: ProfileMenuProps) {
     router.push(dashPath);
   };
 
-  const nameCls = isNavy ? 'text-white' : 'text-slate-800';
-  const roleCls = isNavy ? 'text-white/70' : 'text-slate-400';
-  const chevronCls = isNavy ? 'text-white/80' : 'text-slate-400';
-  const borderCls = isNavy ? 'border-white/30' : 'border-slate-200';
+  const nameCls = isNavy ? 'text-[#00d9ff]' : 'text-[#00d9ff]';
+  const roleCls = isNavy ? 'text-[#00d9ff]/70' : 'text-gray-400';
+  const chevronCls = isNavy ? 'text-[#00d9ff]/80' : 'text-gray-400';
+  const borderCls = isNavy ? 'border-white/30' : 'border-gray-200';
 
   return (
     <div className="relative" ref={ref}>
@@ -87,7 +87,7 @@ export default function ProfileMenu({ variant = 'light' }: ProfileMenuProps) {
             className="w-9 h-9 rounded-full object-cover"
           />
         ) : (
-          <div className="w-9 h-9 rounded-full bg-accent-600 text-white flex items-center justify-center text-sm font-bold shrink-0">
+          <div className="w-9 h-9 rounded-full bg-accent-600 text-[#00d9ff] flex items-center justify-center text-sm font-bold shrink-0">
             {initials(user.firstName, user.lastName)}
           </div>
         )}
@@ -107,9 +107,9 @@ export default function ProfileMenu({ variant = 'light' }: ProfileMenuProps) {
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-full mt-2 w-72 max-w-[calc(100vw-1rem)] bg-card rounded-card border border-slate-200 shadow-xl z-50 overflow-hidden"
+          className="absolute right-0 top-full mt-2 w-72 max-w-[calc(100vw-1rem)] bg-card rounded-card border border-gray-200 shadow-xl z-50 overflow-hidden"
         >
-          <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-100 bg-slate-50">
+          <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 bg-gray-50">
             {user.profilePhoto ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -118,13 +118,13 @@ export default function ProfileMenu({ variant = 'light' }: ProfileMenuProps) {
                 className="w-11 h-11 rounded-full object-cover"
               />
             ) : (
-              <div className="w-11 h-11 rounded-full bg-accent-600 text-white flex items-center justify-center font-bold shrink-0">
+              <div className="w-11 h-11 rounded-full bg-accent-600 text-[#00d9ff] flex items-center justify-center font-bold shrink-0">
                 {initials(user.firstName, user.lastName)}
               </div>
             )}
             <div className="min-w-0">
-              <p className="text-sm font-bold text-slate-900 truncate">{fullName || 'QalNet Member'}</p>
-              <p className="text-xs text-slate-500 truncate">{user.phoneNumber || user.email || '—'}</p>
+              <p className="text-sm font-bold text-[#00d9ff] truncate">{fullName || 'QalNet Member'}</p>
+              <p className="text-xs text-gray-500 truncate">{user.phoneNumber || user.email || '—'}</p>
             </div>
           </div>
 
@@ -133,7 +133,7 @@ export default function ProfileMenu({ variant = 'light' }: ProfileMenuProps) {
               type="button"
               role="menuitem"
               onClick={handleBackToDashboard}
-              className="flex w-full items-center gap-3 px-4 py-2.5 text-sm font-semibold text-brand-600 hover:bg-brand-50 border-b border-slate-100"
+              className="flex w-full items-center gap-3 px-4 py-2.5 text-sm font-semibold text-brand-600 hover:bg-brand-50 border-b border-gray-100"
             >
               <svg viewBox="0 0 24 24" className="w-4.5 h-4.5" {...stroke}>
                 <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2h-4v-7h-6v7H5a2 2 0 0 1-2-2Z" />
@@ -147,9 +147,9 @@ export default function ProfileMenu({ variant = 'light' }: ProfileMenuProps) {
               href="/profile"
               role="menuitem"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+              className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-[#00d9ff] hover:bg-gray-50"
             >
-              <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 text-slate-400" {...stroke}>
+              <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 text-gray-400" {...stroke}>
                 <path d="M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0Zm-4 7c-4.4 0-8 2.4-8 5.3V21h16v-1.7C20 16.4 16.4 14 12 14Z" />
               </svg>
               My Profile
@@ -158,16 +158,16 @@ export default function ProfileMenu({ variant = 'light' }: ProfileMenuProps) {
               href="/settings"
               role="menuitem"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+              className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-[#00d9ff] hover:bg-gray-50"
             >
-              <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 text-slate-400" {...stroke}>
+              <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 text-gray-400" {...stroke}>
                 <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm8.4-3a8.9 8.9 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a8.9 8.9 0 0 0-2-1.2L15.5 3h-4l-.4 2.6a8.9 8.9 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6a8.9 8.9 0 0 0 0 2.4l-2 1.6 2 3.4 2.4-1a8.9 8.9 0 0 0 2 1.2l.4 2.6h4l.4-2.6a8.9 8.9 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.07-.4.1-.8.1-1.2Z" />
               </svg>
               Settings
             </Link>
           </div>
 
-          <div className="border-t border-slate-100 py-1.5">
+          <div className="border-t border-gray-100 py-1.5">
             <button
               type="button"
               role="menuitem"

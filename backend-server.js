@@ -18,6 +18,19 @@ const TEST_DATA = config.testData;
 // In-memory store for pending join requests (user -> equb mapping)
 const pendingRequests = {};
 
+// In-memory user registry (phone -> user mapping)
+const userRegistry = {
+  [TEST_CREDENTIALS.phone]: {
+    id: TEST_CREDENTIALS.id,
+    phone: TEST_CREDENTIALS.phone,
+    email: TEST_CREDENTIALS.email,
+    firstName: TEST_CREDENTIALS.firstName,
+    lastName: TEST_CREDENTIALS.lastName,
+    role: TEST_CREDENTIALS.role,
+    pin: TEST_CREDENTIALS.pin,
+  },
+};
+
 // Helper function to generate valid JWT tokens
 function generateToken(user) {
   const payload = {
@@ -37,6 +50,11 @@ function generateToken(user) {
 app.use(cors());
 app.use(express.json());
 
+// Error handling wrapper for all routes
+const asyncHandler = (fn) => (req, res, next) => {
+  Promise.resolve(fn(req, res, next)).catch(next);
+};
+
 console.log('');
 console.log('╔════════════════════════════════════════════════════════════╗');
 console.log('║        QalNet Backend Server - STARTING                    ║');
@@ -45,53 +63,112 @@ console.log('');
 
 // Health check
 app.get('/api/v1/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  try {
+    res.json({ 
+      status: 'ok', 
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime()
+    });
+  } catch (error) {
+    console.error('Health check error:', error);
+    res.status(500).json({ error: 'Health check failed' });
+  }
 });
 
-// Login endpoint
+// Login endpoint - checks if user exists, returns 404 if not found
 app.post('/api/v1/auth/login', (req, res) => {
   const { phone, pin } = req.body;
-  if (phone === TEST_CREDENTIALS.phone && pin === TEST_CREDENTIALS.pin) {
-    const user = {
-      id: TEST_CREDENTIALS.id,
-      phone: TEST_CREDENTIALS.phone,
-      email: TEST_CREDENTIALS.email,
-      firstName: TEST_CREDENTIALS.firstName,
-      lastName: TEST_CREDENTIALS.lastName,
-      role: TEST_CREDENTIALS.role,
-    };
-    return res.json({
-      access_token: generateToken(user),
-      refresh_token: generateToken(user),
-      user,
+  
+  // Check if user exists in registry
+  const user = userRegistry[phone];
+  if (!user) {
+    // User not found - they should sign up
+    return res.status(404).json({ 
+      error: 'User not found',
+      message: 'This phone number is not registered. Please sign up first.',
+      code: 'USER_NOT_FOUND'
     });
   }
-  res.status(401).json({ error: 'Invalid credentials' });
+  
+  // User exists - check PIN
+  if (pin !== user.pin) {
+    return res.status(401).json({ 
+      error: 'Invalid PIN',
+      message: 'The PIN you entered is incorrect.',
+      code: 'INVALID_PIN'
+    });
+  }
+  
+  // Authentication successful
+  const userData = {
+    id: user.id,
+    phone: user.phone,
+    email: user.email,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    role: user.role,
+  };
+  
+  return res.json({
+    access_token: generateToken(userData),
+    refresh_token: generateToken(userData),
+    user: userData,
+  });
 });
 
-// Register endpoint
+// Register endpoint - creates new user if phone not already registered
 app.post('/api/v1/auth/register', (req, res) => {
   const { phone, email, firstName, lastName, pin } = req.body;
-  const user = {
+  
+  // Check if user already exists
+  if (userRegistry[phone]) {
+    return res.status(409).json({ 
+      error: 'User already exists',
+      message: 'This phone number is already registered. Please sign in instead.',
+      code: 'USER_EXISTS'
+    });
+  }
+  
+  // Create new user
+  const newUser = {
     id: 'user-' + Date.now(),
     phone,
     email,
     firstName,
     lastName,
     role: 'participant',
-    isActive: true,
+    pin,
   };
+  
+  // Add to registry
+  userRegistry[phone] = newUser;
+  
+  // Return user data without PIN
+  const userData = {
+    id: newUser.id,
+    phone: newUser.phone,
+    email: newUser.email,
+    firstName: newUser.firstName,
+    lastName: newUser.lastName,
+    role: newUser.role,
+  };
+  
   res.status(201).json({
-    access_token: generateToken(user),
-    refresh_token: generateToken(user),
-    user,
+    access_token: generateToken(userData),
+    refresh_token: generateToken(userData),
+    user: userData,
   });
 });
 
-// Check phone availability
+// Check phone availability - returns whether phone is registered
 app.get('/api/v1/auth/check-availability', (req, res) => {
   const phone = req.query.phone;
-  res.json({ available: true, phone });
+  const exists = !!userRegistry[phone];
+  res.json({ 
+    phone,
+    exists,
+    available: !exists, // available = not registered
+  });
 });
 
 // Verify OTP
@@ -288,9 +365,52 @@ app.post('/api/v1/equbs/join', (req, res) => {
 });
 
 // Get wallet
+// Helper: Generate unique wallet balance per user
+function generateUserBalance(userId) {
+  // Hash user ID to generate consistent balance between 10,000 - 100,000 ETB
+  let hash = 0;
+  for (let i = 0; i < userId.length; i++) {
+    hash = ((hash << 5) - hash) + userId.charCodeAt(i);
+    hash |= 0;
+  }
+  const minBalance = 10000;
+  const maxBalance = 100000;
+  return minBalance + ((Math.abs(hash) % (maxBalance - minBalance)) * 100) / 100;
+}
+
+// Helper: Generate unique transaction list per user
+function generateUserTransactions(userId) {
+  const userHash = Math.abs(userId.split('').reduce((h, c) => ((h << 5) - h) + c.charCodeAt(0), 0));
+  const amounts = [300, 2000, 10000];
+  const statuses = ['paid', 'auto_debited', 'pending'];
+  
+  return TEST_DATA.transactions.slice(0, 5).map((t, idx) => ({
+    id: `${userId}-txn-${idx}`,
+    direction: t.direction,
+    amount: amounts[(userHash + idx) % amounts.length],
+    status: statuses[(userHash + idx) % statuses.length],
+    description: t.description,
+    timestamp: new Date(Date.now() - t.daysAgo * 24 * 60 * 60 * 1000).toISOString(),
+  }));
+}
+
 app.get('/api/v1/wallet', (req, res) => {
+  // Extract user ID from token if available
+  const authHeader = req.headers.authorization;
+  let userId = 'guest';
+  if (authHeader?.startsWith('Bearer ')) {
+    try {
+      const token = authHeader.substring(7);
+      const decoded = jwt.decode(token);
+      userId = decoded?.sub || 'guest';
+    } catch (e) {
+      // Fall back to guest
+    }
+  }
+
   res.json({
-    balance: TEST_DATA.wallet.balance,
+    id: `wallet-${userId}`,
+    balance: generateUserBalance(userId),
     currency: TEST_DATA.wallet.currency,
     lastUpdated: new Date().toISOString(),
   });
@@ -298,8 +418,22 @@ app.get('/api/v1/wallet', (req, res) => {
 
 // Get user wallet
 app.get('/api/v1/wallets/me', (req, res) => {
+  // Extract user ID from token if available
+  const authHeader = req.headers.authorization;
+  let userId = 'guest';
+  if (authHeader?.startsWith('Bearer ')) {
+    try {
+      const token = authHeader.substring(7);
+      const decoded = jwt.decode(token);
+      userId = decoded?.sub || 'guest';
+    } catch (e) {
+      // Fall back to guest
+    }
+  }
+
   res.json({
-    balance: TEST_DATA.wallet.balance,
+    id: `wallet-${userId}`,
+    balance: generateUserBalance(userId),
     currency: TEST_DATA.wallet.currency,
     lastUpdated: new Date().toISOString(),
   });
@@ -307,26 +441,38 @@ app.get('/api/v1/wallets/me', (req, res) => {
 
 // Get wallet transactions
 app.get('/api/v1/wallet/transactions', (req, res) => {
-  res.json(TEST_DATA.transactions.slice(0, 1).map(t => ({
-    id: t.id,
-    direction: t.direction,
-    amount: t.amount,
-    status: t.status,
-    description: t.description,
-    timestamp: new Date(Date.now() - t.daysAgo * 24 * 60 * 60 * 1000).toISOString(),
-  })));
+  // Extract user ID from token if available
+  const authHeader = req.headers.authorization;
+  let userId = 'guest';
+  if (authHeader?.startsWith('Bearer ')) {
+    try {
+      const token = authHeader.substring(7);
+      const decoded = jwt.decode(token);
+      userId = decoded?.sub || 'guest';
+    } catch (e) {
+      // Fall back to guest
+    }
+  }
+
+  res.json(generateUserTransactions(userId).slice(0, 1));
 });
 
 // Get user wallet transactions
 app.get('/api/v1/wallets/me/transactions', (req, res) => {
-  res.json(TEST_DATA.transactions.map(t => ({
-    id: t.id,
-    direction: t.direction,
-    amount: t.amount,
-    status: t.status,
-    description: t.description,
-    timestamp: new Date(Date.now() - t.daysAgo * 24 * 60 * 60 * 1000).toISOString(),
-  })));
+  // Extract user ID from token if available
+  const authHeader = req.headers.authorization;
+  let userId = 'guest';
+  if (authHeader?.startsWith('Bearer ')) {
+    try {
+      const token = authHeader.substring(7);
+      const decoded = jwt.decode(token);
+      userId = decoded?.sub || 'guest';
+    } catch (e) {
+      // Fall back to guest
+    }
+  }
+
+  res.json(generateUserTransactions(userId));
 });
 
 // Get notifications
@@ -434,13 +580,26 @@ app.post('/api/v1/admin/equb-requests/:id/reject', (req, res) => {
 
 // 404 handler
 app.use((req, res) => {
-  res.status(404).json({ error: 'Endpoint not found' });
+  console.warn(`[404] ${req.method} ${req.path}`);
+  res.status(404).json({ 
+    error: 'Endpoint not found',
+    path: req.path,
+    method: req.method
+  });
 });
 
-// Error handler
+// Error handler - catches all unhandled errors
 app.use((err, req, res, next) => {
-  console.error(err);
-  res.status(500).json({ error: 'Internal server error' });
+  console.error(`[ERROR] ${req.method} ${req.path}:`, err);
+  
+  // Don't leak error details in production
+  const isDev = process.env.NODE_ENV !== 'production';
+  
+  res.status(err.status || 500).json({ 
+    error: 'Internal server error',
+    message: isDev ? err.message : 'An error occurred processing your request',
+    ...(isDev && { stack: err.stack })
+  });
 });
 
 // Start server

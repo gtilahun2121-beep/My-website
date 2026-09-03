@@ -70,7 +70,7 @@ export default function FormInput({
 
     return (
         <div className="flex flex-col gap-1">
-            <label className="block text-sm font-bold text-gray-900">
+            <label className="block text-sm font-bold text-[#00d9ff]">
                 {label}
             </label>
 
@@ -93,17 +93,17 @@ export default function FormInput({
                          'focus:outline-none focus:ring-2',
                         icon ? 'pl-10' : 'px-4',
                         isPassword ? 'pr-11' : 'pr-4',
-                        disabled ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white/40 text-gray-900',
+                        disabled ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white/40 text-[#00d9ff]',
                         error
-                            ? 'border-amber-400 focus:ring-amber-300'
-                            : 'border-gray-300 focus:ring-[#314fa0] focus:border-[#314fa0]',
+                            ? 'border-brand-400 focus:ring-amber-300'
+                            : 'border-gray-300 focus:ring-[#001f3f] focus:border-[#001f3f]',
                     ].join(' ')}
                 />
                 {isPassword && (
                     <button
                         type="button"
                         onClick={() => setShowPassword((v) => !v)}
-                        className="absolute right-3 p-1 rounded-full text-gray-400 hover:text-[#314fa0] hover:bg-gray-100 transition-colors"
+                        className="absolute right-3 p-1 rounded-full text-gray-400 hover:text-[#00d9ff] hover:bg-gray-100 transition-colors"
                         aria-label={showPassword ? 'Hide password' : 'Show password'}
                         tabIndex={-1}
                     >
@@ -117,7 +117,7 @@ export default function FormInput({
             )}
 
             {error && (
-                <p className="text-xs text-amber-600 font-medium">{error}</p>
+                <p className="text-xs text-brand-600 font-medium">{error}</p>
             )}
         </div>
     );

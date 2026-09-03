@@ -39,7 +39,7 @@ export default function PromoBanner({
   };
 
   return (
-    <section className="py-20 md:py-32 bg-gradient-to-r from-[#ce1126] via-[#314fa0] to-[#d4af37] relative overflow-hidden">
+    <section className="py-20 md:py-32 bg-gradient-to-r from-[#001f3f] via-[#001f3f] to-[#001f3f] relative overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 pattern-eth opacity-20"></div>
 
@@ -69,10 +69,10 @@ export default function PromoBanner({
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-4xl md:text-5xl font-black text-white mb-6 drop-shadow-lg">
+            <h2 className="text-4xl md:text-5xl font-black text-[#00d9ff] mb-6 drop-shadow-lg">
               {title}
             </h2>
-            <p className="text-xl text-white/90 mb-8 drop-shadow-md font-semibold">
+            <p className="text-xl text-[#00d9ff]/90 mb-8 drop-shadow-md font-semibold">
               {subtitle}
             </p>
 
@@ -92,10 +92,10 @@ export default function PromoBanner({
                 >
                   <div className="flex-shrink-0">
                     <div className="flex items-center justify-center h-8 w-8 rounded-full bg-white/20 border-2 border-white">
-                      <span className="text-white font-black">✓</span>
+                      <span className="text-[#00d9ff] font-black">✓</span>
                     </div>
                   </div>
-                  <p className="text-lg text-white font-semibold">{feature}</p>
+                  <p className="text-lg text-[#00d9ff] font-semibold">{feature}</p>
                 </motion.div>
               ))}
             </motion.div>
@@ -107,7 +107,7 @@ export default function PromoBanner({
             >
               <Link
                 href={ctaLink}
-                className="inline-block px-10 py-4 bg-white text-[#314fa0] font-black rounded-full hover:shadow-2xl transition-all duration-300 text-lg drop-shadow-lg"
+                className="inline-block px-10 py-4 bg-white text-[#00d9ff] font-black rounded-full hover:shadow-2xl transition-all duration-300 text-lg drop-shadow-lg"
               >
                 {ctaText} →
               </Link>
@@ -130,8 +130,8 @@ export default function PromoBanner({
             >
               <div className="text-center h-full flex flex-col items-center justify-center">
                 <div className="text-7xl mb-4">💳</div>
-                <p className="text-white font-black text-xl mb-2">100% Secure</p>
-                <p className="text-white/80 font-semibold">Bank-Level Encryption</p>
+                <p className="text-[#00d9ff] font-black text-xl mb-2">100% Secure</p>
+                <p className="text-[#00d9ff]/80 font-semibold">Bank-Level Encryption</p>
               </div>
             </motion.div>
 
@@ -143,7 +143,7 @@ export default function PromoBanner({
             ].map((badge, idx) => (
               <motion.div
                 key={idx}
-                className="absolute bg-white/90 rounded-full px-4 py-2 shadow-lg border-2 border-white flex items-center gap-2 font-black text-[#314fa0]"
+                className="absolute bg-white/90 rounded-full px-4 py-2 shadow-lg border-2 border-white flex items-center gap-2 font-black text-[#00d9ff]"
                 style={{
                   top: badge.top,
                   bottom: badge.bottom,
@@ -163,3 +163,4 @@ export default function PromoBanner({
     </section>
   );
 }
+

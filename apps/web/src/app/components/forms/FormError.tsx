@@ -14,7 +14,7 @@ export default function FormError({ title = 'Error', message, onDismiss }: FormE
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
-      className="bg-amber-100 border-l-4 border-amber-500 text-amber-700 p-4 rounded flex items-start justify-between gap-3"
+      className="bg-brand-100 border-l-4 border-brand-500 text-brand-700 p-4 rounded flex items-start justify-between gap-3"
     >
       <div className="flex items-start gap-3">
         <span className="text-2xl">⚠️</span>
@@ -26,7 +26,7 @@ export default function FormError({ title = 'Error', message, onDismiss }: FormE
       {onDismiss && (
         <button
           onClick={onDismiss}
-          className="text-amber-500 hover:text-amber-700 font-bold text-xl leading-none"
+          className="text-brand-500 hover:text-brand-700 font-bold text-xl leading-none"
         >
           ✕
         </button>

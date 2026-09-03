@@ -35,7 +35,7 @@ interface LotteryWheelProps {
 }
 
 const SEGMENT_COLORS = [
-  '#314fa0', // navy
+  '#001f3f', // navy
   '#0ea5a4', // teal
   '#7c3aed', // violet
   '#e11d48', // rose
@@ -49,13 +49,13 @@ const SEGMENT_COLORS = [
 
 // Placeholder segments shown before any draw so the wheel is always visible.
 const PLACEHOLDER_COLORS = [
-  '#314fa0',
+  '#001f3f',
   '#4a6ad4',
-  '#314fa0',
+  '#001f3f',
   '#4a6ad4',
-  '#314fa0',
+  '#001f3f',
   '#4a6ad4',
-  '#314fa0',
+  '#001f3f',
   '#4a6ad4',
 ];
 
@@ -293,7 +293,7 @@ export const LotteryWheel: React.FC<LotteryWheelProps> = ({
               );
             })}
             <circle cx={cx} cy={cy} r="34" fill="#1f2937" stroke="#ffffff" strokeWidth="4" />
-            <circle cx={cx} cy={cy} r="26" fill="#314fa0" stroke="#ffffff" strokeWidth="2" />
+            <circle cx={cx} cy={cy} r="26" fill="#001f3f" stroke="#ffffff" strokeWidth="2" />
             <text
               x={cx}
               y={cy}
@@ -316,12 +316,12 @@ export const LotteryWheel: React.FC<LotteryWheelProps> = ({
             initial={{ opacity: 0, y: 10, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0 }}
-            className="text-center bg-emerald-50 border border-emerald-200 rounded-xl px-6 py-3"
+            className="text-center bg-brand-50 border border-brand-200 rounded-xl px-6 py-3"
           >
-            <p className="text-xs font-bold text-emerald-700 uppercase tracking-wide mb-1">
+            <p className="text-xs font-bold text-brand-700 uppercase tracking-wide mb-1">
               Round Winner
             </p>
-            <p className="text-lg font-black text-emerald-800">
+            <p className="text-lg font-black text-brand-800">
               🏆 {winner.first_name} {winner.last_name}
             </p>
           </motion.div>
@@ -373,8 +373,8 @@ export const LotteryWheel: React.FC<LotteryWheelProps> = ({
                   key={c.id}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${
                     isWinner
-                      ? 'bg-amber-100 border-amber-300 text-amber-800 shadow-sm'
-                      : 'bg-gray-50 border-gray-200 text-gray-700'
+                      ? 'bg-brand-100 border-brand-300 text-brand-800 shadow-sm'
+                      : 'bg-gray-50 border-gray-200 text-[#00d9ff]'
                   }`}
                 >
                   {isWinner && <span aria-hidden>🏆</span>}

@@ -17,7 +17,7 @@ export default function FormSuccess({
     <motion.div
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="bg-green-50 border-2 border-green-200 rounded-lg p-6 text-center"
+      className="bg-brand-50 border-2 border-brand-200 rounded-lg p-6 text-center"
     >
       <motion.div
         className="text-6xl mb-4"
@@ -26,8 +26,8 @@ export default function FormSuccess({
       >
         {icon}
       </motion.div>
-      <h3 className="text-2xl font-black text-green-900 mb-2">{title}</h3>
-      <p className="text-green-700 text-sm">{message}</p>
+      <h3 className="text-2xl font-black text-brand-900 mb-2">{title}</h3>
+      <p className="text-brand-700 text-sm">{message}</p>
     </motion.div>
   );
 }

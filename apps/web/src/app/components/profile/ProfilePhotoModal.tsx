@@ -71,13 +71,13 @@ export default function ProfilePhotoModal({ open, currentPhoto, onClose, onSave 
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60" onClick={handleClose} aria-hidden="true" />
 
-      <div className="relative w-full max-w-sm bg-card rounded-card border border-slate-200 shadow-2xl overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-          <h2 className="text-lg font-black text-slate-900">Profile Photo</h2>
+      <div className="relative w-full max-w-sm bg-card rounded-card border border-gray-200 shadow-2xl overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+          <h2 className="text-lg font-black text-[#00d9ff]">Profile Photo</h2>
           <button
             type="button"
             onClick={handleClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100"
+            className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100"
             aria-label="Close"
           >
             <svg viewBox="0 0 24 24" className="w-5 h-5" {...stroke}>
@@ -87,7 +87,7 @@ export default function ProfilePhotoModal({ open, currentPhoto, onClose, onSave 
         </div>
 
         <div className="px-5 py-6 text-center">
-          <div className="mx-auto w-36 h-36 rounded-full overflow-hidden bg-slate-100 flex items-center justify-center ring-4 ring-brand-100">
+          <div className="mx-auto w-36 h-36 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center ring-4 ring-brand-100">
             {(preview ?? currentPhoto) ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -96,13 +96,13 @@ export default function ProfilePhotoModal({ open, currentPhoto, onClose, onSave 
                 className="w-full h-full object-cover"
               />
             ) : (
-              <svg viewBox="0 0 24 24" className="w-14 h-14 text-slate-300" {...stroke}>
+              <svg viewBox="0 0 24 24" className="w-14 h-14 text-gray-300" {...stroke}>
                 <path d="M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0Zm-4 7c-4.4 0-8 2.4-8 5.3V21h16v-1.7C20 16.4 16.4 14 12 14Z" />
               </svg>
             )}
           </div>
 
-          <p className="mt-4 text-xs text-slate-500">
+          <p className="mt-4 text-xs text-gray-500">
             Upload a square image (JPG or PNG). It will appear on your profile and in the header.
           </p>
 
@@ -118,7 +118,7 @@ export default function ProfilePhotoModal({ open, currentPhoto, onClose, onSave 
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
-              className="w-full px-4 py-2.5 rounded-lg bg-brand-600 text-white text-sm font-bold hover:bg-brand-700 transition-colors"
+              className="w-full px-4 py-2.5 rounded-lg bg-brand-600 text-[#00d9ff] text-sm font-bold hover:bg-brand-700 transition-colors"
             >
               {preview ? 'Choose different photo' : 'Upload photo'}
             </button>
@@ -128,7 +128,7 @@ export default function ProfilePhotoModal({ open, currentPhoto, onClose, onSave 
                 type="button"
                 onClick={handleSave}
                 disabled={saving}
-                className="w-full px-4 py-2.5 rounded-lg bg-brand-600 text-white text-sm font-bold hover:bg-brand-700 transition-colors"
+                className="w-full px-4 py-2.5 rounded-lg bg-brand-600 text-[#00d9ff] text-sm font-bold hover:bg-brand-700 transition-colors"
               >
                 {saving ? 'Saving…' : 'Save Photo'}
               </button>

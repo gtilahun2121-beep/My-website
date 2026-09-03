@@ -47,7 +47,7 @@ const AnimatedCounter = ({ value, suffix }: { value: number; suffix: string }) =
 
   return (
     <div ref={ref}>
-      <div className="text-3xl sm:text-5xl font-black text-[#d4af37] drop-shadow-lg break-all">
+      <div className="text-3xl sm:text-5xl font-black text-[#00d9ff] drop-shadow-lg break-all">
         {displayValue.toLocaleString()}
         {suffix}
       </div>
@@ -88,10 +88,10 @@ export default function CountUpStats({ stats, title, description }: CountUpStats
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-4xl md:text-5xl font-black text-[#314fa0] mb-4">
+          <h2 className="text-4xl md:text-5xl font-black text-[#00d9ff] mb-4">
             📊 {title}
           </h2>
-          <p className="text-xl text-[#5a5a5a]">{description}</p>
+          <p className="text-xl text-[#ffffff]">{description}</p>
         </motion.div>
 
         {/* Stats Grid */}
@@ -111,7 +111,7 @@ export default function CountUpStats({ stats, title, description }: CountUpStats
               transition={{ duration: 0.3 }}
             >
               {/* Background glow effect */}
-              <div className="absolute inset-0 bg-gradient-to-br from-[#314fa0]/10 to-[#ce1126]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-[#001f3f]/10 to-[#001f3f]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
               {/* Content */}
               <div className="relative z-10">
@@ -121,7 +121,7 @@ export default function CountUpStats({ stats, title, description }: CountUpStats
                 <div className="mb-6">
                   <AnimatedCounter value={stat.value} suffix={stat.suffix} />
                 </div>
-                <p className="text-lg font-bold text-[#314fa0] group-hover:text-[#ce1126] transition-colors">
+                <p className="text-lg font-bold text-[#00d9ff] group-hover:text-[#00d9ff] transition-colors">
                   {stat.label}
                 </p>
               </div>
@@ -132,3 +132,4 @@ export default function CountUpStats({ stats, title, description }: CountUpStats
     </section>
   );
 }
+

@@ -22,7 +22,7 @@ export default function EqubSelectionStep({ onSelect, selected }: EqubSelectionS
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       <div className="space-y-4">
         <div>
-          <h3 className="text-2xl font-black text-[#314fa0] mb-2 text-center">
+          <h3 className="text-2xl font-black text-[#00d9ff] mb-2 text-center">
             🏢 Choose Your Equb Group
           </h3>
           <p className="text-center text-sm text-gray-600 mb-4">
@@ -37,7 +37,7 @@ export default function EqubSelectionStep({ onSelect, selected }: EqubSelectionS
             placeholder="Search profession or income level..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-[#314fa0] font-bold"
+            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#001f3f] font-bold"
           />
         </div>
 
@@ -50,17 +50,17 @@ export default function EqubSelectionStep({ onSelect, selected }: EqubSelectionS
               whileHover={{ scale: 1.02 }}
               className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
                 selected?.id === equb.id
-                  ? 'border-[#314fa0] bg-[#314fa0]/10'
+                  ? 'border-[#001f3f] bg-[#001f3f]/10'
                   : 'border-white/60 bg-white/30 hover:shadow-lg hover:bg-white/40'
               }`}
             >
               <div className="flex items-start gap-3">
                 <span className="text-3xl">{equb.icon}</span>
                 <div className="flex-1">
-                  <h4 className="font-black text-[#314fa0] text-sm">{equb.name}</h4>
+                  <h4 className="font-black text-[#00d9ff] text-sm">{equb.name}</h4>
                   <p className="text-xs text-gray-600 mb-2">{equb.description}</p>
                   <div className="flex gap-2 flex-wrap text-xs">
-                    <span className="px-2 py-1 bg-[#314fa0]/10 text-[#314fa0] rounded font-bold">
+                    <span className="px-2 py-1 bg-[#001f3f]/10 text-[#00d9ff] rounded font-bold">
                       ETB {equb.monthlyPayment}/mo
                     </span>
                     <span
@@ -68,8 +68,8 @@ export default function EqubSelectionStep({ onSelect, selected }: EqubSelectionS
                         equb.incomeLevel === 'low'
                           ? 'bg-yellow-100 text-yellow-700'
                           : equb.incomeLevel === 'medium'
-                          ? 'bg-blue-100 text-blue-700'
-                          : 'bg-green-100 text-green-700'
+                          ? 'bg-brand-100 text-brand-700'
+                          : 'bg-brand-100 text-brand-700'
                       }`}
                     >
                       {equb.incomeLevel.charAt(0).toUpperCase() + equb.incomeLevel.slice(1)}
@@ -84,3 +84,4 @@ export default function EqubSelectionStep({ onSelect, selected }: EqubSelectionS
     </motion.div>
   );
 }
+

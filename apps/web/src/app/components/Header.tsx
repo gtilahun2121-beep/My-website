@@ -42,7 +42,7 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
 
   return (
     <>
-    <header className="bg-gradient-to-r from-[#314fa0]/85 to-[#ce1126]/75 backdrop-blur-md shadow-2xl sticky top-0 z-50 border-b-4 border-[#d4af37]">
+    <header className="bg-gradient-to-r from-[#001f3f]/85 to-[#001f3f]/75 backdrop-blur-md shadow-2xl sticky top-0 z-50 border-b-4 border-[#001f3f]">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex justify-between items-center gap-2 sm:gap-3">
           {/* Left corner: profile + logo */}
@@ -51,7 +51,7 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
             {authenticated && (
               <button
                 onClick={() => setProfileOpen(true)}
-                className="relative w-10 h-10 rounded-full overflow-hidden bg-white flex items-center justify-center text-[#314fa0] font-black text-sm uppercase shadow-md hover:scale-105 transition-transform border-2 border-[#d4af37]"
+                className="relative w-10 h-10 rounded-full overflow-hidden bg-white flex items-center justify-center text-[#00d9ff] font-black text-sm uppercase shadow-md hover:scale-105 transition-transform border-2 border-[#001f3f]"
                 aria-label="Open profile"
               >
                 {user?.profilePhoto ? (
@@ -67,12 +67,12 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
               </button>
             )}
             <Link href="/" className="flex items-center gap-3 group min-w-0">
-            <div className="w-10 h-10 shrink-0 bg-gradient-to-br from-[#d4af37] to-[#ce1126] rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-              <span className="text-[#314fa0] font-black text-lg">🇪🇹</span>
+            <div className="w-10 h-10 shrink-0 bg-gradient-to-br from-[#001f3f] to-[#001f3f] rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+              <span className="text-[#00d9ff] font-black text-lg">ET</span>
             </div>
             <div className="min-w-0">
-              <span className="block font-black text-xl sm:text-2xl text-white drop-shadow-lg truncate">QalNet</span>
-              <p className="hidden sm:block text-xs text-white/80 font-semibold -mt-1 truncate">Ethiopia&apos;s Digital Equb</p>
+              <span className="block font-black text-xl sm:text-2xl text-[#00d9ff] drop-shadow-lg truncate">QalNet</span>
+              <p className="hidden sm:block text-xs text-[#00d9ff]/80 font-semibold -mt-1 truncate">Ethiopia&apos;s Digital Equb</p>
             </div>
           </Link>
           </div>
@@ -83,7 +83,7 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-white font-bold hover:text-[#d4af37] transition-all"
+                className="text-[#00d9ff] font-bold hover:text-[#00d9ff] transition-all"
               >
                 {item.label}
               </Link>
@@ -96,7 +96,7 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
             {authenticated && (
               <button
                 onClick={openNotifications}
-                className="relative p-2 hover:bg-white/20 rounded-full transition-all text-white"
+                className="relative p-2 hover:bg-white/20 rounded-full transition-all text-[#00d9ff]"
                 aria-label="Notifications"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -107,7 +107,7 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
                   />
                 </svg>
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-[#ce1126] border-2 border-white rounded-full text-[10px] font-black text-white flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-[#001f3f] border-2 border-white rounded-full text-[10px] font-black text-[#00d9ff] flex items-center justify-center">
                     {unreadCount > 99 ? '99+' : unreadCount}
                   </span>
                 )}
@@ -118,7 +118,7 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
             <select
               value={lang}
               onChange={(e) => onLanguageChange(e.target.value as Language)}
-              className="hidden sm:block px-4 py-2 border-2 border-[#d4af37] rounded-full text-sm bg-white text-[#314fa0] font-bold cursor-pointer"
+              className="hidden sm:block px-4 py-2 border-2 border-[#001f3f] rounded-full text-sm bg-white text-[#00d9ff] font-bold cursor-pointer"
             >
               {(Object.keys(languages) as Language[]).map((l) => (
                 <option key={l} value={l}>
@@ -131,7 +131,7 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
             {!authenticated && (
               <button
                 onClick={onSignUpClick}
-                className="hidden sm:inline-block px-6 py-2 bg-gradient-to-r from-[#d4af37] via-[#ecc860] to-[#d4af37] text-[#314fa0] font-black rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all text-sm"
+                className="hidden sm:inline-block px-6 py-2 bg-gradient-to-r from-[#001f3f] to-[#001f3f] text-[#00d9ff] font-black rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all text-sm"
               >
                 ✍️ Sign Up
               </button>
@@ -140,7 +140,7 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 hover:bg-white/20 rounded-full transition-all text-white font-bold"
+              className="md:hidden p-2 hover:bg-white/20 rounded-full transition-all text-[#00d9ff] font-bold"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -161,8 +161,8 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
                   onClick={() => onLanguageChange(l)}
                   className={`px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${
                     lang === l
-                      ? 'bg-white text-[#314fa0]'
-                      : 'bg-white/15 text-white hover:bg-white/25'
+                      ? 'bg-white text-[#00d9ff]'
+                      : 'bg-white/15 text-[#00d9ff] hover:bg-white/25'
                   }`}
                 >
                   {languages[l]}
@@ -173,7 +173,7 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
               <Link
                 key={item.href}
                 href={item.href}
-                className="block px-4 py-3 text-white font-bold hover:bg-white/20 rounded-lg"
+                className="block px-4 py-3 text-[#00d9ff] font-bold hover:bg-white/20 rounded-lg"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {item.label}
@@ -185,9 +185,9 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
                   onSignUpClick?.();
                   setMobileMenuOpen(false);
                 }}
-                className="w-full px-4 py-3 bg-white text-[#314fa0] font-bold rounded-lg"
+                className="w-full px-4 py-3 bg-gradient-to-r from-[#001f3f] to-[#001f3f] text-[#00d9ff] font-bold rounded-lg"
               >
-                ✍️ Sign Up
+                Sign Up
               </button>
             )}
           </div>

@@ -60,8 +60,8 @@ export default function AdminLoginPage() {
       setError('Enter your QalNet phone number or email.');
       return;
     }
-    if (pass.length !== 6) {
-      setError('Enter your PIN.');
+    if (!/^\d{4,6}$/.test(pass)) {
+      setError('Enter your 4-6 digit PIN.');
       return;
     }
 
@@ -166,7 +166,7 @@ export default function AdminLoginPage() {
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-admin-bg">
       {/* Brand */}
       <Link href="/" className="flex items-center gap-3 mb-8 group">
-        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white font-black text-lg shadow-lg shadow-brand-900/50 group-hover:from-brand-600 group-hover:to-brand-800 transition-all">
+        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-[#00d9ff] font-black text-lg shadow-lg shadow-brand-900/50 group-hover:from-brand-600 group-hover:to-brand-800 transition-all">
           Q
         </div>
         <div>
@@ -199,7 +199,7 @@ export default function AdminLoginPage() {
                 setPin('');
                 setIdentifier('');
               }}
-              className="w-full py-3 rounded-lg bg-gradient-to-r from-brand-600 to-brand-500 text-white text-sm font-bold hover:from-brand-500 hover:to-brand-400 transition-all"
+              className="w-full py-3 rounded-lg bg-gradient-to-r from-brand-600 to-brand-500 text-[#00d9ff] text-sm font-bold hover:from-brand-500 hover:to-brand-400 transition-all"
             >
               Sign out and try again
             </button>
@@ -240,7 +240,7 @@ export default function AdminLoginPage() {
               <button
                 type="submit"
                 disabled={otpSubmitting}
-                className="w-full py-3 rounded-lg bg-gradient-to-r from-brand-600 to-brand-500 text-white text-sm font-bold hover:from-brand-500 hover:to-brand-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="w-full py-3 rounded-lg bg-gradient-to-r from-brand-600 to-brand-500 text-[#00d9ff] text-sm font-bold hover:from-brand-500 hover:to-brand-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 {otpSubmitting ? 'Verifying…' : 'Verify & Sign In'}
               </button>
@@ -302,7 +302,7 @@ export default function AdminLoginPage() {
                 <button
                   type="submit"
                   disabled={resetBusy}
-                  className="w-full py-3 rounded-lg bg-gradient-to-r from-brand-600 to-brand-500 text-white text-sm font-bold hover:from-brand-500 hover:to-brand-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  className="w-full py-3 rounded-lg bg-gradient-to-r from-brand-600 to-brand-500 text-[#00d9ff] text-sm font-bold hover:from-brand-500 hover:to-brand-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   {resetBusy ? 'Sending code…' : 'Send verification code'}
                 </button>
@@ -350,7 +350,7 @@ export default function AdminLoginPage() {
                       type="button"
                       onClick={() => setShowNewPin((v) => !v)}
                       aria-label="Show/Hide PIN"
-                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:text-[#314fa0] hover:bg-gray-100 transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:text-[#00d9ff] hover:bg-gray-100 transition-colors"
                     >
                       {!showNewPin ? (
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -380,7 +380,7 @@ export default function AdminLoginPage() {
                       type="button"
                       onClick={() => setShowConfirmPin((v) => !v)}
                       aria-label="Show/Hide PIN"
-                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:text-[#314fa0] hover:bg-gray-100 transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:text-[#00d9ff] hover:bg-gray-100 transition-colors"
                     >
                       {!showConfirmPin ? (
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -405,7 +405,7 @@ export default function AdminLoginPage() {
                 <button
                   type="submit"
                   disabled={resetBusy}
-                  className="w-full py-3 rounded-lg bg-gradient-to-r from-brand-600 to-brand-500 text-white text-sm font-bold hover:from-brand-500 hover:to-brand-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  className="w-full py-3 rounded-lg bg-gradient-to-r from-brand-600 to-brand-500 text-[#00d9ff] text-sm font-bold hover:from-brand-500 hover:to-brand-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   {resetBusy ? 'Resetting…' : 'Reset PIN'}
                 </button>
@@ -475,7 +475,7 @@ export default function AdminLoginPage() {
                     type="button"
                     onClick={() => setShowPin((v) => !v)}
                     aria-label="Show/Hide PIN"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:text-[#314fa0] hover:bg-gray-100 transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:text-[#00d9ff] hover:bg-gray-100 transition-colors"
                   >
                     {!showPin ? (
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -495,7 +495,7 @@ export default function AdminLoginPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full py-3 rounded-lg bg-gradient-to-r from-brand-600 to-brand-500 text-white text-sm font-bold hover:from-brand-500 hover:to-brand-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="w-full py-3 rounded-lg bg-gradient-to-r from-brand-600 to-brand-500 text-[#00d9ff] text-sm font-bold hover:from-brand-500 hover:to-brand-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 {submitting ? 'Signing in…' : 'Sign in to Admin'}
               </button>
@@ -531,3 +531,4 @@ export default function AdminLoginPage() {
     </div>
   );
 }
+

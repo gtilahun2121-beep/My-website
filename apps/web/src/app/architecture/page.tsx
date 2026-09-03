@@ -24,7 +24,7 @@ function ArchitectureContent() {
 
       <section className="py-20 md:py-32 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-8">
+          <h1 className="text-4xl md:text-5xl font-bold text-[#00d9ff] mb-8">
             {t.architecture}
           </h1>
 
@@ -59,27 +59,27 @@ function ArchitectureContent() {
 
             <h2 className="text-2xl font-bold mt-8 mb-4">Infrastructure</h2>
             <ul className="space-y-2 mb-8">
-              <li className="flex items-start"><span className="text-emerald-600 mr-2">✓</span> Cloudflare WAF & Kong API Gateway</li>
-              <li className="flex items-start"><span className="text-emerald-600 mr-2">✓</span> Neon Serverless Postgres with database branching</li>
-              <li className="flex items-start"><span className="text-emerald-600 mr-2">✓</span> HashiCorp Vault for secret management</li>
-              <li className="flex items-start"><span className="text-emerald-600 mr-2">✓</span> Kubernetes / AWS ECS for deployment</li>
+              <li className="flex items-start"><span className="text-brand-600 mr-2">✓</span> Cloudflare WAF & Kong API Gateway</li>
+              <li className="flex items-start"><span className="text-brand-600 mr-2">✓</span> Neon Serverless Postgres with database branching</li>
+              <li className="flex items-start"><span className="text-brand-600 mr-2">✓</span> HashiCorp Vault for secret management</li>
+              <li className="flex items-start"><span className="text-brand-600 mr-2">✓</span> Kubernetes / AWS ECS for deployment</li>
             </ul>
 
             <h2 className="text-2xl font-bold mt-8 mb-4">{t.security}</h2>
             <ul className="space-y-2 mb-8">
-              <li className="flex items-start"><span className="text-emerald-600 mr-2">🔒</span> AES-256 PII Encryption</li>
-              <li className="flex items-start"><span className="text-emerald-600 mr-2">🔒</span> Row-Level Security (RLS)</li>
-              <li className="flex items-start"><span className="text-emerald-600 mr-2">🔒</span> 5 failed attempt lockout</li>
-              <li className="flex items-start"><span className="text-emerald-600 mr-2">🔒</span> 100 req/min rate limiting</li>
-              <li className="flex items-start"><span className="text-emerald-600 mr-2">🔒</span> 90-day key rotation</li>
+              <li className="flex items-start"><span className="text-brand-600 mr-2">🔒</span> AES-256 PII Encryption</li>
+              <li className="flex items-start"><span className="text-brand-600 mr-2">🔒</span> Row-Level Security (RLS)</li>
+              <li className="flex items-start"><span className="text-brand-600 mr-2">🔒</span> 5 failed attempt lockout</li>
+              <li className="flex items-start"><span className="text-brand-600 mr-2">🔒</span> 100 req/min rate limiting</li>
+              <li className="flex items-start"><span className="text-brand-600 mr-2">🔒</span> 90-day key rotation</li>
             </ul>
 
             <h2 className="text-2xl font-bold mt-8 mb-4">{t.localizationTitle}</h2>
             <ul className="space-y-2">
-              <li className="flex items-start"><span className="text-emerald-600 mr-2">✓</span> Amharic (አማርኛ)</li>
-              <li className="flex items-start"><span className="text-emerald-600 mr-2">✓</span> Afaan Oromo</li>
-              <li className="flex items-start"><span className="text-emerald-600 mr-2">✓</span> Tigrinya (ትግርኛ)</li>
-              <li className="flex items-start"><span className="text-emerald-600 mr-2">✓</span> English</li>
+              <li className="flex items-start"><span className="text-brand-600 mr-2">✓</span> Amharic (አማርኛ)</li>
+              <li className="flex items-start"><span className="text-brand-600 mr-2">✓</span> Afaan Oromo</li>
+              <li className="flex items-start"><span className="text-brand-600 mr-2">✓</span> Tigrinya (ትግርኛ)</li>
+              <li className="flex items-start"><span className="text-brand-600 mr-2">✓</span> English</li>
             </ul>
           </div>
         </div>

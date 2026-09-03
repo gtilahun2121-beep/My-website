@@ -392,13 +392,13 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
             <div key={s} className="flex flex-col items-center flex-1 min-w-0">
               <div
                 className={`flex items-center justify-center w-8 h-8 sm:w-12 sm:h-12 rounded-full font-bold text-sm transition-all mb-2 ${s <= step
-                  ? 'bg-[#314fa0] text-white shadow-lg'
-                  : 'bg-white/40 text-gray-900 border border-white/60'
+                  ? 'bg-[#001f3f] text-[#00d9ff] shadow-lg'
+                  : 'bg-white/40 text-[#00d9ff] border border-white/60'
                   }`}
               >
                 {s < step ? '✓' : s}
               </div>
-              <p className="text-xs text-gray-800 font-semibold text-center">
+              <p className="text-xs text-[#00d9ff] font-semibold text-center">
                 {s === 1 ? 'Personal' : s === 2 ? 'Contact' : s === 3 ? 'Fayda' : s === 4 ? 'OTP' : 'PIN'}
               </p>
             </div>
@@ -406,7 +406,7 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
         </div>
         <div className="w-full bg-white/40 border border-white/50 h-2 rounded-full overflow-hidden">
           <div
-            className="bg-[#314fa0] h-full transition-all duration-300"
+            className="bg-[#001f3f] h-full transition-all duration-300"
             style={{ width: `${(step / 5) * 100}%` }}
           />
         </div>
@@ -414,7 +414,7 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
 
       {/* Step Indicator */}
       <div className="mb-6 pb-4 border-b border-gray-200">
-        <h3 className="text-lg font-bold text-gray-800">
+        <h3 className="text-lg font-bold text-[#00d9ff]">
           {step === 1
             ? lang === 'en'
               ? 'Personal Information'
@@ -468,7 +468,7 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
 
           <button
             onClick={handleNext}
-            className="w-full py-3 bg-[#314fa0] text-white font-bold rounded-lg hover:bg-[#2a4183] transition-all duration-200 mt-8"
+            className="w-full py-3 bg-[#001f3f] text-[#00d9ff] font-bold rounded-lg hover:bg-[#001f3f] transition-all duration-200 mt-8"
           >
             {lang === 'en' ? 'Next →' : 'ቀጥል →'}
           </button>
@@ -506,13 +506,13 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
           <div className="flex gap-3 mt-8">
             <button
               onClick={handleBack}
-              className="flex-1 py-3 border-2 border-[#314fa0] text-[#314fa0] font-bold rounded-lg hover:bg-gray-50 transition-all"
+              className="flex-1 py-3 border-2 border-[#001f3f] text-[#00d9ff] font-bold rounded-lg hover:bg-gray-50 transition-all"
             >
               {lang === 'en' ? '← Back' : '← ተመለስ'}
             </button>
             <button
               onClick={handleNext}
-              className="flex-1 py-3 bg-[#314fa0] text-white font-bold rounded-lg hover:bg-[#2a4183] transition-all"
+              className="flex-1 py-3 bg-[#001f3f] text-[#00d9ff] font-bold rounded-lg hover:bg-[#001f3f] transition-all"
             >
               {lang === 'en' ? 'Next →' : 'ቀጥል →'}
             </button>
@@ -539,7 +539,7 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
           />
 
           {fayda.verified && (
-            <p className="text-xs text-green-600 bg-green-50 border border-green-200 rounded-md px-3 py-2">
+            <p className="text-xs text-brand-600 bg-brand-50 border border-brand-200 rounded-md px-3 py-2">
               ✓ Fayda ID verified
             </p>
           )}
@@ -547,14 +547,14 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
           <div className="flex gap-3 mt-8">
             <button
               onClick={handleBack}
-              className="flex-1 py-3 border-2 border-[#314fa0] text-[#314fa0] font-bold rounded-lg hover:bg-gray-50 transition-all"
+              className="flex-1 py-3 border-2 border-[#001f3f] text-[#00d9ff] font-bold rounded-lg hover:bg-gray-50 transition-all"
             >
               {lang === 'en' ? '← Back' : '← ተመለስ'}
             </button>
             <button
               onClick={handleVerifyFayda}
               disabled={fayda.loading || otp.sending}
-              className="flex-1 py-3 bg-[#314fa0] text-white font-bold rounded-lg hover:bg-[#2a4183] transition-all disabled:opacity-50"
+              className="flex-1 py-3 bg-[#001f3f] text-[#00d9ff] font-bold rounded-lg hover:bg-[#001f3f] transition-all disabled:opacity-50"
             >
               {fayda.loading || otp.sending
                 ? lang === 'en'
@@ -567,7 +567,7 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
           </div>
 
           {otp.sent && (
-            <p className="text-xs text-blue-600 bg-blue-50 border border-blue-200 rounded-md px-3 py-2">
+            <p className="text-xs text-brand-600 bg-brand-50 border border-brand-200 rounded-md px-3 py-2">
               {lang === 'en'
                 ? `A 6-digit code was sent to ${formData.phoneNumber}.`
                 : `6-አሃዝ ኮድ ወደ ${formData.phoneNumber} ተልኳል።`}
@@ -585,7 +585,7 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
           className="space-y-5"
         >
           <div className="bg-white/35 border border-white/60 rounded-lg p-4">
-            <p className="text-sm text-gray-900">
+            <p className="text-sm text-[#00d9ff]">
               {lang === 'en'
                 ? `Enter the 6-digit code sent to ${formData.phoneNumber}.`
                 : `ወደ ${formData.phoneNumber} የተላከውን 6-አሃዝ ኮድ ያስገቡ።`}
@@ -593,8 +593,8 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
           </div>
 
           {/* Temporary universal dev OTP — shown until government SMS approval */}
-          <div className="bg-amber-50/70 border border-amber-300 rounded-lg p-3">
-            <p className="text-xs text-amber-900 font-semibold">
+          <div className="bg-brand-50/70 border border-brand-300 rounded-lg p-3">
+            <p className="text-xs text-brand-900 font-semibold">
               {lang === 'en'
                 ? '🟡 Testing only: enter code 818959 for any phone number (valid until SMS delivery is approved).'
                 : '🟡 ለሙከራ ብቻ፡ የ SMS ፍቃድ እስኪገኝ ድረስ ለማንኛውም የስልክ ቁጥር ኮድ 818959 ያስገቡ።'}
@@ -615,7 +615,7 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
           <button
             onClick={handleResendOtp}
             disabled={otp.sending}
-            className="w-full text-sm text-[#314fa0] font-semibold underline hover:text-[#2a4183] transition-all disabled:opacity-50"
+            className="w-full text-sm text-[#00d9ff] font-semibold underline hover:text-[#00d9ff] transition-all disabled:opacity-50"
           >
             {otp.sending
               ? lang === 'en'
@@ -629,14 +629,14 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
           <div className="flex gap-3 mt-8">
             <button
               onClick={handleBack}
-              className="flex-1 py-3 border-2 border-[#314fa0] text-[#314fa0] font-bold rounded-lg hover:bg-gray-50 transition-all"
+              className="flex-1 py-3 border-2 border-[#001f3f] text-[#00d9ff] font-bold rounded-lg hover:bg-gray-50 transition-all"
             >
               {lang === 'en' ? '← Back' : '← ተመለስ'}
             </button>
             <button
               onClick={handleVerifyOtp}
               disabled={otp.verifying}
-              className="flex-1 py-3 bg-[#314fa0] text-white font-bold rounded-lg hover:bg-[#2a4183] transition-all disabled:opacity-50"
+              className="flex-1 py-3 bg-[#001f3f] text-[#00d9ff] font-bold rounded-lg hover:bg-[#001f3f] transition-all disabled:opacity-50"
             >
               {otp.verifying
                 ? lang === 'en'
@@ -659,7 +659,7 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
           className="space-y-5"
         >
           <div className="bg-white/35 border border-white/60 rounded-lg p-4">
-            <p className="text-sm text-gray-900">
+            <p className="text-sm text-[#00d9ff]">
               {lang === 'en'
                 ? 'Create a 6-digit PIN for your account security'
                 : 'ሂሳብ ደህንነት ለ 6-ዲጂት PIN ይሰሩ'}
@@ -678,7 +678,7 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
           />
 
           {submitError && (
-            <p className="text-xs text-amber-600 bg-amber-50 border border-amber-300 rounded-md px-3 py-2">
+            <p className="text-xs text-brand-600 bg-brand-50 border border-brand-300 rounded-md px-3 py-2">
               {submitError}
             </p>
           )}
@@ -686,14 +686,14 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
           <div className="flex gap-3 mt-8">
             <button
               onClick={handleBack}
-              className="flex-1 py-3 border-2 border-[#314fa0] text-[#314fa0] font-bold rounded-lg hover:bg-gray-50 transition-all"
+              className="flex-1 py-3 border-2 border-[#001f3f] text-[#00d9ff] font-bold rounded-lg hover:bg-gray-50 transition-all"
             >
               {lang === 'en' ? '← Back' : '← ተመለስ'}
             </button>
             <button
               onClick={handleSubmit}
               disabled={isLoading}
-              className="flex-1 py-3 bg-[#314fa0] text-white font-bold rounded-lg hover:bg-[#2a4183] transition-all disabled:opacity-50"
+              className="flex-1 py-3 bg-[#001f3f] text-[#00d9ff] font-bold rounded-lg hover:bg-[#001f3f] transition-all disabled:opacity-50"
             >
               {isLoading
                 ? '⏳ Creating...'
@@ -707,3 +707,4 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
     </div>
   );
 }
+

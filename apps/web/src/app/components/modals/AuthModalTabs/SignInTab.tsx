@@ -28,13 +28,20 @@ export default function SignInTab({ lang = defaultLanguage, onSuccess, onError }
   const handleFieldChange = (field: string, value: string) => {
     let finalValue = value;
     if (field === 'phoneNumber') {
-      // Accept +2519 (Ethio Telecom) or +2517 (Safaricom) — never force a prefix.
-      // A full Ethiopian number is 12 digits: 251 (country) + 9 local digits.
-      const digitsOnly = value.replace(/\D/g, '');
-      if (digitsOnly.length > 12) {
-        value = '+' + digitsOnly.substring(0, 12);
+      // Accept an email address OR a phone number as the sign-in identifier.
+      // Phone numbers may carry a leading +, country code, spaces/dashes;
+      // emails are passed through untouched.
+      if (value.includes('@')) {
+        finalValue = value;
+      } else {
+        // Cap phone length: +251 + 9 local digits = 13 chars
+        const digitsOnly = value.replace(/[^\d+]/g, '');
+        if (digitsOnly.replace(/\D/g, '').length > 12) {
+          finalValue = '+' + digitsOnly.replace(/\D/g, '').substring(0, 12);
+        } else {
+          finalValue = value;
+        }
       }
-      finalValue = value;
     } else if (field === 'pin') {
       finalValue = value.replace(/\D/g, '').slice(0, 6);
     }
@@ -47,17 +54,26 @@ export default function SignInTab({ lang = defaultLanguage, onSuccess, onError }
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.phoneNumber.trim()) {
-      newErrors.phoneNumber = 'Phone number is required';
+    const identifier = formData.phoneNumber.trim();
+    if (!identifier) {
+      newErrors.phoneNumber = 'Email or phone number is required';
     } else {
-      const validation = ValidationSchema.validatePhone(formData.phoneNumber);
-      if (!validation.valid) newErrors.phoneNumber = validation.error || 'Invalid phone';
+      const looksLikeEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
+      if (looksLikeEmail) {
+        const emailValidation = ValidationSchema.validateEmail(identifier);
+        if (!emailValidation.valid) newErrors.phoneNumber = emailValidation.error || 'Invalid email';
+      } else {
+        const phoneValidation = ValidationSchema.validatePhone(identifier);
+        if (!phoneValidation.valid) {
+          newErrors.phoneNumber = 'Enter a valid email or Ethiopian phone number';
+        }
+      }
     }
 
     if (!formData.pin) {
       newErrors.pin = 'PIN is required';
-    } else if (formData.pin.length !== 6) {
-      newErrors.pin = 'PIN must be 6 digits';
+    } else if (!/^\d{4,6}$/.test(formData.pin)) {
+      newErrors.pin = 'PIN must be 4-6 digits';
     }
 
     setErrors(newErrors);
@@ -83,7 +99,15 @@ export default function SignInTab({ lang = defaultLanguage, onSuccess, onError }
         return;
       }
       const message = error instanceof Error ? error.message : 'Sign in failed';
-      onError?.('Error', message);
+      
+      // Check if user not found - suggest signup
+      if (message.includes('not found') || message.includes('404')) {
+        onError?.('User Not Found', 'This phone number is not registered. Please sign up first.', 5000);
+      } else if (message.includes('PIN') || message.includes('credentials')) {
+        onError?.('Invalid PIN', 'The PIN you entered is incorrect. Please try again.', 3000);
+      } else {
+        onError?.('Error', message);
+      }
     }
   };
 
@@ -115,7 +139,7 @@ export default function SignInTab({ lang = defaultLanguage, onSuccess, onError }
   if (mfaToken) {
     return (
       <div className="space-y-4">
-        <h3 className="text-lg font-bold text-gray-800 mb-4">
+        <h3 className="text-lg font-bold text-[#00d9ff] mb-4">
           {lang === 'en' ? 'Two-Factor Authentication' : lang === 'am' ? 'የሁለት-ደረጃ ማረጋገጫ' : 'Iggantoota Lama'} 
         </h3>
 
@@ -140,7 +164,7 @@ export default function SignInTab({ lang = defaultLanguage, onSuccess, onError }
         <button
           type="button"
           onClick={() => setMfaToken(null)}
-          className="w-full text-xs text-gray-500 text-center hover:text-gray-700"
+          className="w-full text-xs text-gray-500 text-center hover:text-[#00d9ff]"
         >
           ← Back to PIN
         </button>
@@ -150,7 +174,7 @@ export default function SignInTab({ lang = defaultLanguage, onSuccess, onError }
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-bold text-gray-800 mb-4">
+      <h3 className="text-lg font-bold text-[#00d9ff] mb-4">
         {lang === 'en' ? 'Sign In to Your Account' : lang === 'am' ? 'ወደ መስተዋወቅ ወደ ውስጥ ግባ' : lang === 'om' ? 'Seensa Akkauntaa Keessan' : 'Seensa Akkauntaa Keessan'}
       </h3>
 

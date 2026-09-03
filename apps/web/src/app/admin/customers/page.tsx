@@ -110,7 +110,7 @@ function ResetPinModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-gray-950/70 p-4"
       role="dialog"
       aria-modal="true"
     >
@@ -145,7 +145,7 @@ function ResetPinModal({
                 type="button"
                 onClick={() => setShowPin((v) => !v)}
                 aria-label="Show/Hide PIN"
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:text-[#314fa0] hover:bg-gray-100 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:text-[#00d9ff] hover:bg-gray-100 transition-colors"
               >
                 {!showPin ? (
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -178,7 +178,7 @@ function ResetPinModal({
                 type="button"
                 onClick={() => setShowConfirm((v) => !v)}
                 aria-label="Show/Hide PIN"
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:text-[#314fa0] hover:bg-gray-100 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:text-[#00d9ff] hover:bg-gray-100 transition-colors"
               >
                 {!showConfirm ? (
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -206,7 +206,7 @@ function ResetPinModal({
             type="button"
             onClick={() => void submit()}
             disabled={busy || done}
-            className="px-4 py-2 rounded-lg bg-gradient-to-r from-brand-600 to-brand-500 text-sm font-bold text-white hover:from-brand-500 hover:to-brand-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2 rounded-lg bg-gradient-to-r from-brand-600 to-brand-500 text-sm font-bold text-[#00d9ff] hover:from-brand-500 hover:to-brand-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {busy ? 'Resetting…' : 'Reset PIN'}
           </button>
@@ -260,7 +260,7 @@ function RoleModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-gray-950/70 p-4"
       role="dialog"
       aria-modal="true"
     >
@@ -316,7 +316,7 @@ function RoleModal({
             type="button"
             onClick={() => void submit()}
             disabled={busy || role === customer.role}
-            className="px-4 py-2 rounded-lg bg-gradient-to-r from-brand-600 to-brand-500 text-sm font-bold text-white hover:from-brand-500 hover:to-brand-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2 rounded-lg bg-gradient-to-r from-brand-600 to-brand-500 text-sm font-bold text-[#00d9ff] hover:from-brand-500 hover:to-brand-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {busy ? 'Saving…' : role === 'admin' ? 'Make admin' : 'Update role'}
           </button>
@@ -684,3 +684,4 @@ export default function RegisteredCustomersPage() {
     </>
   );
 }
+

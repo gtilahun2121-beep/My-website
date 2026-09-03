@@ -51,7 +51,7 @@ export default function DetailsEntryStep({
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
       <div>
-        <h3 className="text-2xl font-black text-[#314fa0] mb-2 text-center">
+        <h3 className="text-2xl font-black text-[#00d9ff] mb-2 text-center">
           ✍️ Your Details
         </h3>
         <p className="text-center text-sm text-gray-600 mb-4">
@@ -122,3 +122,4 @@ export default function DetailsEntryStep({
     </motion.div>
   );
 }
+

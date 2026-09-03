@@ -71,7 +71,7 @@ export default function EqubRotation({
   };
 
   return (
-    <section className="py-20 md:py-32 bg-gradient-to-br from-[#314fa0] to-[#ce1126] relative overflow-hidden">
+    <section className="py-20 md:py-32 bg-gradient-to-br from-[#001f3f] to-[#001f3f] relative overflow-hidden">
       {/* Animated background pattern */}
       <div className="absolute inset-0 pattern-eth opacity-5"></div>
 
@@ -84,10 +84,10 @@ export default function EqubRotation({
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-4 drop-shadow-lg">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#00d9ff] mb-4 drop-shadow-lg">
             💰 {title}
           </h2>
-          <p className="text-lg sm:text-xl text-white/90 drop-shadow-md">{description}</p>
+          <p className="text-lg sm:text-xl text-[#00d9ff]/90 drop-shadow-md">{description}</p>
         </motion.div>
 
         {/* Equb Circle Animation */}
@@ -117,8 +117,8 @@ export default function EqubRotation({
             {/* Rotating gradient circle */}
             <defs>
               <linearGradient id="rotatingGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#d4af37" />
-                <stop offset="100%" stopColor="#314fa0" />
+                <stop offset="0%" stopColor="#001f3f" />
+                <stop offset="100%" stopColor="#001f3f" />
               </linearGradient>
             </defs>
 
@@ -175,7 +175,7 @@ export default function EqubRotation({
                 >
                   {/* Glow effect */}
                   <motion.div
-                    className="absolute inset-0 w-16 h-16 rounded-full bg-[#d4af37] blur-xl"
+                    className="absolute inset-0 w-16 h-16 rounded-full bg-[#001f3f] blur-xl"
                     custom={idx}
                     variants={glowVariants}
                     initial="hidden"
@@ -192,8 +192,8 @@ export default function EqubRotation({
                   <motion.div
                     className={`w-16 h-16 rounded-full flex items-center justify-center font-black text-2xl shadow-lg border-4 transition-all ${
                       isActive
-                        ? 'border-[#d4af37] bg-[#314fa0] text-[#d4af37] scale-110'
-                        : 'border-white bg-[#ce1126] text-white'
+                        ? 'border-[#001f3f] bg-[#001f3f] text-[#00d9ff] scale-110'
+                        : 'border-white bg-[#001f3f] text-[#00d9ff]'
                     }`}
                     custom={idx}
                     variants={memberVariants}
@@ -205,7 +205,7 @@ export default function EqubRotation({
                   </motion.div>
 
                   {/* Member index badge */}
-                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-[#d4af37] rounded-full text-[#314fa0] flex items-center justify-center text-xs font-black shadow-lg">
+                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-[#001f3f] rounded-full text-[#00d9ff] flex items-center justify-center text-xs font-black shadow-lg">
                     {idx + 1}
                   </div>
                 </div>
@@ -227,7 +227,7 @@ export default function EqubRotation({
             </motion.div>
 
             {/* Center circle */}
-            <div className="absolute w-20 h-20 rounded-full bg-gradient-to-br from-[#d4af37] to-[#314fa0] flex items-center justify-center shadow-2xl border-4 border-white">
+            <div className="absolute w-20 h-20 rounded-full bg-gradient-to-br from-[#001f3f] to-[#001f3f] flex items-center justify-center shadow-2xl border-4 border-white">
               <div className="text-3xl">🏦</div>
             </div>
           </motion.div>
@@ -248,12 +248,12 @@ export default function EqubRotation({
           ].map((benefit, idx) => (
             <motion.div
               key={idx}
-              className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 text-center text-white"
+              className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 text-center text-[#00d9ff]"
               whileHover={{ scale: 1.05, y: -4 }}
             >
               <div className="text-4xl mb-3">{benefit.icon}</div>
               <h4 className="font-black text-lg mb-2">{benefit.title}</h4>
-              <p className="text-white/80">{benefit.desc}</p>
+              <p className="text-[#00d9ff]/80">{benefit.desc}</p>
             </motion.div>
           ))}
         </motion.div>
@@ -261,3 +261,4 @@ export default function EqubRotation({
     </section>
   );
 }
+

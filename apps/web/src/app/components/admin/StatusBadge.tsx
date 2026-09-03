@@ -1,21 +1,23 @@
 import type { AdminCustomer } from '../../services/api';
 
-export type BadgeTone = 'success' | 'warning' | 'danger' | 'info' | 'neutral';
+export type BadgeTone = 'success' | 'warning' | 'danger' | 'info' | 'accent' | 'neutral';
 
 export const TONE_STYLES: Record<BadgeTone, string> = {
   success: 'bg-success-100 text-success-700',
   warning: 'bg-warning-100 text-warning-700',
   danger: 'bg-danger-100 text-danger-700',
-  info: 'bg-brand-100 text-brand-700',
-  neutral: 'bg-slate-100 text-slate-600',
+  info: 'bg-brand-100 text-brand-800',
+  accent: 'bg-accent-100 text-accent-700',
+  neutral: 'bg-gray-100 text-gray-600',
 };
 
 export const TONE_STYLES_DARK: Record<BadgeTone, string> = {
-  success: 'bg-success-100 text-success-700',
-  warning: 'bg-warning-100 text-warning-700',
-  danger: 'bg-danger-100 text-danger-700',
-  info: 'bg-brand-100 text-brand-700',
-  neutral: 'bg-slate-100 text-slate-600',
+  success: 'bg-success-500/15 text-success-300 border border-success-500/30',
+  warning: 'bg-warning-500/15 text-warning-300 border border-warning-500/30',
+  danger: 'bg-danger-500/15 text-danger-300 border border-danger-500/30',
+  info: 'bg-brand-500/15 text-brand-300 border border-brand-500/30',
+  accent: 'bg-accent-500/15 text-accent-300 border border-accent-500/30',
+  neutral: 'bg-admin-disabled/20 text-admin-muted border border-admin-border-subtle',
 };
 
 interface StatusBadgeProps {
@@ -39,7 +41,7 @@ export function StatusBadge({ tone, variant = 'light', children }: StatusBadgePr
 export function roleBadge(role: AdminCustomer['role']) {
   switch (role) {
     case 'admin':
-      return { tone: 'accent' as BadgeTone, label: 'Admin' };
+      return { tone: 'accent' as const, label: 'Admin' };
     case 'host':
       return { tone: 'info' as BadgeTone, label: 'Host' };
     default:
