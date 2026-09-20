@@ -83,7 +83,7 @@ export default function NotificationsDrawer({
                 </h2>
                 <button
                   onClick={onClose}
-                  className="p-2 hover:bg-white/20 rounded-full text-xl leading-none"
+                  className="p-2 hover:bg-gray-200 rounded-full text-xl leading-none"
                   aria-label="Close"
                 >
                   ✕

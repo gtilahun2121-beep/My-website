@@ -8,6 +8,7 @@ import { translations } from '@/i18n/translations';
 import { useAuth } from '@/app/context/AuthContext';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
+import PresetTemplates, { PresetTemplate } from '@/app/components/PresetTemplates';
 import api from '@/app/services/api';
 
 export default function CreateEqubPage() {
@@ -30,6 +31,20 @@ export default function CreateEqubPage() {
 
   const set = (field: string, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
+
+  const handleSelectTemplate = (template: PresetTemplate) => {
+    setForm({
+      name: template.name,
+      description: template.description || '',
+      contribution_amount: template.contribution_amount.toString(),
+      total_rounds: template.total_rounds.toString(),
+      cycle_days: template.cycle_days.toString(),
+    });
+    // Scroll to form
+    setTimeout(() => {
+      document.querySelector('[data-form-section]')?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  };
 
   const handleSubmit = async () => {
     setError(null);
@@ -93,7 +108,7 @@ export default function CreateEqubPage() {
       <Header lang={lang} onLanguageChange={setLang} isAuthenticated={true} />
 
       <div className="flex-grow py-8 px-4">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           {isAdmin ? (
             <h1 className="text-3xl sm:text-4xl font-black text-[#00d9ff] mb-2">
               {lang === 'en' ? 'Create an Equb 🆕' : 'እቁብ ይፍጠሩ 🆕'}
@@ -133,7 +148,10 @@ export default function CreateEqubPage() {
               </p>
             </div>
           ) : (
-            <div className="bg-white rounded-xl shadow-md p-8 border-t-4 border-[#001f3f]">
+            <>
+              <PresetTemplates lang={lang} onSelectTemplate={handleSelectTemplate} />
+
+              <div data-form-section className="bg-white rounded-xl shadow-md p-8 border-t-4 border-[#001f3f] max-w-3xl">
               <div className="space-y-5">
                 <div>
                   <label className="block text-sm font-bold text-[#00d9ff] mb-1">
@@ -215,7 +233,8 @@ export default function CreateEqubPage() {
                       : (lang === 'en' ? 'Submit Request to Admin' : 'ጥያቄ ለአስተዳዳሪ ይላኩ')}
                 </button>
               </div>
-            </div>
+              </div>
+            </>
           )}
         </div>
       </div>

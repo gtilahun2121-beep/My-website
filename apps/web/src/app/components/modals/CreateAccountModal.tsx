@@ -166,7 +166,7 @@ export default function CreateAccountModal({
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="glass-form rounded-2xl max-w-2xl w-full p-6"
+              className="bg-white rounded-2xl max-w-2xl w-full p-6"
               onClick={(e) => e.stopPropagation()}
             >
               <FormSuccess title="✓ Success" message={successMessage} />
@@ -191,7 +191,7 @@ export default function CreateAccountModal({
             initial={{ scale: 0.9, y: 20 }}
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.9, y: 20 }}
-            className="glass-form rounded-2xl max-w-2xl w-full"
+            className="bg-white rounded-2xl max-w-2xl w-full"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}

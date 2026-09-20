@@ -1025,6 +1025,13 @@ export const equbAPI = {
   getMine: () => request<EqubGroup[]>('/equbs/mine', { method: 'GET' }),
 
   /**
+   * GET /api/v1/equbs/presets
+   * Returns featured preset equb templates for quick creation
+   */
+  getPresets: () =>
+    request<any[]>('/equbs/presets', { method: 'GET' }),
+
+  /**
    * POST /api/v1/equbs
    * Direct creation — ADMIN ONLY (enforced by RolesGuard on the backend).
    */

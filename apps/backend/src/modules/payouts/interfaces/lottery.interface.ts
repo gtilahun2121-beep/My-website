@@ -73,6 +73,7 @@ export interface DrawValidationResult {
     errors: string[];
     warnings?: string[];
     eligibleMemberCount?: number;
+    eligibleMembers?: MemberEligibility[];
 }
 
 export interface AuditLogEntry {

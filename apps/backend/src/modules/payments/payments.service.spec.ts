@@ -88,6 +88,7 @@ function makeRepoMock() {
     return {
         findEqubById: jest.fn(),
         getMembership: jest.fn(),
+        isPaymentWindowOpen: jest.fn().mockResolvedValue(true),
         getActiveFeeConfig: jest.fn(),
         findPendingPayment: jest.fn(),
         createPendingPayment: jest.fn(),
@@ -96,6 +97,7 @@ function makeRepoMock() {
         markPaymentPaid: jest.fn(),
         creditWalletBalance: jest.fn(),
         getAdminWalletUserId: jest.fn(),
+        getEqubWinnerSelectionType: jest.fn().mockResolvedValue(null),
         confirmPaymentByReference: jest.fn(),
         recordWebhookEvent: jest.fn(),
         markWebhookEventProcessed: jest.fn(),

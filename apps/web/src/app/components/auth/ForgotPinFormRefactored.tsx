@@ -123,7 +123,7 @@ export default function ForgotPinFormRefactored({
 
   return (
     <motion.div
-      className="glass-form rounded-2xl p-8"
+      className="bg-white rounded-2xl p-8"
       variants={containerVariants}
       initial="hidden"
       animate="visible"

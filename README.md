@@ -97,6 +97,40 @@ npm run test
 npm run type-check
 ```
 
+## Run everything with Docker (recommended for live / full-stack)
+
+One command builds the backend + web images and brings up the whole stack
+(PostgreSQL with the schema + migrations, Redis, the NestJS API, and the
+Next.js frontend):
+
+```bash
+docker compose up -d --build
+```
+
+| Service    | URL / port        | Notes |
+|-----------|-------------------|-------|
+| Web app   | http://localhost:3001 | Next.js frontend |
+| Backend   | http://localhost:4000 | NestJS REST API |
+| API docs  | http://localhost:4000/api/v1/health | Health endpoint |
+| PostgreSQL | :5432 (`postgres` / `postgres`, db `qalnet_dev`) | Schema + migrations applied on a fresh volume |
+| Redis     | :6379                | Cache / Redlock |
+
+On the very first boot, the Postgres container applies
+`apps/backend/database/schema.sql` and then every `.sql` inside
+`apps/backend/database/migrations/` (in numeric order) automatically — you
+don't need to run any migration step by hand.
+
+Only infrastructure (DB + Redis, no app images) is started by:
+
+```bash
+docker compose -f docker-compose-lite.yml up -d
+```
+
+Troubleshooting:
+- `docker compose config` validates the file without needing the daemon.
+- Wipe everything (including the DB data volume) with `docker compose down -v`.
+- Live logs: `docker compose logs -f backend web`.
+
 ## Apps
 
 | App | Description | Port | Docs |

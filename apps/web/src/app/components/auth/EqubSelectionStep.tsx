@@ -51,7 +51,7 @@ export default function EqubSelectionStep({ onSelect, selected }: EqubSelectionS
               className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
                 selected?.id === equb.id
                   ? 'border-[#001f3f] bg-[#001f3f]/10'
-                  : 'border-white/60 bg-white/30 hover:shadow-lg hover:bg-white/40'
+                  : 'border-gray-300 bg-gray-50 hover:shadow-lg hover:bg-gray-100'
               }`}
             >
               <div className="flex items-start gap-3">

@@ -1,6 +1,9 @@
-# Minimal Docker Compose for QalNet services
+# Minimal Docker Compose for QalNet infrastructure only
+# (PostgreSQL + Redis). Does NOT run the backend or web images.
+#
 # Start with: docker-compose -f docker-compose-lite.yml up -d
-# Stop with: docker-compose -f docker-compose-lite.yml down
+# Stop with:  docker-compose -f docker-compose-lite.yml down
+# Full reset: docker-compose -f docker-compose-lite.yml down -v
 
 services:
   postgres:
@@ -14,13 +17,16 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./apps/backend/database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      - postgres_data:/var/lib/postgresql
+      - ./apps/backend/database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./apps/backend/database/migrations:/docker-entrypoint-initdb.d/migrations:ro
+      - ./scripts/db/docker-init-migrations.sh:/docker-entrypoint-initdb.d/02-migrations.sh:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d qalnet_dev"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
 
   redis:
     image: redis:7-alpine

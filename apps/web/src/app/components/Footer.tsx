@@ -12,7 +12,7 @@ export default function Footer({ lang }: FooterProps) {
   const t = translations[lang];
 
   return (
-    <footer className="bg-white/85 backdrop-blur-md text-[#00d9ff] border-t border-white/60 py-12">
+    <footer className="bg-white text-[#00d9ff] border-t border-gray-300 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           {/* Brand */}

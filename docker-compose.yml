@@ -1,9 +1,25 @@
-version: '3.9'
+# =============================================================================
+# QalNet — full stack via Docker Compose
+#
+#   docker compose up -d --build
+#
+# Stacks:  postgres (DB + schema + migrations)
+#          redis    (cache / Redlock)
+#          seed     (one-shot: creates the admin account)
+#          backend  (NestJS API, :4000)
+#          web      (Next.js frontend, :3001)
+#
+# Reset everything (incl. the database volume):
+#   docker compose down -v
+# =============================================================================
+
+name: qalnet
 
 services:
   postgres:
     image: postgres:18-alpine
     container_name: qalnet-postgres
+    restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -12,32 +28,127 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./apps/backend/database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
-      - ./apps/backend/database/migrations:/docker-entrypoint-initdb.d/migrations
+      - postgres_data:/var/lib/postgresql
+      # Schema first (fresh boot only), then the additive migrations — the
+      # postgres image only executes files directly inside initdb.d, so a .sh
+      # wrapper iterates the migrations/ sub-folder in numeric order.
+      - ./apps/backend/database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./apps/backend/database/migrations:/docker-entrypoint-initdb.d/migrations:ro
+      - ./scripts/db/docker-init-migrations.sh:/docker-entrypoint-initdb.d/02-migrations.sh:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
+      test: ["CMD-SHELL", "pg_isready -U postgres -d qalnet_dev"]
+      interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 20
+      start_period: 10s
     networks:
       - qalnet
 
   redis:
     image: redis:7-alpine
     container_name: qalnet-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
+      interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
     networks:
       - qalnet
-    command: redis-server --appendonly yes
+
+  # One-shot: seed (or reset) the admin account once the DB is up and migrated.
+  seed:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      HOST: 0.0.0.0
+      # In-container service names (overrides the env_file's localhost values).
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/qalnet_dev
+      REDIS_URL: redis://redis:6379
+      ALLOWED_ORIGINS: http://localhost:3000,http://localhost:3001,http://localhost:5173
+    env_file:
+      - ./apps/backend/.env
+    command: ["node", "apps/backend/scripts/seed-admin.cjs"]
+    restart: "no"
+    networks:
+      - qalnet
+
+  backend:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    container_name: qalnet-backend
+    restart: unless-stopped
+    depends_on:
+      seed:
+        condition: service_completed_successfully
+    env_file:
+      - ./apps/backend/.env
+    environment:
+      NODE_ENV: development
+      PORT: "4000"
+      HOST: 0.0.0.0
+      # In-container service names (overrides the env_file's localhost values).
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/qalnet_dev
+      REDIS_URL: redis://redis:6379
+      ALLOWED_ORIGINS: http://localhost:3000,http://localhost:3001,http://localhost:5173
+    ports:
+      - "4000:4000"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "node -e \"fetch('http://127.0.0.1:4000/api/v1/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\"",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    networks:
+      - qalnet
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        # Inlined into the browser bundle at build time, so it MUST be the
+        # host the user's browser can reach (the published :4000 port), NOT the
+        # in-network service name. The server-side proxy uses the runtime env
+        # (http://backend:4000) instead — see the web service's environment.
+        NEXT_PUBLIC_API_BASE_URL: http://localhost:4000
+    container_name: qalnet-web
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_BASE_URL: http://backend:4000
+    ports:
+      - "3001:3001"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "node -e \"fetch('http://127.0.0.1:3001').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\"",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    networks:
+      - qalnet
 
 volumes:
   postgres_data:

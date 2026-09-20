@@ -23,6 +23,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { ReconciliationModule } from './modules/reconciliation/reconciliation.module';
 import { DailyCycleModule } from './modules/daily-cycle/daily-cycle.module';
 import { WeeklyCycleModule } from './modules/weekly-cycle/weekly-cycle.module';
+import { HealthModule } from './modules/health/health.module';
 
 @Module({
     imports: [
@@ -50,6 +51,7 @@ import { WeeklyCycleModule } from './modules/weekly-cycle/weekly-cycle.module';
         ReconciliationModule,
         DailyCycleModule,
         WeeklyCycleModule,
+        HealthModule,
     ],
     providers: [
         {

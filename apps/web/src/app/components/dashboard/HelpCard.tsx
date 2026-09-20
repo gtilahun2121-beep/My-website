@@ -11,7 +11,7 @@ export default function HelpCard() {
       <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2">
         <Link
           href="/security"
-          className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-white/10 text-sm font-bold hover:bg-white/20 transition-colors"
+          className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-gray-100 text-sm font-bold hover:bg-gray-200 transition-colors"
         >
           <svg
             viewBox="0 0 24 24"
@@ -30,7 +30,7 @@ export default function HelpCard() {
           type="button"
           title="Coming soon"
           disabled
-          className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-white/10 text-sm font-bold opacity-60 cursor-not-allowed"
+          className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-gray-100 text-sm font-bold opacity-60 cursor-not-allowed"
         >
           <svg
             viewBox="0 0 24 24"
@@ -49,7 +49,7 @@ export default function HelpCard() {
           type="button"
           title="Coming soon"
           disabled
-          className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-white/10 text-sm font-bold opacity-60 cursor-not-allowed"
+          className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-gray-100 text-sm font-bold opacity-60 cursor-not-allowed"
         >
           <svg
             viewBox="0 0 24 24"

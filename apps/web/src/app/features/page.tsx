@@ -119,7 +119,7 @@ function FeaturesContent() {
       <Header lang={lang} onLanguageChange={handleLanguageChange} />
 
       {/* Hero */}
-      <section className="bg-white/40 backdrop-blur-md py-16">
+      <section className="bg-gradient-to-r from-[#001f3f] to-[#001f3f] py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-4xl md:text-5xl font-bold text-[#00d9ff] mb-4">
             {t.features}
@@ -131,7 +131,7 @@ function FeaturesContent() {
       </section>
 
       {/* Navigation Tabs */}
-      <section className="py-20 md:py-32 bg-white/60 backdrop-blur-md">
+      <section className="py-20 md:py-32 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-center mb-16 text-[#00d9ff]">
             {t.uxTitle}
@@ -156,7 +156,7 @@ function FeaturesContent() {
       </section>
 
       {/* UX Principles */}
-      <section className="py-20 md:py-32 bg-white/60 backdrop-blur-md">
+      <section className="py-20 md:py-32 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-center mb-16 text-[#00d9ff]">
             {t.uxTitle}
@@ -174,7 +174,7 @@ function FeaturesContent() {
       </section>
 
       {/* Offline Support */}
-      <section className="py-20 md:py-32 bg-white/60 backdrop-blur-md">
+      <section className="py-20 md:py-32 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>

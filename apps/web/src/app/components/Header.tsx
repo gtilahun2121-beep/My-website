@@ -42,7 +42,7 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
 
   return (
     <>
-    <header className="bg-gradient-to-r from-[#001f3f]/85 to-[#001f3f]/75 backdrop-blur-md shadow-2xl sticky top-0 z-50 border-b-4 border-[#001f3f]">
+    <header className="bg-gradient-to-r from-[#001f3f] to-[#001f3f] shadow-2xl sticky top-0 z-50 border-b-4 border-[#001f3f]">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex justify-between items-center gap-2 sm:gap-3">
           {/* Left corner: profile + logo */}
@@ -96,7 +96,7 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
             {authenticated && (
               <button
                 onClick={openNotifications}
-                className="relative p-2 hover:bg-white/20 rounded-full transition-all text-[#00d9ff]"
+                className="relative p-2 hover:bg-gray-200 rounded-full transition-all text-[#00d9ff]"
                 aria-label="Notifications"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -140,7 +140,7 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 hover:bg-white/20 rounded-full transition-all text-[#00d9ff] font-bold"
+              className="md:hidden p-2 hover:bg-gray-200 rounded-full transition-all text-[#00d9ff] font-bold"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -151,9 +151,9 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
 
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <div className="md:hidden mt-4 space-y-2 bg-white/10 backdrop-blur-md rounded-2xl p-4">
+          <div className="md:hidden mt-4 space-y-2 bg-gray-50 rounded-2xl p-4">
             {/* Mobile language picker */}
-            <div className="flex flex-wrap gap-2 pb-2 border-b border-white/20">
+            <div className="flex flex-wrap gap-2 pb-2 border-b border-gray-300">
               {(Object.keys(languages) as Language[]).map((l) => (
                 <button
                   key={l}
@@ -162,7 +162,7 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
                   className={`px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${
                     lang === l
                       ? 'bg-white text-[#00d9ff]'
-                      : 'bg-white/15 text-[#00d9ff] hover:bg-white/25'
+                      : 'bg-gray-100 text-[#00d9ff] hover:bg-gray-200'
                   }`}
                 >
                   {languages[l]}
@@ -173,7 +173,7 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
               <Link
                 key={item.href}
                 href={item.href}
-                className="block px-4 py-3 text-[#00d9ff] font-bold hover:bg-white/20 rounded-lg"
+                className="block px-4 py-3 text-[#00d9ff] font-bold hover:bg-gray-100 rounded-lg"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {item.label}

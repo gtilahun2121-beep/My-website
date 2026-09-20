@@ -1,0 +1,41 @@
+# ── Dependencies ──────────────────────────────────────────────────────────────
+node_modules
+**/node_modules
+
+# ── Build outputs ─────────────────────────────────────────────────────────────
+dist
+**/dist
+build
+**/build
+.next
+**/.next
+out
+**/out
+coverage
+**/coverage
+*.tsbuildinfo
+**/*.tsbuildinfo
+
+# ── Git / CI ──────────────────────────────────────────────────────────────────
+.git
+.gitignore
+.turbo
+**/.turbo
+.vscode
+.idea
+
+# ── Environment & secrets — NEVER baked into an image ─────────────────────────
+.env
+.env.local
+.env.*.local
+**/.env
+**/.env.local
+**/.env.*.local
+
+# ── Agent / tooling metadata ──────────────────────────────────────────────────
+.agents
+.claude
+.opencode
+skills-lock.json
+*.log
+temp_check.txt

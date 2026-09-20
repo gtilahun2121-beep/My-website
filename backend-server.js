@@ -11,25 +11,21 @@ const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
 
 const app = express();
 const { port, host } = config.server;
-const { secret: JWT_SECRET, algorithm: JWT_ALGORITHM, expiresInSeconds: JWT_EXPIRES_IN } = config.jwt;
-const TEST_CREDENTIALS = config.testCredentials.admin;
-const TEST_DATA = config.testData;
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production';
+const JWT_ALGORITHM = config.jwt.algorithm;
+const JWT_EXPIRES_IN = config.jwt.expiresInSeconds;
+
+// Helper function to pad PINs the same way the frontend does
+function padPin(pin) {
+  if (pin.length >= 8 && /[A-Za-z]/.test(pin)) return pin;
+  return `${pin}QN${pin}!`;
+}
 
 // In-memory store for pending join requests (user -> equb mapping)
 const pendingRequests = {};
 
-// In-memory user registry (phone -> user mapping)
-const userRegistry = {
-  [TEST_CREDENTIALS.phone]: {
-    id: TEST_CREDENTIALS.id,
-    phone: TEST_CREDENTIALS.phone,
-    email: TEST_CREDENTIALS.email,
-    firstName: TEST_CREDENTIALS.firstName,
-    lastName: TEST_CREDENTIALS.lastName,
-    role: TEST_CREDENTIALS.role,
-    pin: TEST_CREDENTIALS.pin,
-  },
-};
+// In-memory user registry - starts empty, users created via signup
+const userRegistry = {};
 
 // Helper function to generate valid JWT tokens
 function generateToken(user) {
@@ -77,10 +73,21 @@ app.get('/api/v1/health', (req, res) => {
 
 // Login endpoint - checks if user exists, returns 404 if not found
 app.post('/api/v1/auth/login', (req, res) => {
-  const { phone, pin } = req.body;
+  // Accept both 'identifier' (new) and 'phone' (old) for backwards compatibility
+  const identifier = req.body.identifier || req.body.phone;
+  // Accept both 'password' (new) and 'pin' (old) for backwards compatibility
+  const password = req.body.password || req.body.pin;
+  
+  if (!identifier || !password) {
+    return res.status(400).json({ 
+      error: 'Missing fields',
+      message: 'Please provide identifier/phone and password/pin.',
+      code: 'MISSING_FIELDS'
+    });
+  }
   
   // Check if user exists in registry
-  const user = userRegistry[phone];
+  const user = userRegistry[identifier];
   if (!user) {
     // User not found - they should sign up
     return res.status(404).json({ 
@@ -90,8 +97,8 @@ app.post('/api/v1/auth/login', (req, res) => {
     });
   }
   
-  // User exists - check PIN
-  if (pin !== user.pin) {
+  // User exists - check PIN/password
+  if (password !== user.pin) {
     return res.status(401).json({ 
       error: 'Invalid PIN',
       message: 'The PIN you entered is incorrect.',
@@ -118,7 +125,20 @@ app.post('/api/v1/auth/login', (req, res) => {
 
 // Register endpoint - creates new user if phone not already registered
 app.post('/api/v1/auth/register', (req, res) => {
-  const { phone, email, firstName, lastName, pin } = req.body;
+  // Accept snake_case from frontend API mapping
+  const phone = req.body.phone || req.body.phoneNumber;
+  const email = req.body.email;
+  const firstName = req.body.first_name || req.body.firstName;
+  const lastName = req.body.last_name || req.body.lastName;
+  const password = req.body.password;
+  
+  if (!phone || !email || !firstName || !lastName || !password) {
+    return res.status(400).json({
+      error: 'Missing required fields',
+      message: 'Please provide all required fields.',
+      code: 'MISSING_FIELDS'
+    });
+  }
   
   // Check if user already exists
   if (userRegistry[phone]) {
@@ -129,7 +149,7 @@ app.post('/api/v1/auth/register', (req, res) => {
     });
   }
   
-  // Create new user
+  // Create new user (store the padded PIN as-is, since frontend pads it)
   const newUser = {
     id: 'user-' + Date.now(),
     phone,
@@ -137,7 +157,7 @@ app.post('/api/v1/auth/register', (req, res) => {
     firstName,
     lastName,
     role: 'participant',
-    pin,
+    pin: password,  // Store the padded password as the PIN
   };
   
   // Add to registry
@@ -308,7 +328,116 @@ app.get('/api/v1/equbs/:id', (req, res) => {
   });
 });
 
-// Join equb tier - creates pending request
+// Join equb by ID - creates pending membership request
+app.post('/api/v1/equbs/:id/join', asyncHandler(async (req, res) => {
+  const equbId = req.params.id;
+  const currentUserId = 'user-' + Date.now(); // Mock current user
+  
+  // Check if equb exists
+  const equb = TEST_DATA.equbs.find(e => e.id === equbId);
+  if (!equb) {
+    return res.status(404).json({ 
+      error: 'Equb not found',
+      code: 'EQUB_NOT_FOUND'
+    });
+  }
+
+  // Check if user already a member
+  const membershipKey = `${currentUserId}-${equbId}`;
+  if (pendingRequests[membershipKey] === 'approved') {
+    return res.status(409).json({ 
+      error: 'You are already a member of this Equb',
+      alreadyMember: true,
+      code: 'ALREADY_MEMBER'
+    });
+  }
+
+  // Check if request already pending
+  if (pendingRequests[membershipKey] === 'pending') {
+    return res.status(409).json({ 
+      error: 'You already have a pending join request for this Equb',
+      alreadyRequested: true,
+      code: 'ALREADY_REQUESTED'
+    });
+  }
+
+  // Check if equb has open slots
+  if (equb.openSlots <= 0) {
+    return res.status(400).json({ 
+      error: 'This Equb is at full capacity',
+      code: 'EQUB_FULL'
+    });
+  }
+
+  // Create pending membership request
+  pendingRequests[membershipKey] = 'pending';
+  equb.memberCount = (equb.memberCount || 0) + 1;
+  equb.openSlots = Math.max(0, equb.openSlots - 1);
+
+  return res.status(201).json({
+    success: true,
+    pending: true,
+    message: 'Join request submitted — awaiting admin approval',
+    membership: {
+      user_id: currentUserId,
+      equb_id: equbId,
+      equb_name: equb.name,
+      status: 'pending',
+      joined_at: new Date().toISOString(),
+    },
+  });
+}));
+
+// Activate equb - transitions from 'open' to 'active' and starts round 1
+app.post('/api/v1/equbs/:id/activate', asyncHandler(async (req, res) => {
+  const equbId = req.params.id;
+  
+  // Check if equb exists
+  const equb = TEST_DATA.equbs.find(e => e.id === equbId);
+  if (!equb) {
+    return res.status(404).json({ 
+      error: 'Equb not found',
+      code: 'EQUB_NOT_FOUND'
+    });
+  }
+
+  // Check if equb is in 'open' status
+  if (equb.status !== 'open') {
+    return res.status(400).json({ 
+      error: `Equb is already ${equb.status}. Only 'open' equbs can be activated.`,
+      code: 'INVALID_STATUS'
+    });
+  }
+
+  // Check if equb has minimum members
+  const minMembers = Math.ceil(equb.totalRounds / 2);
+  if (equb.memberCount < minMembers) {
+    return res.status(400).json({ 
+      error: `Need at least ${minMembers} approved members to activate. Current: ${equb.memberCount}`,
+      code: 'INSUFFICIENT_MEMBERS'
+    });
+  }
+
+  // Activate equb
+  equb.status = 'active';
+  equb.currentRound = 1;
+
+  return res.status(200).json({
+    success: true,
+    message: 'Equb activated — Round 1 is now live!',
+    equb: {
+      id: equb.id,
+      name: equb.name,
+      status: equb.status,
+      current_round: equb.currentRound,
+      total_rounds: equb.totalRounds,
+      member_count: equb.memberCount,
+      activated_at: new Date().toISOString(),
+    },
+  });
+}));;
+
+// Join equb tier - creates pending request (legacy endpoint)
 app.post('/api/v1/equbs/join', (req, res) => {
   const { tier_type, user_id, user_name, phone, email } = req.body;
 
@@ -389,8 +518,10 @@ function generateUserTransactions(userId) {
     direction: t.direction,
     amount: amounts[(userHash + idx) % amounts.length],
     status: statuses[(userHash + idx) % statuses.length],
-    description: t.description,
-    timestamp: new Date(Date.now() - t.daysAgo * 24 * 60 * 60 * 1000).toISOString(),
+    equb_name: t.description || 'Equb Transaction',
+    created_at: new Date(Date.now() - t.daysAgo * 24 * 60 * 60 * 1000).toISOString(),
+    paid_at: new Date(Date.now() - t.daysAgo * 24 * 60 * 60 * 1000).toISOString(),
+    round_number: idx + 1,
   }));
 }
 
@@ -621,17 +752,17 @@ app.listen(port, host, () => {
   console.log('   GET    /api/v1/wallet');
   console.log('   GET    /api/v1/notifications');
   console.log('');
-  console.log('🔐 Test Credentials (from backend-config.json):');
-  console.log(`   Phone: ${TEST_CREDENTIALS.phone}`);
-  console.log(`   PIN:   ${TEST_CREDENTIALS.pin}`);
-  console.log(`   OTP:   ${TEST_DATA.otp}`);
-  console.log('');
   console.log('⚙️ Configuration:');
   console.log(`   JWT Expires In: ${JWT_EXPIRES_IN}s (${Math.floor(JWT_EXPIRES_IN / 3600)}h)`);
-  console.log(`   Equbs Count: ${TEST_DATA.equbs.length}`);
-  console.log(`   Wallet Balance: ${TEST_DATA.wallet.balance} ${TEST_DATA.wallet.currency}`);
+  console.log(`   Payment Gateway: Chapa (configured via env)`);
   console.log('');
   console.log('📝 Config File: backend-config.json');
+  console.log('   Environment Variables Required:');
+  console.log('   - JWT_SECRET');
+  console.log('   - CHAPA_PUBLIC_KEY');
+  console.log('   - CHAPA_SECRET_KEY');
+  console.log('   - TELEBIRR_MERCHANT_ID');
+  console.log('   - TELEBIRR_API_KEY');
   console.log('');
   console.log('Press Ctrl+C to stop');
   console.log('');

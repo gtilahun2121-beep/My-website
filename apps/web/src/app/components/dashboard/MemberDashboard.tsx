@@ -121,7 +121,7 @@ export default function MemberDashboard({
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={onSignOut}
-            className="px-4 py-2 bg-white/20 backdrop-blur text-[#00d9ff] font-bold rounded-full hover:bg-white/30 transition-all text-sm"
+            className="px-4 py-2 bg-white text-[#001f3f] font-bold rounded-full hover:bg-gray-100 transition-all text-sm"
           >
             🚪 Sign Out
           </motion.button>
@@ -151,7 +151,7 @@ export default function MemberDashboard({
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="flex-1 px-4 py-3 bg-white/20 backdrop-blur text-[#00d9ff] font-bold rounded-full hover:bg-white/30 transition-all"
+            className="flex-1 px-4 py-3 bg-white text-[#001f3f] font-bold rounded-full hover:bg-gray-100 transition-all"
           >
             📊 Withdraw
           </motion.button>

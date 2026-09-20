@@ -39,7 +39,22 @@ export default function WalletPage() {
   const mapTxn = (txn: WalletTransaction): TxnRow => {
     const outgoing = txn.direction === 'payment' || txn.direction === 'withdrawal';
     const amount = `${outgoing ? '-' : '+'}ETB ${txn.amount.toLocaleString('en-US')}`;
-    const date = new Date(txn.created_at).toISOString().split('T')[0];
+    
+    // Handle date safely - check if it's a valid date string
+    let date = 'N/A';
+    try {
+      const parsedDate = new Date(txn.created_at);
+      if (!isNaN(parsedDate.getTime())) {
+        date = parsedDate.toISOString().split('T')[0];
+      } else if (typeof txn.created_at === 'string') {
+        // If it looks like a date string already, use it directly
+        date = txn.created_at.split('T')[0] || txn.created_at;
+      }
+    } catch {
+      // Fallback to current date
+      date = new Date().toISOString().split('T')[0];
+    }
+    
     const type =
       txn.direction === 'payment'
         ? 'Payment'
@@ -134,7 +149,7 @@ export default function WalletPage() {
               </button>
               <button 
                 onClick={() => setShowWithdrawModal(true)}
-                className="bg-white/20 text-[#00d9ff] font-bold px-6 py-2 rounded-lg hover:bg-white/30 transition-all"
+              className="bg-white text-[#00d9ff] font-bold px-6 py-2 rounded-lg hover:bg-gray-100 transition-all"
               >
                 {lang === 'en' ? 'Withdraw' : 'ዘግቡ'}
               </button>
@@ -181,7 +196,7 @@ export default function WalletPage() {
       {/* Deposit Modal */}
       {showDepositModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="glass-form rounded-2xl max-w-md w-full p-6">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6">
             <h3 className="text-2xl font-bold mb-6 text-[#00d9ff]">Deposit Funds</h3>
             <div className="space-y-4">
               <div>

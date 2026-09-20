@@ -114,7 +114,7 @@ export default function LoginForm({ onSuccess, onError }: LoginFormProps) {
 
   return (
     <motion.div
-      className="glass-form p-8 rounded-2xl"
+      className="bg-white p-8 rounded-2xl"
       variants={containerVariants}
       initial="hidden"
       animate="visible"

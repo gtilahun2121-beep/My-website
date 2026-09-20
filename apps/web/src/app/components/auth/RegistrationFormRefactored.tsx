@@ -184,7 +184,7 @@ export default function RegistrationFormRefactored({
 
   return (
     <motion.div
-      className="glass-form p-8 rounded-2xl"
+      className="bg-white p-8 rounded-2xl"
       variants={containerVariants}
       initial="hidden"
       animate="visible"

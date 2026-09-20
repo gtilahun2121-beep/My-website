@@ -30,6 +30,10 @@ export class EqubsService {
         return this.repo.findMine(userId, limit, offset);
     }
 
+    async getPresetTemplates() {
+        return this.repo.getPresetTemplates();
+    }
+
     validateCreatePayload(data: any): CreateEqubInput {
         if (!data || typeof data !== 'object') {
             throw new BadRequestException('Invalid payload');
@@ -94,9 +98,31 @@ export class EqubsService {
             total_rounds: Math.floor(totalRounds),
         };
 
+        // Winner selection type (lottery | fcfs | auction)
+        const winnerSelectionType = data.winner_selection_type ?? 'lottery';
+        if (!['lottery', 'fcfs', 'auction'].includes(winnerSelectionType)) {
+            throw new BadRequestException('winner_selection_type must be lottery, fcfs, or auction');
+        }
+
+        // Equb type (public | private | corporate)
+        const equbType = data.equb_type ?? 'public';
+        if (!['public', 'private', 'corporate'].includes(equbType)) {
+            throw new BadRequestException('equb_type must be public, private, or corporate');
+        }
+
+        // Preset template
+        const presetTemplateId = typeof data.preset_template_id === 'string' ? data.preset_template_id : undefined;
+
+        const result = {
+            ...base,
+            winner_selection_type: winnerSelectionType as 'lottery' | 'fcfs' | 'auction',
+            equb_type: equbType as 'public' | 'private' | 'corporate',
+            preset_template_id: presetTemplateId,
+        };
+
         if (cycleType !== 'round' || paymentCutoffTime || penaltyRate != null || cutoffWeekday != null) {
             return {
-                ...base,
+                ...result,
                 cycle_type: cycleType,
                 payment_cutoff_time: paymentCutoffTime,
                 late_penalty_rate: penaltyRate,
@@ -104,7 +130,7 @@ export class EqubsService {
             };
         }
 
-        return base;
+        return result;
     }
 
     /**

@@ -11,8 +11,13 @@ import { JwtPayload } from '../auth/auth.service';
 export class EqubsController {
     constructor(private readonly equbsService: EqubsService) {}
 
+    @Get('presets')
+    async getPresets() {
+        return this.equbsService.getPresetTemplates();
+    }
+
     @Get()
-    async listEqubs(
+    async findAll(
         @Query('limit') limit?: string,
         @Query('offset') offset?: string,
     ) {

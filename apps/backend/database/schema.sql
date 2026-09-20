@@ -1,46 +1,3 @@
-CREATE INDEX IF NOT EXISTS idx_refresh_tokens_expires ON refresh_tokens(expires_at);
-
--- =========================================================================
--- USER SETTINGS (TOTP 2FA + APPEARANCE PREFERENCE)
--- =========================================================================
-CREATE TABLE IF NOT EXISTS user_settings (
-  user_id            UUID         PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
-  two_factor_secret  TEXT,
-  two_factor_enabled BOOLEAN      NOT NULL DEFAULT FALSE,
-  backup_codes       TEXT[]       NOT NULL DEFAULT '{}',
-  theme              VARCHAR(10)  NOT NULL DEFAULT 'light'
-                        CHECK (theme IN ('light', 'dark', 'gold')),
-  updated_at         TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
-INSERT INTO user_settings (user_id)
-SELECT id FROM users
-ON CONFLICT (user_id) DO NOTHING;
-
-ALTER TABLE user_settings ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_settings FORCE  ROW LEVEL SECURITY;
-
-DROP POLICY IF EXISTS user_settings_isolation_read ON user_settings;
-CREATE POLICY user_settings_isolation_read ON user_settings
-  FOR SELECT TO public
-  USING (user_id = current_user_id() OR current_user_role() = 'admin');
-
-DROP POLICY IF EXISTS user_settings_isolation_write ON user_settings;
-CREATE POLICY user_settings_isolation_write ON user_settings
-  FOR UPDATE TO public
-  USING (user_id = current_user_id() OR current_user_role() = 'admin')
-  WITH CHECK (user_id = current_user_id() OR current_user_role() = 'admin');
-
--- =========================================================================
--- QUERY EFFICIENCY INDEXES (migration 006)
--- =========================================================================
-CREATE INDEX IF NOT EXISTS idx_notifications_user_unread ON notifications (user_id, is_read, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_memberships_user          ON memberships (user_id);
-CREATE INDEX IF NOT EXISTS idx_equb_groups_host_status   ON equb_groups (host_id, status);
-CREATE INDEX IF NOT EXISTS idx_payouts_equb_status       ON payouts (equb_id, status);
-CREATE INDEX IF NOT EXISTS idx_payments_equb_status      ON payments (equb_id, payment_status);
-CREATE INDEX IF NOT EXISTS idx_lottery_draws_equb        ON lottery_draws (equb_id);
-CREATE INDEX IF NOT EXISTS idx_audit_logs_row            ON audit_logs (row_id, performed_at DESC);
 -- =========================================================================
 -- QALNET ENTERPRISE DATABASE SCHEMA - RELATIONAL DDL
 -- OPTIMIZED FOR NEON SERVERLESS POSTGRES (v18)
@@ -480,3 +437,54 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
 );
 
 CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user ON refresh_tokens(user_id);
+
+-- =========================================================================
+-- ADDITIVE CLEAN-UP (runs LAST — these statements reference tables and
+-- helper functions created above, so they must execute after them. Kept as
+-- one top-to-bottom runnable file so a fresh `docker compose up` can apply
+-- the whole schema through PostgreSQL's /docker-entrypoint-initdb.d hook.)
+-- =========================================================================
+
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_expires ON refresh_tokens(expires_at);
+
+-- =========================================================================
+-- USER SETTINGS (TOTP 2FA + APPEARANCE PREFERENCE)
+-- =========================================================================
+CREATE TABLE IF NOT EXISTS user_settings (
+  user_id            UUID         PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  two_factor_secret  TEXT,
+  two_factor_enabled BOOLEAN      NOT NULL DEFAULT FALSE,
+  backup_codes       TEXT[]       NOT NULL DEFAULT '{}',
+  theme              VARCHAR(10)  NOT NULL DEFAULT 'light'
+                        CHECK (theme IN ('light', 'dark', 'gold')),
+  updated_at         TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO user_settings (user_id)
+SELECT id FROM users
+ON CONFLICT (user_id) DO NOTHING;
+
+ALTER TABLE user_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_settings FORCE  ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS user_settings_isolation_read ON user_settings;
+CREATE POLICY user_settings_isolation_read ON user_settings
+  FOR SELECT TO public
+  USING (user_id = current_user_id() OR current_user_role() = 'admin');
+
+DROP POLICY IF EXISTS user_settings_isolation_write ON user_settings;
+CREATE POLICY user_settings_isolation_write ON user_settings
+  FOR UPDATE TO public
+  USING (user_id = current_user_id() OR current_user_role() = 'admin')
+  WITH CHECK (user_id = current_user_id() OR current_user_role() = 'admin');
+
+-- =========================================================================
+-- QUERY EFFICIENCY INDEXES (migration 006)
+-- =========================================================================
+CREATE INDEX IF NOT EXISTS idx_notifications_user_unread ON notifications (user_id, is_read, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_memberships_user          ON memberships (user_id);
+CREATE INDEX IF NOT EXISTS idx_equb_groups_host_status   ON equb_groups (host_id, status);
+CREATE INDEX IF NOT EXISTS idx_payouts_equb_status       ON payouts (equb_id, status);
+CREATE INDEX IF NOT EXISTS idx_payments_equb_status      ON payments (equb_id, payment_status);
+CREATE INDEX IF NOT EXISTS idx_lottery_draws_equb        ON lottery_draws (equb_id);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_row            ON audit_logs (row_id, performed_at DESC);

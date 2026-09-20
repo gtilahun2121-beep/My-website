@@ -37,6 +37,34 @@ export type QueryScope = Sql | TransactionSql;
 
 let _sql: Sql | null = null;
 
+export function isDatabaseStartupDegraded(): boolean {
+    return process.env.NODE_ENV !== 'production' && process.env._DB_STARTUP_FAILED === 'true';
+}
+
+export function isDatabaseAvailable(): boolean {
+    return process.env._DB_STARTUP_FAILED !== 'true' && Boolean(process.env._DB_URL_CACHE);
+}
+
+function createUnavailablePool(): Sql {
+    const unavailable = Object.assign(
+        async (_strings: TemplateStringsArray | string, ..._args: unknown[]) => {
+            throw new Error(
+                '[DatabaseConfig] PostgreSQL is unavailable. Start the database service or configure DATABASE_URL before hitting database-backed routes.',
+            );
+        },
+        {
+            begin: async (_callback: (tx: unknown) => Promise<unknown>) => {
+                throw new Error(
+                    '[DatabaseConfig] PostgreSQL is unavailable. Start the database service or configure DATABASE_URL before hitting database-backed routes.',
+                );
+            },
+            end: async () => undefined,
+        },
+    ) as unknown as Sql;
+
+    return unavailable;
+}
+
 /**
  * Returns the initialised postgres.js connection pool.
  * Lazily created on first call and reused for the lifetime of the process.
@@ -47,7 +75,12 @@ export function getPool(): Sql {
     if (_sql) return _sql;
 
     const url = process.env._DB_URL_CACHE; // set by initDatabase()
-    if (!url) {
+    if (!url || process.env._DB_STARTUP_FAILED === 'true') {
+        if (process.env.NODE_ENV !== 'production') {
+            console.warn('[DatabaseConfig] Database is unavailable; returning degraded query adapter.');
+            return createUnavailablePool();
+        }
+
         throw new Error(
             '[DatabaseConfig] getPool() called before initDatabase(). ' +
             'Call initDatabase() once at application bootstrap.',
@@ -110,6 +143,7 @@ export async function initDatabase(): Promise<void> {
 
     // Cache the URL in process.env so getPool() can access it synchronously
     process.env._DB_URL_CACHE = secrets.DATABASE_URL;
+    process.env._DB_STARTUP_FAILED = 'false';
 
     // Warm the pool with a lightweight probe — retry up to 6 times with
     // exponential backoff (max 10 s per attempt). This tolerates a transient
@@ -138,6 +172,16 @@ export async function initDatabase(): Promise<void> {
 
     const detail =
         lastError instanceof Error ? ` Last error: ${lastError.message}` : '';
+
+    if (process.env.NODE_ENV !== 'production') {
+        process.env._DB_STARTUP_FAILED = 'true';
+        console.warn(
+            '[DatabaseConfig] Running in degraded mode because PostgreSQL is not available right now. ' +
+            'Database-backed endpoints will return service-unavailable responses until the database comes back.' + detail,
+        );
+        return;
+    }
+
     throw new Error(
         '[DatabaseConfig] Unable to connect to Neon after multiple attempts. ' +
         'Check that outbound TCP 5432 is reachable from this network and that ' +

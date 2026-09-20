@@ -3,7 +3,12 @@ const path = require('path');
 const dotenv = require('dotenv');
 dotenv.config({ path: path.resolve(__dirname, '../../apps/backend/.env') });
 
-const sql = postgres(process.env.DATABASE_URL, { connect_timeout: 60, ssl: { rejectUnauthorized: false } });
+const dbUrl = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/qalnet_dev';
+const isLocalDb = /localhost|127\.0\.0\.1|::1/i.test(dbUrl);
+const sql = postgres(dbUrl, {
+  connect_timeout: 60,
+  ssl: isLocalDb ? false : { rejectUnauthorized: false },
+});
 
 (async () => {
   try {

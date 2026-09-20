@@ -91,7 +91,7 @@ export default function PromoBanner({
                   variants={itemVariants}
                 >
                   <div className="flex-shrink-0">
-                    <div className="flex items-center justify-center h-8 w-8 rounded-full bg-white/20 border-2 border-white">
+                    <div className="flex items-center justify-center h-8 w-8 rounded-full bg-[#00d9ff]/20 border-2 border-[#00d9ff]">
                       <span className="text-[#00d9ff] font-black">✓</span>
                     </div>
                   </div>
@@ -124,7 +124,7 @@ export default function PromoBanner({
           >
             {/* Card stack effect */}
             <motion.div
-              className="absolute inset-0 bg-gradient-to-br from-white/20 to-white/5 rounded-3xl border-2 border-white/30 backdrop-blur-sm p-8"
+              className="absolute inset-0 bg-white rounded-3xl border-2 border-[#00d9ff]/20 p-8"
               animate={{ y: [0, -10, 0] }}
               transition={{ duration: 3, repeat: Infinity }}
             >
@@ -143,7 +143,7 @@ export default function PromoBanner({
             ].map((badge, idx) => (
               <motion.div
                 key={idx}
-                className="absolute bg-white/90 rounded-full px-4 py-2 shadow-lg border-2 border-white flex items-center gap-2 font-black text-[#00d9ff]"
+                className="absolute bg-white rounded-full px-4 py-2 shadow-lg border-2 border-[#00d9ff] flex items-center gap-2 font-black text-[#00d9ff]"
                 style={{
                   top: badge.top,
                   bottom: badge.bottom,

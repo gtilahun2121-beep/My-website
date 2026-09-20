@@ -83,14 +83,14 @@ export default function ChoiceFlow({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 glass-backdrop flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
             onClick={onClose}
           >
             <motion.div
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="glass-form rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden"
+              className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
@@ -106,7 +106,7 @@ export default function ChoiceFlow({
                 <div className="flex gap-2">
                   <button
                     onClick={handleBackToChoice}
-                    className="text-xl text-[#00d9ff] hover:opacity-70 transition-all px-3 py-2 rounded-lg hover:bg-white/20"
+                    className="text-xl text-[#00d9ff] hover:opacity-70 transition-all px-3 py-2 rounded-lg hover:bg-gray-200"
                     title={lang === 'en' ? 'Back' : 'ተመለስ'}
                   >
                     ←
@@ -146,14 +146,14 @@ export default function ChoiceFlow({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 glass-backdrop flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
             onClick={onClose}
           >
             <motion.div
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="glass-form rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden"
+              className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
@@ -169,7 +169,7 @@ export default function ChoiceFlow({
                 <div className="flex gap-2">
                   <button
                     onClick={handleBackToChoice}
-                    className="text-xl text-[#00d9ff] hover:opacity-70 transition-all px-3 py-2 rounded-lg hover:bg-white/20"
+                    className="text-xl text-[#00d9ff] hover:opacity-70 transition-all px-3 py-2 rounded-lg hover:bg-gray-200"
                     title={lang === 'en' ? 'Back' : 'ተመለስ'}
                   >
                     ←

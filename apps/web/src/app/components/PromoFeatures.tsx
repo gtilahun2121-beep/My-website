@@ -37,10 +37,10 @@ export default function PromoFeatures({ features, title, subtitle }: PromoFeatur
   };
 
   return (
-    <section className="py-20 md:py-32 bg-white relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute top-0 right-0 w-72 h-72 bg-[#001f3f]/10 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-0 left-0 w-72 h-72 bg-[#001f3f]/10 rounded-full blur-3xl"></div>
+    <section className="py-20 md:py-32 bg-gray-50 relative overflow-hidden">
+      {/* Background decoration - clean circles without blur */}
+      <div className="absolute top-0 right-0 w-72 h-72 bg-[#00d9ff]/10 rounded-full"></div>
+      <div className="absolute bottom-0 left-0 w-72 h-72 bg-[#001f3f]/5 rounded-full"></div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header */}

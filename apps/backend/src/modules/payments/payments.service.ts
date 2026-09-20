@@ -239,6 +239,13 @@ export class PaymentsService implements OnModuleInit {
                     // (6) Sufficient — commit
                     const txRef = buildTransactionReference('WLT', equbId, roundNumber, ctx.userId);
                     await this.repo.markPaymentPaid(payment.id, txRef, tx);
+                    
+                    // Record FCFS payment order if equb uses FCFS selection
+                    const equbConfig = await this.repo.getEqubWinnerSelectionType(equbId);
+                    if (equbConfig?.winner_selection_type === 'fcfs') {
+                        await this.recordFCFSPaymentOrder(equbId, roundNumber, ctx.userId, payment.id, new Date());
+                    }
+                    
                     await this.repo.creditWalletBalance(equb.host_id, hostCommissionDeducted, tx);
 
                     const adminId = await this.repo.getAdminWalletUserId();
@@ -1028,4 +1035,37 @@ export class PaymentsService implements OnModuleInit {
             }
         }
     }
+
+    // ── FCFS Payment Order Tracking ──────────────────────────────────────────
+
+    /**
+     * Record FCFS (First-Come-First-Serve) payment order when a payment is made
+     * Used to determine winner based on who paid first
+     *
+     * @param equbId - The equb identifier
+     * @param roundNumber - The round number
+     * @param userId - The member who paid
+     * @param paymentId - The payment record ID
+     * @param paidAt - When the payment was completed
+     */
+    private async recordFCFSPaymentOrder(
+        equbId: string,
+        roundNumber: number,
+        userId: string,
+        paymentId: string,
+        paidAt: Date,
+    ): Promise<void> {
+        try {
+            await this.repo.recordFCFSPaymentOrder(equbId, roundNumber, userId, paymentId, paidAt);
+            this.logger.log(
+                `FCFS payment order recorded: equb=${equbId}, round=${roundNumber}, user=${userId}`,
+            );
+        } catch (error) {
+            // Log but don't fail the payment if FCFS recording fails
+            this.logger.error(
+                `Failed to record FCFS payment order: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            );
+        }
+    }
 }
+

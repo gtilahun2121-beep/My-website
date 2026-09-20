@@ -11,6 +11,7 @@ import {
     Logger,
 } from '@nestjs/common';
 import { getPool, inTransaction, RlsContext } from '../../config/database.config';
+import type { FCFSPaymentOrderRecord } from '../equbs/equbs.repository';
 
 // ---------------------------------------------------------------------------
 // Shapes
@@ -234,6 +235,59 @@ export class PaymentsRepository {
     `;
 
         return rows[0] ?? null;
+    }
+
+    /**
+     * Returns the winner selection strategy for an equb
+     * ('lottery' | 'fcfs' | 'auction'). Used by the payment flow to decide
+     * whether paying members are tracked by arrival order.
+     */
+    async getEqubWinnerSelectionType(
+        equbId: string,
+    ): Promise<{ winner_selection_type: string } | null> {
+        const sql = getPool();
+
+        const rows = await sql<{ winner_selection_type: string }[]>`
+      SELECT winner_selection_type
+      FROM equb_groups
+      WHERE id = ${equbId}
+      LIMIT 1
+    `;
+
+        return rows[0] ?? null;
+    }
+
+    /**
+     * Records the payment arrival order (FCFS) for an equb round, so the
+     * winner is chosen as the member who paid first. Failure here is
+     * non-fatal — the caller logs and continues the payment.
+     */
+    async recordFCFSPaymentOrder(
+        equbId: string,
+        roundNumber: number,
+        userId: string,
+        paymentId: string,
+        paidAt: Date,
+    ): Promise<FCFSPaymentOrderRecord> {
+        const sql = getPool();
+
+        const countResult = await sql<{ count: number }[]>`
+      SELECT COUNT(*)::int AS count
+      FROM fcfs_payment_order
+      WHERE equb_id = ${equbId} AND round_number = ${roundNumber}
+    `;
+
+        const paymentOrder = (countResult[0]?.count ?? 0) + 1;
+
+        const [record] = await sql<FCFSPaymentOrderRecord[]>`
+      INSERT INTO fcfs_payment_order (equb_id, round_number, user_id, payment_id, paid_at, payment_order)
+      VALUES (${equbId}, ${roundNumber}, ${userId}, ${paymentId}, ${paidAt}, ${paymentOrder})
+      ON CONFLICT (equb_id, round_number, user_id)
+        DO UPDATE SET payment_id = EXCLUDED.payment_id, paid_at = EXCLUDED.paid_at
+      RETURNING id, equb_id, round_number, user_id, payment_id, paid_at, payment_order
+    `;
+
+        return record;
     }
 
     /**

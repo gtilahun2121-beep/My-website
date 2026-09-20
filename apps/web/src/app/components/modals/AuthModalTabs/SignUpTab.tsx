@@ -393,7 +393,7 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
               <div
                 className={`flex items-center justify-center w-8 h-8 sm:w-12 sm:h-12 rounded-full font-bold text-sm transition-all mb-2 ${s <= step
                   ? 'bg-[#001f3f] text-[#00d9ff] shadow-lg'
-                  : 'bg-white/40 text-[#00d9ff] border border-white/60'
+                  : 'bg-gray-200 text-gray-500 border border-gray-300'
                   }`}
               >
                 {s < step ? '✓' : s}
@@ -404,7 +404,7 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
             </div>
           ))}
         </div>
-        <div className="w-full bg-white/40 border border-white/50 h-2 rounded-full overflow-hidden">
+        <div className="w-full bg-gray-200 border border-gray-300 h-2 rounded-full overflow-hidden">
           <div
             className="bg-[#001f3f] h-full transition-all duration-300"
             style={{ width: `${(step / 5) * 100}%` }}
@@ -584,7 +584,7 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
           exit={{ opacity: 0, y: -10 }}
           className="space-y-5"
         >
-          <div className="bg-white/35 border border-white/60 rounded-lg p-4">
+          <div className="bg-gray-100 border border-gray-300 rounded-lg p-4">
             <p className="text-sm text-[#00d9ff]">
               {lang === 'en'
                 ? `Enter the 6-digit code sent to ${formData.phoneNumber}.`
@@ -658,7 +658,7 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
           exit={{ opacity: 0, y: -10 }}
           className="space-y-5"
         >
-          <div className="bg-white/35 border border-white/60 rounded-lg p-4">
+          <div className="bg-gray-100 border border-gray-300 rounded-lg p-4">
             <p className="text-sm text-[#00d9ff]">
               {lang === 'en'
                 ? 'Create a 6-digit PIN for your account security'

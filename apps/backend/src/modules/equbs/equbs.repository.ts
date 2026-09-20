@@ -14,6 +14,14 @@ export interface EqubGroupRecord {
     current_round: number;
     status: 'open' | 'active' | 'completed' | 'cancelled';
     social_fund_balance: number;
+    /** 'lottery' (default) | 'fcfs' | 'auction' — determines how winners are selected */
+    winner_selection_type?: 'lottery' | 'fcfs' | 'auction';
+    /** 'public' (default) | 'private' | 'corporate' — controls visibility and access */
+    equb_type?: 'public' | 'private' | 'corporate';
+    /** Whether created from preset template */
+    is_preset?: boolean;
+    /** Reference to preset template if applicable */
+    preset_template_id?: string | null;
     created_at: Date;
 }
 
@@ -32,6 +40,12 @@ export interface CreateEqubInput {
     late_penalty_rate?: number;
     /** Weekly mode only: day of week (0=Sun..6=Sat) the weekly draw runs (Day 7). */
     payment_cutoff_weekday?: number;
+    /** 'lottery' | 'fcfs' | 'auction' - how winners are selected (default: 'lottery') */
+    winner_selection_type?: 'lottery' | 'fcfs' | 'auction';
+    /** 'public' | 'private' | 'corporate' - visibility and access control (default: 'public') */
+    equb_type?: 'public' | 'private' | 'corporate';
+    /** Preset template ID to use as base (if provided, overrides manual config) */
+    preset_template_id?: string;
 }
 
 export interface CreateRequestInput {
@@ -43,6 +57,32 @@ export interface CreateRequestInput {
 }
 
 export type MembershipStatus = 'pending' | 'approved' | 'rejected';
+
+export interface FCFSPaymentOrderRecord {
+    id: string;
+    equb_id: string;
+    round_number: number;
+    user_id: string;
+    payment_id: string | null;
+    paid_at: Date;
+    payment_order: number;
+}
+
+export interface EqubPresetTemplate {
+    id: string;
+    name: string;
+    description: string | null;
+    contribution_amount: number;
+    total_rounds: number;
+    cycle_days: number;
+    cycle_type: 'round' | 'daily' | 'weekly';
+    winner_selection: 'lottery' | 'fcfs' | 'auction';
+    equb_type: 'public' | 'private' | 'corporate';
+    is_featured: boolean;
+    display_order: number;
+    created_at: Date;
+    updated_at: Date;
+}
 
 /**
  * Clamps a pagination value to a safe integer range so a malformed query
@@ -81,6 +121,7 @@ export class EqubsRepository {
                 e.total_amount, e.contribution_amount, e.cycle_days,
                 e.total_rounds, e.current_round, e.status, e.social_fund_balance,
                 e.created_at, e.updated_at,
+                e.winner_selection_type, e.equb_type, e.is_preset, e.preset_template_id,
                 u.first_name AS host_first_name,
                 u.last_name  AS host_last_name,
                 u.phone      AS host_phone,
@@ -93,6 +134,7 @@ export class EqubsRepository {
                 FROM memberships m
                 WHERE m.equb_id = e.id AND m.status = 'approved'
             ) counts ON TRUE
+            WHERE e.equb_type = 'public' OR e.equb_type = 'public'
             ORDER BY e.created_at DESC
             LIMIT ${safeLimit} OFFSET ${safeOffset}
         `;
@@ -105,6 +147,7 @@ export class EqubsRepository {
                 e.id, e.host_id, e.name, e.description, e.telegram_group_id,
                 e.total_amount, e.contribution_amount, e.cycle_days,
                 e.total_rounds, e.current_round, e.status, e.social_fund_balance,
+                e.winner_selection_type, e.equb_type, e.is_preset, e.preset_template_id,
                 e.created_at, e.updated_at,
                 u.first_name AS host_first_name,
                 u.last_name  AS host_last_name,
@@ -125,13 +168,28 @@ export class EqubsRepository {
             WHERE e.id = ${id}
             LIMIT 1
         `;
-        return rows[0] ?? null;
+        
+        const equb = rows[0] ?? null;
+        if (!equb) return null;
+        
+        // Visibility control: check if user has access to this equb based on type
+        const isHost = equb.is_host === true;
+        const isMember = equb.membership_status !== null;
+        
+        if (equb.equb_type === 'private' && !isHost && !isMember) {
+            // Private equbs only visible to host and members
+            return null;
+        }
+        
+        if (equb.equb_type === 'corporate' && !isHost && !isMember) {
+            // Corporate equbs only visible to host and members
+            return null;
+        }
+        
+        // Public equbs visible to everyone
+        return equb;
     }
 
-    /**
-     * Equbs the user belongs to — as host, or as an approved/pending member.
-     * Rejected memberships are not surfaced here.
-     */
     async findMine(userId: string, limit = 100, offset = 0): Promise<any[]> {
         const sql = getPool();
         const safeLimit = clampPaging(limit, 1, 200);
@@ -141,6 +199,7 @@ export class EqubsRepository {
                 e.id, e.host_id, e.name, e.description, e.telegram_group_id,
                 e.total_amount, e.contribution_amount, e.cycle_days,
                 e.total_rounds, e.current_round, e.status, e.social_fund_balance,
+                e.winner_selection_type, e.equb_type, e.is_preset, e.preset_template_id,
                 e.created_at, e.updated_at,
                 u.first_name AS host_first_name,
                 u.last_name  AS host_last_name,
@@ -159,12 +218,11 @@ export class EqubsRepository {
             LEFT JOIN LATERAL (
                 SELECT mm.status FROM memberships mm
                 WHERE mm.equb_id = e.id AND mm.user_id = ${userId}
-                LIMIT 1
             ) ms ON TRUE
-            WHERE e.host_id = ${userId}
-               OR EXISTS (SELECT 1 FROM memberships mm
-                          WHERE mm.equb_id = e.id AND mm.user_id = ${userId}
-                            AND mm.status IN ('approved', 'pending'))
+            WHERE (e.host_id = ${userId} OR EXISTS (
+                SELECT 1 FROM memberships m
+                WHERE m.equb_id = e.id AND m.user_id = ${userId} AND m.status IN ('approved', 'pending')
+            ))
             ORDER BY e.created_at DESC
             LIMIT ${safeLimit} OFFSET ${safeOffset}
         `;
@@ -486,5 +544,133 @@ export class EqubsRepository {
             }
             return { success: true, membership: rows[0] };
         });
+    }
+
+    // ── Preset Templates ──────────────────────────────────────────────────────
+
+    async getPresetTemplates(): Promise<EqubPresetTemplate[]> {
+        const sql = getPool();
+        return sql<EqubPresetTemplate[]>`
+            SELECT
+                id, name, description, contribution_amount, total_rounds, cycle_days,
+                cycle_type, winner_selection, equb_type, is_featured, display_order,
+                created_at, updated_at
+            FROM equb_preset_templates
+            WHERE is_featured = TRUE
+            ORDER BY display_order ASC, created_at DESC
+        `;
+    }
+
+    async getPresetTemplate(templateId: string): Promise<EqubPresetTemplate | null> {
+        const sql = getPool();
+        const rows = await sql<EqubPresetTemplate[]>`
+            SELECT
+                id, name, description, contribution_amount, total_rounds, cycle_days,
+                cycle_type, winner_selection, equb_type, is_featured, display_order,
+                created_at, updated_at
+            FROM equb_preset_templates
+            WHERE id = ${templateId}
+        `;
+        return rows[0] ?? null;
+    }
+
+    // ── FCFS Payment Order Tracking ───────────────────────────────────────────
+
+    async recordFCFSPaymentOrder(
+        equbId: string,
+        roundNumber: number,
+        userId: string,
+        paymentId: string,
+        paidAt: Date
+    ): Promise<FCFSPaymentOrderRecord> {
+        const sql = getPool();
+        
+        // Get the current payment order count to determine this payment's order
+        const countResult = await sql<{ count: number }[]>`
+            SELECT COUNT(*)::int AS count FROM fcfs_payment_order
+            WHERE equb_id = ${equbId} AND round_number = ${roundNumber}
+        `;
+        
+        const paymentOrder = (countResult[0]?.count ?? 0) + 1;
+        
+        const [record] = await sql<FCFSPaymentOrderRecord[]>`
+            INSERT INTO fcfs_payment_order (equb_id, round_number, user_id, payment_id, paid_at, payment_order)
+            VALUES (${equbId}, ${roundNumber}, ${userId}, ${paymentId}, ${paidAt}, ${paymentOrder})
+            ON CONFLICT (equb_id, round_number, user_id) 
+            DO UPDATE SET payment_id = EXCLUDED.payment_id, paid_at = EXCLUDED.paid_at
+            RETURNING id, equb_id, round_number, user_id, payment_id, paid_at, payment_order
+        `;
+        
+        return record;
+    }
+
+    async getFCFSWinner(equbId: string, roundNumber: number): Promise<{ userId: string; paymentOrder: number } | null> {
+        const sql = getPool();
+        const rows = await sql<{ user_id: string; payment_order: number }[]>`
+            SELECT user_id, payment_order FROM fcfs_payment_order
+            WHERE equb_id = ${equbId} AND round_number = ${roundNumber}
+            ORDER BY payment_order ASC
+            LIMIT 1
+        `;
+        
+        if (rows.length === 0) return null;
+        return { userId: rows[0].user_id, paymentOrder: rows[0].payment_order };
+    }
+
+    async getFCFSPaymentOrder(equbId: string, roundNumber: number): Promise<FCFSPaymentOrderRecord[]> {
+        const sql = getPool();
+        return sql<FCFSPaymentOrderRecord[]>`
+            SELECT id, equb_id, round_number, user_id, payment_id, paid_at, payment_order
+            FROM fcfs_payment_order
+            WHERE equb_id = ${equbId} AND round_number = ${roundNumber}
+            ORDER BY payment_order ASC
+        `;
+    }
+
+    async getEqubWinnerSelectionType(equbId: string): Promise<{ winner_selection_type: string } | null> {
+        const sql = getPool();
+        const rows = await sql<{ winner_selection_type: string }[]>`
+            SELECT winner_selection_type FROM equb_groups WHERE id = ${equbId}
+        `;
+        return rows[0] ?? null;
+    }
+
+    /**
+     * Get equbs filtered by type (public, private, corporate)
+     * Used for discovery pages and filtering
+     */
+    async findByType(equbType: 'public' | 'private' | 'corporate', userId?: string, limit = 50, offset = 0): Promise<any[]> {
+        const sql = getPool();
+        const safeLimit = clampPaging(limit, 1, 200);
+        const safeOffset = clampPaging(offset, 0, Number.MAX_SAFE_INTEGER);
+        
+        return sql`
+            SELECT
+                e.id, e.host_id, e.name, e.description, e.telegram_group_id,
+                e.total_amount, e.contribution_amount, e.cycle_days,
+                e.total_rounds, e.current_round, e.status, e.social_fund_balance,
+                e.winner_selection_type, e.equb_type, e.is_preset, e.preset_template_id,
+                e.created_at, e.updated_at,
+                u.first_name AS host_first_name,
+                u.last_name AS host_last_name,
+                u.phone AS host_phone,
+                counts.member_count,
+                GREATEST(e.total_rounds - counts.member_count, 0) AS open_slots,
+                CASE WHEN ${userId ?? null}::uuid = e.host_id THEN TRUE ELSE FALSE END AS is_host,
+                CASE WHEN ${userId ?? null}::uuid IS NOT NULL THEN (
+                    SELECT mm.status FROM memberships mm
+                    WHERE mm.equb_id = e.id AND mm.user_id = ${userId ?? null}::uuid LIMIT 1
+                ) ELSE NULL END AS membership_status
+            FROM equb_groups e
+            JOIN users u ON u.id = e.host_id
+            LEFT JOIN LATERAL (
+                SELECT COUNT(*)::int AS member_count
+                FROM memberships m
+                WHERE m.equb_id = e.id AND m.status = 'approved'
+            ) counts ON TRUE
+            WHERE e.equb_type = ${equbType}
+            ORDER BY e.created_at DESC
+            LIMIT ${safeLimit} OFFSET ${safeOffset}
+        `;
     }
 }

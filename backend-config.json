@@ -4,140 +4,34 @@
     "host": "0.0.0.0"
   },
   "jwt": {
-    "secret": "qalnet-mock-secret-key-dev-only-change-in-production",
+    "secret": "${JWT_SECRET}",
     "algorithm": "HS256",
     "expiresInSeconds": 86400
   },
-  "testCredentials": {
-    "admin": {
-      "id": "admin-1",
-      "phone": "+251904556677",
-      "pin": "4488",
-      "email": "admin@qalnet.com",
-      "firstName": "Danel",
-      "lastName": "Temesgen",
-      "role": "admin"
+  "payment": {
+    "chapa": {
+      "publicKey": "${CHAPA_PUBLIC_KEY}",
+      "secretKey": "${CHAPA_SECRET_KEY}",
+      "environment": "test"
+    },
+    "telebirr": {
+      "merchantId": "${TELEBIRR_MERCHANT_ID}",
+      "apiKey": "${TELEBIRR_API_KEY}",
+      "environment": "test"
     }
   },
-  "testData": {
-    "otp": "818959",
-    "fayda": {
-      "faydaIdLength": 16,
-      "verifiedName": "Danel Temesgen"
-    },
-    "equbs": [
-      {
-        "id": "equb-1",
-        "name": "Community Savings Group",
-        "description": "Monthly savings rotation",
-        "contributionAmount": 1000,
-        "totalRounds": 12,
-        "currentRound": 1,
-        "status": "active",
-        "members": 5,
-        "totalAmount": 12000,
-        "memberCount": 5,
-        "cycleDays": 30,
-        "openSlots": 7,
-        "hostFirstName": "Danel",
-        "hostLastName": "Temesgen"
-      },
-      {
-        "id": "equb-2",
-        "name": "Business Fund",
-        "description": "Investment group",
-        "contributionAmount": 5000,
-        "totalRounds": 6,
-        "currentRound": 2,
-        "status": "active",
-        "members": 8,
-        "totalAmount": 30000,
-        "memberCount": 8,
-        "cycleDays": 30,
-        "openSlots": 2,
-        "hostFirstName": "Danel",
-        "hostLastName": "Temesgen"
-      }
-    ],
+  "database": {
+    "type": "${DB_TYPE}",
+    "host": "${DB_HOST}",
+    "port": "${DB_PORT}",
+    "name": "${DB_NAME}",
+    "user": "${DB_USER}",
+    "password": "${DB_PASSWORD}"
+  },
+  "defaults": {
     "wallet": {
-      "balance": 50000,
+      "initialBalance": 0,
       "currency": "ETB"
-    },
-    "transactions": [
-      {
-        "id": "txn-1",
-        "direction": "payment",
-        "amount": 1000,
-        "status": "paid",
-        "description": "Community Savings Group - Round 1",
-        "daysAgo": 7
-      },
-      {
-        "id": "txn-2",
-        "direction": "payout",
-        "amount": 5000,
-        "status": "received",
-        "description": "Business Fund Payout",
-        "daysAgo": 14
-      }
-    ],
-    "notifications": [
-      {
-        "id": "notif-1",
-        "message": "Your contribution was received",
-        "type": "success",
-        "isRead": false
-      },
-      {
-        "id": "notif-2",
-        "message": "Your payout is ready to claim",
-        "type": "info",
-        "isRead": false,
-        "daysAgo": 1
-      }
-    ],
-    "pendingMemberships": [
-      {
-        "id": "membership-req-1",
-        "equbId": "equb-1",
-        "equbName": "Community Savings Group",
-        "userId": "user-123",
-        "firstName": "John",
-        "lastName": "Doe",
-        "phone": "+251912345678",
-        "email": "john@example.com",
-        "status": "pending",
-        "daysAgo": 1
-      },
-      {
-        "id": "membership-req-2",
-        "equbId": "equb-2",
-        "equbName": "Business Fund",
-        "userId": "user-456",
-        "firstName": "Jane",
-        "lastName": "Smith",
-        "phone": "+251913456789",
-        "email": "jane@example.com",
-        "status": "pending",
-        "daysAgo": 0.5
-      }
-    ],
-    "pendingEqubRequests": [
-      {
-        "id": "equb-req-1",
-        "requesterId": "user-789",
-        "requesterFirstName": "Ahmed",
-        "requesterLastName": "Hassan",
-        "phone": "+251914567890",
-        "email": "ahmed@example.com",
-        "equbName": "Tech Founders Fund",
-        "description": "Investment pool for tech startups",
-        "contributionAmount": 10000,
-        "totalRounds": 10,
-        "cycleDays": 30,
-        "status": "pending",
-        "daysAgo": 2
-      }
-    ]
+    }
   }
 }

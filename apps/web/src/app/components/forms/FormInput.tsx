@@ -93,7 +93,7 @@ export default function FormInput({
                          'focus:outline-none focus:ring-2',
                         icon ? 'pl-10' : 'px-4',
                         isPassword ? 'pr-11' : 'pr-4',
-                        disabled ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white/40 text-[#00d9ff]',
+                        disabled ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white text-[#00d9ff]',
                         error
                             ? 'border-brand-400 focus:ring-amber-300'
                             : 'border-gray-300 focus:ring-[#001f3f] focus:border-[#001f3f]',

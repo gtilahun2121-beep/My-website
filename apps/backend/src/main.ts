@@ -50,7 +50,18 @@ async function bootstrap() {
     await VaultConfig.load();
 
     // ── 2. Database ───────────────────────────────────────────────────────────
-    await initDatabase();
+    try {
+        await initDatabase();
+    } catch (error) {
+        if (process.env.NODE_ENV === 'production') {
+            throw error;
+        }
+
+        console.warn(
+            '[Bootstrap] Continuing in development degraded mode because the database is unavailable.',
+            error instanceof Error ? error.message : error,
+        );
+    }
 
     // ── 3. NestJS App ─────────────────────────────────────────────────────────
     const app = await NestFactory.create(AppModule, {

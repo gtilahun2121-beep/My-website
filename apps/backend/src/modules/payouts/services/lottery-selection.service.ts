@@ -8,9 +8,10 @@ import {
     Logger,
     NotFoundException,
     BadRequestException,
+    HttpException,
     InternalServerErrorException,
 } from '@nestjs/common';
-import { randomBytes } from 'crypto';
+import { createHash, randomBytes } from 'crypto';
 import { DataSource } from 'typeorm';
 
 import {
@@ -39,6 +40,7 @@ interface RepositoryCollection {
 @Injectable()
 export class LotterySelectionService {
     private readonly logger = new Logger(LotterySelectionService.name);
+    private readonly eligibleMembersCache = new Map<string, MemberEligibility[]>();
 
     constructor(
         private readonly dataSource: DataSource,
@@ -78,8 +80,8 @@ export class LotterySelectionService {
             );
         }
 
-        // Step 2: Get eligible members
-        const eligibleMembers = await this.getEligibleMembers(cycleId);
+        // Step 2: Reuse the validation result to avoid repeating the eligibility lookup
+        const eligibleMembers = cycle.eligibleMembers ?? (await this.getEligibleMembers(cycleId));
         const memberCount = eligibleMembers.length;
 
         // Log eligibility check
@@ -160,6 +162,11 @@ export class LotterySelectionService {
      */
     async getEligibleMembers(cycleId: string): Promise<MemberEligibility[]> {
         try {
+            const cachedMembers = this.eligibleMembersCache.get(cycleId);
+            if (cachedMembers) {
+                return cachedMembers;
+            }
+
             const members = await this.repositories.memberEligibilityRepository.find({
                 where: {
                     payout_cycle_id: cycleId,
@@ -170,12 +177,19 @@ export class LotterySelectionService {
                 },
             });
 
+            const safeMembers = Array.isArray(members) ? members : [];
+            this.eligibleMembersCache.set(cycleId, safeMembers);
+
             this.logger.log(
-                `Retrieved ${members.length} eligible members for cycle ${cycleId}`,
+                `Retrieved ${safeMembers.length} eligible members for cycle ${cycleId}`,
             );
 
-            return members;
+            return safeMembers;
         } catch (error) {
+            if (error instanceof HttpException) {
+                throw error;
+            }
+
             this.logger.error(
                 `Failed to get eligible members for cycle ${cycleId}: ${error}`,
             );
@@ -272,8 +286,13 @@ export class LotterySelectionService {
                 errors,
                 warnings: warnings.length > 0 ? warnings : undefined,
                 eligibleMemberCount: eligibleCount,
+                eligibleMembers,
             };
         } catch (error) {
+            if (error instanceof HttpException) {
+                throw error;
+            }
+
             this.logger.error(`Failed to validate draw conditions: ${error}`);
             throw new InternalServerErrorException(
                 'Failed to validate draw conditions',
@@ -393,9 +412,10 @@ export class LotterySelectionService {
         }
 
         try {
-            // Convert hex seed to a number
-            const seedNumber = BigInt(`0x${prngConfig.seed.substring(0, 16)}`);
-            // Get modulo to ensure index is within bounds
+            const normalizedSeed = (prngConfig.seed ?? '').trim();
+            const seedForHash = normalizedSeed.length > 0 ? normalizedSeed : 'qalnet-default-seed';
+            const hashSeed = createHash('sha256').update(seedForHash).digest('hex');
+            const seedNumber = BigInt(`0x${hashSeed.substring(0, 16)}`);
             const selectedIndex = Number(seedNumber % BigInt(maxIndex));
 
             this.logger.debug(
@@ -613,6 +633,10 @@ export class LotterySelectionService {
 
             return selectedMember.member_id;
         } catch (error) {
+            if (error instanceof HttpException) {
+                throw error;
+            }
+
             this.logger.error(`Failed to verify reproducibility: ${error}`);
             throw new InternalServerErrorException(
                 'Failed to verify reproducibility',

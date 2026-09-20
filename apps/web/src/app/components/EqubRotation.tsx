@@ -248,7 +248,7 @@ export default function EqubRotation({
           ].map((benefit, idx) => (
             <motion.div
               key={idx}
-              className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 text-center text-[#00d9ff]"
+              className="bg-gray-50 rounded-2xl p-6 border border-gray-200 text-center text-[#00d9ff]"
               whileHover={{ scale: 1.05, y: -4 }}
             >
               <div className="text-4xl mb-3">{benefit.icon}</div>

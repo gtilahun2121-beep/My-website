@@ -77,7 +77,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
 
   return (
     <motion.div
-      className="glass-form p-8 rounded-2xl"
+      className="bg-white p-8 rounded-2xl"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
@@ -111,7 +111,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                 className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
                   selectedEqub?.id === equb.id
                     ? 'border-[#001f3f] bg-[#001f3f]/10'
-                    : 'border-white/60 bg-white/30 hover:shadow-lg hover:bg-white/40'
+                    : 'border-gray-300 bg-gray-50 hover:shadow-lg hover:bg-gray-100'
                 }`}
               >
                 <div className="flex items-start gap-3">
