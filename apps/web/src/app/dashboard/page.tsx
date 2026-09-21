@@ -3,16 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { EqubGroup, Wallet, WalletTransaction, Notification } from '@qalnet/shared-types';
-import AppShell from '@/app/components/admin/AppShell';
-import DashboardHeader from '@/app/components/dashboard/DashboardHeader';
-import FinancialSummary from '@/app/components/dashboard/FinancialSummary';
-import MyEqubs from '@/app/components/dashboard/MyEqubs';
-import ImportantAlerts from '@/app/components/dashboard/ImportantAlerts';
-import QuickActions from '@/app/components/dashboard/QuickActions';
-import RecentActivity from '@/app/components/dashboard/RecentActivity';
-import UpcomingPayments from '@/app/components/dashboard/UpcomingPayments';
-import LotterySection from '@/app/components/dashboard/LotterySection';
-import HelpCard from '@/app/components/dashboard/HelpCard';
 import { useAuth } from '@/app/context/AuthContext';
 import api from '@/app/services/api';
 
@@ -24,8 +14,116 @@ interface DashboardData {
   error: string | null;
 }
 
-export default function DashboardPage() {
-  const { user, isAuthenticated, isLoading } = useAuth();
+// ─────────────────────────────────────────────────────────────────────────────
+// Icons
+// ─────────────────────────────────────────────────────────────────────────────
+
+function LogoMark() {
+  return (
+    <div className="relative h-16 w-16 rounded-full bg-[conic-gradient(#1c9cd6_0deg_90deg,#ffd12a_90deg_180deg,#1dd3b0_180deg_270deg,#ff5d5d_270deg_360deg)] p-2 shadow-[0_8px_20px_rgba(0,0,0,0.14)]">
+      <div className="flex h-full w-full items-center justify-center rounded-full bg-[#f5f5f2]">
+        <div className="relative h-10 w-10 rounded-full border-[3px] border-[#0d2f2f]/80 bg-white/60">
+          <div className="absolute inset-0 rounded-full border-[3px] border-[#0d2f2f]/60" />
+          <div className="absolute inset-2 rounded-full border-[3px] border-[#0d2f2f]/50" />
+          <div className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#0d2f2f]" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function JoinIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-12 w-12 text-[#0a7f76]" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <circle cx="12" cy="9" r="4" />
+      <path d="M4 20c1.5-3 4-4 8-4s6.5 1 8 4" />
+      <path d="M12 7v6m-3-3h6" />
+    </svg>
+  );
+}
+
+function CoinIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-12 w-12 text-[#f0c84e]" fill="currentColor">
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="12" cy="12" r="7" fill="white" />
+      <circle cx="12" cy="12" r="5" fill="#f0c84e" opacity="0.3" />
+    </svg>
+  );
+}
+
+function WheelIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-12 w-12 text-[#0d2f2f]" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <circle cx="12" cy="12" r="8" />
+      <circle cx="12" cy="12" r="2" />
+      <path d="M12 4v4M12 16v4M4 12h4M16 12h4M7.5 7.5l2.8 2.8M13.7 13.7l2.8 2.8M16.5 7.5l-2.8 2.8M10.3 13.7l-2.8 2.8" />
+    </svg>
+  );
+}
+
+function MembersIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-12 w-12 text-[#0d2f2f]" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <circle cx="8" cy="8" r="3" />
+      <circle cx="16" cy="8" r="3" />
+      <path d="M4 18c0-3 2-4 8-4s8 1 8 4" />
+      <path d="M18 15c2 0 3 1 3 3v3" />
+    </svg>
+  );
+}
+
+function CalendarIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-12 w-12 text-[#0d2f2f]" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <rect x="4" y="6" width="16" height="14" rx="2" />
+      <path d="M4 10h16M8 3v6M16 3v6" />
+    </svg>
+  );
+}
+
+function PaymentIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-12 w-12 text-[#0d2f2f]" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <rect x="3" y="8" width="18" height="12" rx="2" />
+      <path d="M3 12h18M7 16h2" />
+    </svg>
+  );
+}
+
+function InviteIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-12 w-12 text-[#0d2f2f]" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <circle cx="9" cy="9" r="3" />
+      <path d="M4 18c0-2.5 2-3.5 5-3.5s5 1 5 3.5" />
+      <path d="M18 10h4M20 8v4" />
+    </svg>
+  );
+}
+
+function HistoryIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-12 w-12 text-[#b91c1c]" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <circle cx="12" cy="12" r="8" />
+      <path d="M12 7v5l3 2" />
+    </svg>
+  );
+}
+
+function SpinIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-8 w-8 text-white" fill="currentColor">
+      <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2m0 3c3.9 0 7 3.1 7 7s-3.1 7-7 7-7-3.1-7-7 3.1-7 7-7" />
+    </svg>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Main Component
+// ─────────────────────────────────────────────────────────────────────────────
+
+export default function MemberDashboardPage() {
+  const { user, isAuthenticated } = useAuth();
   const router = useRouter();
   const [data, setData] = useState<DashboardData>({
     equbs: [],
@@ -36,106 +134,245 @@ export default function DashboardPage() {
   });
   const [loading, setLoading] = useState(true);
 
+  // Navigation handlers
+  const handleMenuClick = (path: string) => {
+    router.push(path);
+  };
+
   useEffect(() => {
-    if (isLoading) return;
     if (!isAuthenticated) {
-      router.replace('/');
-      return;
-    }
-    // Admins belong on the admin console, not the member dashboard.
-    if (user?.role === 'admin') {
-      router.replace('/admin/dashboard');
+      router.push('/');
       return;
     }
 
-    let cancelled = false;
+    const loadData = async () => {
+      try {
+        const [equbs, wallet, transactions, notifications] = await Promise.all([
+          api.equbAPI.getAll().catch(() => []),
+          api.walletAPI.getBalance().catch(() => null),
+          api.walletAPI.getTransactions().catch(() => []),
+          api.notificationsAPI.getNotifications().catch(() => []),
+        ]);
 
-    Promise.allSettled([
-      api.equbAPI.getMine(),
-      api.walletAPI.getBalance(),
-      api.walletAPI.getTransactions(),
-      api.notificationsAPI.getNotifications(),
-    ]).then(([equbsRes, walletRes, txnRes, notifRes]) => {
-      if (cancelled) return;
-      setData({
-        equbs:
-          equbsRes.status === 'fulfilled' ? equbsRes.value : [],
-        wallet: walletRes.status === 'fulfilled' ? walletRes.value : null,
-        transactions: txnRes.status === 'fulfilled' ? txnRes.value : [],
-        notifications: notifRes.status === 'fulfilled' ? notifRes.value : [],
-        error:
-          equbsRes.status === 'rejected' &&
-          equbsRes.reason instanceof Error
-            ? equbsRes.reason.message
-            : null,
-      });
-      setLoading(false);
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [isLoading, isAuthenticated, user?.role, router]);
-
-  if (isLoading) {
-    return (
-      <div className="dark-navy min-h-screen flex items-center justify-center bg-surface">
-        <div className="w-10 h-10 rounded-full border-4 border-brand-200 border-t-brand-600 animate-spin" />
-      </div>
-    );
-  }
-
-  if (!isAuthenticated || !user) {
-    return null;
-  }
-
-  const totalSaved =
-    data.transactions
-      .filter((t) => t.direction === 'payment' && (t.status === 'paid' || t.status === 'auto_debited'))
-      .reduce((sum, t) => sum + Number(t.amount), 0) || null;
-
-  const memberEqubs = data.equbs.filter((e) => e.status === 'active' || e.status === 'open');
-  const nextUpcoming = [...memberEqubs].sort((a, b) => a.contribution_amount - b.contribution_amount)[0];
-  const nextPayment = nextUpcoming
-    ? {
-        amount: nextUpcoming.contribution_amount,
-        label: `${nextUpcoming.name} · Round ${Math.min(nextUpcoming.current_round + 1, nextUpcoming.total_rounds)}`,
+        setData({
+          equbs,
+          wallet,
+          transactions,
+          notifications,
+          error: null,
+        });
+      } catch (error) {
+        setData((prev) => ({
+          ...prev,
+          error: 'Failed to load dashboard data',
+        }));
+      } finally {
+        setLoading(false);
       }
-    : null;
+    };
 
-  const isNewUser = data.equbs.length === 0;
+    loadData();
+  }, [isAuthenticated, router]);
+
+  if (!isAuthenticated) return null;
+
+  const formatETB = (amount: number) =>
+    new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
 
   return (
-    <AppShell
-      title="Member Dashboard"
-      subtitle="Manage your Equbs, payments, and wallet"
-      variant="member"
-    >
-      <DashboardHeader firstName={user.firstName} isNewUser={isNewUser} />
-
-      <FinancialSummary
-        balance={data.wallet?.balance ?? null}
-        totalSaved={totalSaved}
-        activeEqubs={memberEqubs.length}
-        nextPayment={nextPayment}
-        loading={loading}
-      />
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <MyEqubs equbs={data.equbs} loading={loading} error={data.error} />
-          <LotterySection equbs={data.equbs} loading={loading} />
-          <QuickActions />
+    <div className="min-h-screen bg-gray-50">
+      {/* Header with Logo */}
+      <div className="bg-white px-4 pt-6 pb-4 sm:px-6 sm:pt-8 sm:pb-6">
+        <div className="flex items-center gap-3 sm:gap-4 mb-6">
+          <LogoMark />
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-[#0d2f2f]">Digital Equb</h1>
+            <p className="text-sm text-gray-600">Rotating Savings Circle</p>
+          </div>
         </div>
 
-        <div className="space-y-6">
-          <ImportantAlerts notifications={data.notifications} />
-          <UpcomingPayments equbs={data.equbs} loading={loading} />
-          <RecentActivity transactions={data.transactions} loading={loading} />
+        {/* Greeting */}
+        <h2 className="text-xl sm:text-2xl font-semibold text-[#0d2f2f] mb-6">
+          Good Morning, {user?.firstName || 'Member'}
+        </h2>
+
+        {/* Wallet Balance Card - Green */}
+        <div className="relative bg-gradient-to-r from-[#16a34a] to-[#15803d] text-white rounded-3xl p-6 sm:p-8 mb-6 overflow-hidden">
+          {/* Decorative coins */}
+          <div className="absolute top-4 right-6 sm:right-8 space-y-2">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="w-8 h-8 sm:w-10 sm:h-10 bg-yellow-400 rounded-full opacity-70" />
+            ))}
+          </div>
+
+          <div className="relative z-10">
+            <p className="text-xs sm:text-sm font-bold opacity-90 mb-2">EQUB POT BALANCE</p>
+            <h3 className="text-4xl sm:text-5xl font-bold mb-2">
+              ETB {formatETB(data.wallet?.balance || 0)}
+            </h3>
+            <p className="text-sm sm:text-base opacity-90">Next winner payout: in 6 days</p>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6">
+          <button 
+            onClick={() => handleMenuClick('/wallet')}
+            className="bg-yellow-400 hover:bg-yellow-500 text-[#0d2f2f] font-bold py-3 sm:py-4 px-6 rounded-full transition-colors text-sm sm:text-base active:scale-95"
+          >
+            Contribute Now
+          </button>
+          <button 
+            onClick={() => handleMenuClick('/my-equbs')}
+            className="border-2 border-[#0a7f76] hover:bg-[#0a7f76]/5 text-[#0a7f76] font-bold py-3 sm:py-4 px-6 rounded-full transition-colors text-sm sm:text-base active:scale-95"
+          >
+            My Equbs
+          </button>
         </div>
       </div>
 
-      <HelpCard />
-    </AppShell>
+      {/* Menu Grid - 2x3 */}
+      <div className="px-4 pb-24 sm:px-6">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6">
+          {/* Join Equb */}
+          <div 
+            onClick={() => handleMenuClick('/join-equb')}
+            className="bg-white rounded-2xl p-5 sm:p-6 text-center hover:shadow-md transition-shadow cursor-pointer active:scale-95"
+          >
+            <div className="flex justify-center mb-3">
+              <JoinIcon />
+            </div>
+            <p className="text-sm sm:text-base font-semibold text-[#0d2f2f]">Join Equb</p>
+          </div>
+
+          {/* Contribute */}
+          <div 
+            onClick={() => handleMenuClick('/wallet')}
+            className="bg-white rounded-2xl p-5 sm:p-6 text-center hover:shadow-md transition-shadow cursor-pointer active:scale-95"
+          >
+            <div className="flex justify-center mb-3">
+              <CoinIcon />
+            </div>
+            <p className="text-sm sm:text-base font-semibold text-[#0d2f2f]">Contribute</p>
+          </div>
+
+          {/* Winners Wheel */}
+          <div 
+            onClick={() => handleMenuClick('/my-equbs')}
+            className="bg-white rounded-2xl p-5 sm:p-6 text-center hover:shadow-md transition-shadow cursor-pointer active:scale-95"
+          >
+            <div className="flex justify-center mb-3">
+              <WheelIcon />
+            </div>
+            <p className="text-sm sm:text-base font-semibold text-[#0d2f2f]">Winners Wheel</p>
+          </div>
+
+          {/* Members */}
+          <div 
+            onClick={() => handleMenuClick('/my-equbs')}
+            className="bg-white rounded-2xl p-5 sm:p-6 text-center hover:shadow-md transition-shadow cursor-pointer active:scale-95"
+          >
+            <div className="flex justify-center mb-3">
+              <MembersIcon />
+            </div>
+            <p className="text-sm sm:text-base font-semibold text-[#0d2f2f]">Members</p>
+          </div>
+
+          {/* Schedule */}
+          <div 
+            onClick={() => handleMenuClick('/my-equbs')}
+            className="bg-white rounded-2xl p-5 sm:p-6 text-center hover:shadow-md transition-shadow cursor-pointer active:scale-95"
+          >
+            <div className="flex justify-center mb-3">
+              <CalendarIcon />
+            </div>
+            <p className="text-sm sm:text-base font-semibold text-[#0d2f2f]">Schedule</p>
+          </div>
+
+          {/* Payments */}
+          <div 
+            onClick={() => handleMenuClick('/wallet')}
+            className="bg-white rounded-2xl p-5 sm:p-6 text-center hover:shadow-md transition-shadow cursor-pointer active:scale-95"
+          >
+            <div className="flex justify-center mb-3">
+              <PaymentIcon />
+            </div>
+            <p className="text-sm sm:text-base font-semibold text-[#0d2f2f]">Payments</p>
+          </div>
+
+          {/* Invite Friends */}
+          <div 
+            onClick={() => handleMenuClick('/profile')}
+            className="bg-white rounded-2xl p-5 sm:p-6 text-center hover:shadow-md transition-shadow cursor-pointer active:scale-95"
+          >
+            <div className="flex justify-center mb-3">
+              <InviteIcon />
+            </div>
+            <p className="text-sm sm:text-base font-semibold text-[#0d2f2f]">Invite Friends</p>
+          </div>
+
+          {/* History */}
+          <div 
+            onClick={() => handleMenuClick('/wallet')}
+            className="bg-white rounded-2xl p-5 sm:p-6 text-center hover:shadow-md transition-shadow cursor-pointer active:scale-95"
+          >
+            <div className="flex justify-center mb-3">
+              <HistoryIcon />
+            </div>
+            <p className="text-sm sm:text-base font-semibold text-[#0d2f2f]">History</p>
+          </div>
+        </div>
+
+        {/* Spin Wheel Button - Red */}
+        <div className="mb-6">
+          <button 
+            onClick={() => handleMenuClick('/my-equbs')}
+            className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 sm:py-5 px-6 rounded-full transition-colors flex items-center justify-center gap-3 text-sm sm:text-base active:scale-95"
+          >
+            <SpinIcon />
+            Spin the Winner Wheel
+          </button>
+        </div>
+      </div>
+
+      {/* Bottom Navigation - Fixed */}
+      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-[#16a34a] to-[#15803d] text-white px-4 py-3 sm:py-4 sm:px-6 flex justify-around items-center">
+        <button 
+          onClick={() => handleMenuClick('/my-equbs')}
+          className="flex flex-col items-center gap-1 text-xs font-semibold hover:opacity-80 transition-opacity active:scale-90"
+        >
+          <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="8" r="3" />
+            <path d="M6 20c0-3 2.7-5 6-5s6 2 6 5" />
+          </svg>
+          <span>My Equb</span>
+        </button>
+
+        <button 
+          onClick={() => handleMenuClick('/wallet')}
+          className="flex flex-col items-center gap-1 text-xs font-semibold hover:opacity-80 transition-opacity active:scale-90"
+        >
+          <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9" fill="#f0c84e" />
+            <circle cx="12" cy="12" r="7" fill="white" />
+            <circle cx="12" cy="12" r="5" fill="#f0c84e" opacity="0.3" />
+          </svg>
+          <span>Contribute</span>
+        </button>
+
+        <button 
+          onClick={() => handleMenuClick('/profile')}
+          className="flex flex-col items-center gap-1 text-xs font-semibold hover:opacity-80 transition-opacity active:scale-90"
+        >
+          <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="8" r="3" />
+            <circle cx="18" cy="8" r="3" />
+            <path d="M4 20c0-2.5 2-3.5 8-3.5s8 1 8 3.5" />
+            <path d="M18 13c2 0 3 1 3 3v4" />
+          </svg>
+          <span>Profile</span>
+        </button>
+      </div>
+    </div>
   );
 }
