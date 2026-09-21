@@ -80,7 +80,7 @@ export default function PresetTemplates({ lang, onSelectTemplate }: PresetTempla
     return (
       <div className="flex items-center justify-center py-8">
         <div className="text-center">
-          <div className="inline-block w-8 h-8 border-4 border-[#00d9ff] border-t-transparent rounded-full animate-spin mb-2"></div>
+          <div className="inline-block w-8 h-8 border-4 border-[#0066ff] border-t-transparent rounded-full animate-spin mb-2"></div>
           <p className="text-sm text-gray-600">
             {lang === 'en' ? 'Loading templates...' : 'ቴምፕሌቶች እየተጫኑ...'}
           </p>
@@ -103,7 +103,7 @@ export default function PresetTemplates({ lang, onSelectTemplate }: PresetTempla
 
   return (
     <div className="mb-8">
-      <h3 className="text-lg font-bold text-[#00d9ff] mb-4">
+      <h3 className="text-lg font-bold text-[#0066ff] mb-4">
         {lang === 'en' ? '⚡ Quick Start - Popular Templates' : '⚡ ፈጣን ጅምር - ታዋቂ ቴምፕሌቶች'}
       </h3>
 
@@ -117,7 +117,7 @@ export default function PresetTemplates({ lang, onSelectTemplate }: PresetTempla
             onClick={() => onSelectTemplate?.(template)}
             className="cursor-pointer group"
           >
-            <div className="bg-white border-2 border-gray-200 rounded-lg p-4 transition-all duration-300 group-hover:border-[#00d9ff] group-hover:shadow-lg">
+            <div className="bg-white border-2 border-gray-200 rounded-lg p-4 transition-all duration-300 group-hover:border-[#0066ff] group-hover:shadow-lg">
               {/* Header */}
               <div className="mb-3">
                 <h4 className="font-bold text-gray-900 mb-1">{template.name}</h4>
@@ -127,8 +127,8 @@ export default function PresetTemplates({ lang, onSelectTemplate }: PresetTempla
               </div>
 
               {/* Main Stats */}
-              <div className="bg-gradient-to-r from-[#001f3f]/10 to-[#00d9ff]/10 rounded-lg p-3 mb-3">
-                <div className="text-2xl font-black text-[#00d9ff] mb-1">
+              <div className="bg-gradient-to-r from-[#ffffff]/10 to-[#0066ff]/10 rounded-lg p-3 mb-3">
+                <div className="text-2xl font-black text-[#0066ff] mb-1">
                   {template.contribution_amount.toLocaleString()} ETB
                 </div>
                 <div className="text-xs text-gray-600">
@@ -162,7 +162,7 @@ export default function PresetTemplates({ lang, onSelectTemplate }: PresetTempla
                   {getSelectionLabel(template.winner_selection)}
                 </div>
                 <div className="flex gap-2 text-xs">
-                  <span className="bg-[#00d9ff]/10 text-[#00d9ff] rounded px-2 py-1 font-semibold">
+                  <span className="bg-[#0066ff]/10 text-[#0066ff] rounded px-2 py-1 font-semibold">
                     {getTypeLabel(template.cycle_type)}
                   </span>
                   <span className="bg-gray-200 text-gray-700 rounded px-2 py-1 font-semibold capitalize">
@@ -172,7 +172,7 @@ export default function PresetTemplates({ lang, onSelectTemplate }: PresetTempla
               </div>
 
               {/* CTA */}
-              <button className="w-full mt-3 bg-gradient-to-r from-[#001f3f] to-[#001f3f] text-[#00d9ff] font-bold py-2 rounded-lg group-hover:shadow-lg transition-all duration-300">
+              <button className="w-full mt-3 bg-[#0066ff] text-white font-bold py-2 rounded-lg group-hover:shadow-lg transition-all duration-300">
                 {lang === 'en' ? 'Use This Template' : 'ይህን ቴምፕሌት ተጠቀም'}
               </button>
             </div>

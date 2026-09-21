@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export default function HelpCard() {
   return (
-    <section className="rounded-card bg-gradient-to-br from-brand-700 to-brand-600 text-[#00d9ff] p-5">
+    <section className="rounded-card bg-gradient-to-br from-brand-700 to-brand-600 text-white p-5">
       <h2 className="text-lg font-black">Need help?</h2>
       <p className="mt-1 text-sm text-brand-100">
         Our support team is ready to answer your questions about Equbs, payments, and your account.

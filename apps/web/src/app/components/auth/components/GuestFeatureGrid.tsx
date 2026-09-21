@@ -35,12 +35,12 @@ export default function GuestFeatureGrid() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: idx * 0.1 }}
-          className="bg-white border-2 border-[#001f3f] rounded-lg p-4 hover:shadow-lg transition-all duration-300"
+          className="bg-white border-2 border-[#0066ff] rounded-lg p-4 hover:shadow-lg transition-all duration-300"
         >
           <div className="flex items-start gap-4">
             <span className="text-3xl">{feature.icon}</span>
             <div>
-              <h3 className="font-black text-[#00d9ff]">{feature.title}</h3>
+              <h3 className="font-black text-[#0066ff]">{feature.title}</h3>
               <p className="text-sm text-gray-600">{feature.description}</p>
             </div>
           </div>

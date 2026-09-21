@@ -22,9 +22,9 @@ function ArchitectureContent() {
     <>
       <Header lang={lang} onLanguageChange={handleLanguageChange} />
 
-      <section className="py-20 md:py-32 bg-white">
+      <section className="py-20 md:py-32 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-[#00d9ff] mb-8">
+          <h1 className="text-4xl md:text-5xl font-bold text-[#0066ff] mb-8">
             {t.architecture}
           </h1>
 

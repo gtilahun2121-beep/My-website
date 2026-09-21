@@ -97,7 +97,7 @@ export default function DailyCyclePanel({
   return (
     <div className="bg-white rounded-xl shadow-md p-6 mb-6">
       <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-        <h2 className="text-xl font-black text-[#00d9ff]">{text.title}</h2>
+        <h2 className="text-xl font-black text-[#0066ff]">{text.title}</h2>
         <span
           className={`px-3 py-1 rounded-full text-xs font-black uppercase ${
             state.payment_window_open
@@ -112,26 +112,26 @@ export default function DailyCyclePanel({
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
         <div className="bg-gray-50 rounded-lg p-3">
           <p className="text-xs text-gray-500 uppercase font-bold mb-1">{text.cycleDate}</p>
-          <p className="text-sm font-black text-[#00d9ff]">{state.cycle_date}</p>
+          <p className="text-sm font-black text-[#0066ff]">{state.cycle_date}</p>
         </div>
         <div className="bg-gray-50 rounded-lg p-3">
           <p className="text-xs text-gray-500 uppercase font-bold mb-1">{text.cutoff}</p>
-          <p className="text-sm font-black text-[#00d9ff]">{state.payment_cutoff_time}</p>
+          <p className="text-sm font-black text-[#0066ff]">{state.payment_cutoff_time}</p>
         </div>
         <div className="bg-gray-50 rounded-lg p-3">
           <p className="text-xs text-gray-500 uppercase font-bold mb-1">{text.status}</p>
-          <p className="text-sm font-black text-[#00d9ff]">{state.cycle_status}</p>
+          <p className="text-sm font-black text-[#0066ff]">{state.cycle_status}</p>
         </div>
         <div className="bg-gray-50 rounded-lg p-3">
           <p className="text-xs text-gray-500 uppercase font-bold mb-1">{text.penalty}</p>
-          <p className="text-sm font-black text-[#00d9ff]">
+          <p className="text-sm font-black text-[#0066ff]">
             {(state.late_penalty_rate * 100).toFixed(0)}%
           </p>
         </div>
       </div>
 
       {notice && (
-        <div className="border rounded-lg p-3 mb-4 bg-brand-50 border-brand-300 text-brand-800 text-sm">
+        <div className="border rounded-lg p-3 mb-4 bg-brand-50 border-brand-300 text-[#0042ad] text-sm">
           {notice}
         </div>
       )}
@@ -143,7 +143,7 @@ export default function DailyCyclePanel({
           className={`w-full py-3 font-black rounded-lg transition-all ${
             running
               ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-              : 'bg-brand-900 text-[#00d9ff] hover:bg-brand-950'
+              : 'bg-[#0066ff] text-white hover:bg-[#0047b3]'
           }`}
         >
           {running ? text.running : text.run}

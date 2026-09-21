@@ -61,10 +61,10 @@ export default function MyEqubsPage() {
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-gradient-to-r from-[#00d9ff]/10 to-[#0066ff]/10 border-l-4 border-[#00d9ff] rounded-lg p-6 mb-8"
+              className="bg-gradient-to-r from-[#0066ff]/10 to-[#0066ff]/10 border-l-4 border-[#0066ff] rounded-lg p-6 mb-8"
             >
-              <p className="text-[#00d9ff] font-black text-lg mb-3">{notice}</p>
-              <div className="space-y-2 text-sm text-[#00d9ff]">
+              <p className="text-[#0066ff] font-black text-lg mb-3">{notice}</p>
+              <div className="space-y-2 text-sm text-[#0066ff]">
                 <p>✅ {lang === 'en' ? 'Next steps:' : 'ሚቀጥሉ ደረጃዎች:'}</p>
                 <ul className="list-disc list-inside space-y-1 ml-2">
                   <li>{lang === 'en' ? 'Wait for admin approval of your membership' : 'የአስተዳዳሪ ማጽደቅ በመጠበቅ ላይ'}</li>
@@ -74,14 +74,14 @@ export default function MyEqubsPage() {
               </div>
               <button
                 onClick={() => setNotice(null)}
-                className="mt-4 text-sm text-[#00d9ff] hover:underline font-bold"
+                className="mt-4 text-sm text-[#0066ff] hover:underline font-bold"
               >
                 {lang === 'en' ? 'Dismiss' : 'ዝጋ'}
               </button>
             </motion.div>
           )}
 
-          <h1 className="text-3xl sm:text-4xl font-black text-[#00d9ff] mb-2">
+          <h1 className="text-3xl sm:text-4xl font-black text-[#0066ff] mb-2">
             {lang === 'en' ? 'My Equbs' : 'ሙያዬ ኤኩብ'}
           </h1>
           <p className="text-gray-600 mb-8">
@@ -91,7 +91,7 @@ export default function MyEqubsPage() {
           {loading ? (
             <div className="flex items-center justify-center py-16">
               <div className="text-center">
-                <div className="w-12 h-12 rounded-full border-4 border-[#00d9ff]/20 border-t-[#00d9ff] animate-spin mx-auto mb-4" />
+                <div className="w-12 h-12 rounded-full border-4 border-[#0066ff]/20 border-t-[#0066ff] animate-spin mx-auto mb-4" />
                 <p className="text-gray-600 font-semibold">
                   {lang === 'en' ? 'Loading your equbs...' : 'ኤኩብ በሚጫወት ላይ...'}
                 </p>
@@ -103,9 +103,9 @@ export default function MyEqubsPage() {
               <p className="text-sm text-red-500">{error}</p>
             </div>
           ) : equbs.length === 0 ? (
-            <div className="bg-white rounded-xl shadow-md p-6 sm:p-12 text-center border-t-4 border-[#001f3f]">
+            <div className="bg-white rounded-xl shadow-md p-6 sm:p-12 text-center border-t-4 border-[#0066ff]">
               <p className="text-6xl mb-4">🎯</p>
-              <h3 className="text-xl font-bold text-[#00d9ff] mb-2">
+              <h3 className="text-xl font-bold text-[#0066ff] mb-2">
                 {lang === 'en' ? 'No Equbs yet' : 'ገና ኤኩብ የሉም'}
               </h3>
               <p className="text-gray-600 mb-6">
@@ -114,13 +114,13 @@ export default function MyEqubsPage() {
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Link
                   href="/join-equb"
-                  className="px-6 py-3 bg-gradient-to-r from-[#001f3f] to-[#001f3f] text-[#00d9ff] font-bold rounded-lg hover:shadow-lg transition-all"
+                  className="px-6 py-3 bg-[#0066ff] text-white font-bold rounded-lg hover:shadow-lg transition-all"
                 >
                   ➕ {lang === 'en' ? 'Join an Equb' : 'ኤኩብ ይዋሃዱ'}
                 </Link>
                 <Link
                   href="/create-equb"
-                  className="px-6 py-3 bg-gray-200 text-[#00d9ff] font-bold rounded-lg hover:bg-gray-300 transition-all"
+                  className="px-6 py-3 bg-gray-200 text-[#0066ff] font-bold rounded-lg hover:bg-gray-300 transition-all"
                 >
                   ✨ {isAdmin ? (lang === 'en' ? 'Create an Equb' : 'ኤኩብ ይፍጠሩ') : (lang === 'en' ? 'Request an Equb' : 'ኤኩብ ይጠይቁ')}
                 </Link>
@@ -134,13 +134,13 @@ export default function MyEqubsPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.05 }}
-                  className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all cursor-pointer border-t-4 border-[#001f3f]"
+                  className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all cursor-pointer border-t-4 border-[#0066ff]"
                 >
                   <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-xl font-bold text-[#00d9ff]">{equb.name}</h3>
+                    <h3 className="text-xl font-bold text-[#0066ff]">{equb.name}</h3>
                     <div className="flex gap-2 flex-wrap justify-end">
                       {equb.is_host && (
-                        <span className="px-2 py-1 bg-[#001f3f]/20 text-[#00d9ff] text-xs font-bold rounded-full">
+                        <span className="px-2 py-1 bg-[#0066ff]/20 text-[#0066ff] text-xs font-bold rounded-full">
                           {lang === 'en' ? 'Host' : 'አስተዳዳሪ'}
                         </span>
                       )}
@@ -150,7 +150,7 @@ export default function MyEqubsPage() {
                         </span>
                       )}
                       {equb.status === 'active' && (
-                        <span className="px-2 py-1 bg-[#00d9ff]/20 text-[#00d9ff] text-xs font-bold rounded-full">
+                        <span className="px-2 py-1 bg-[#0066ff]/20 text-[#0066ff] text-xs font-bold rounded-full">
                           🟢 {lang === 'en' ? 'Active' : 'ንቁ'}
                         </span>
                       )}
@@ -159,17 +159,17 @@ export default function MyEqubsPage() {
                   <div className="space-y-2 text-sm mb-4">
                     <div className="flex justify-between">
                       <span className="text-gray-600">{lang === 'en' ? 'Members' : 'አባላት'}</span>
-                      <span className="font-bold text-[#00d9ff]">{equb.member_count}/{equb.total_rounds}</span>
+                      <span className="font-bold text-[#0066ff]">{equb.member_count}/{equb.total_rounds}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">{lang === 'en' ? 'Contribution' : 'መዋጮ'}</span>
-                      <span className="font-bold text-[#00d9ff]">
+                      <span className="font-bold text-[#0066ff]">
                         ETB {fmt(equb.contribution_amount)}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">{lang === 'en' ? 'Round' : 'ዙር'}</span>
-                      <span className="font-bold text-[#00d9ff]">
+                      <span className="font-bold text-[#0066ff]">
                         {equb.current_round}/{equb.total_rounds}
                       </span>
                     </div>
@@ -180,7 +180,7 @@ export default function MyEqubsPage() {
                   </div>
                   <Link
                     href={`/equbs/${equb.id}`}
-                    className="block text-center w-full bg-gradient-to-r from-[#001f3f] to-[#001f3f] text-[#00d9ff] font-bold py-3 rounded-lg hover:shadow-lg transition-all"
+                    className="block text-center w-full bg-[#0066ff] text-white font-bold py-3 rounded-lg hover:shadow-lg transition-all"
                   >
                     👁️ {lang === 'en' ? 'View Details' : 'ዝርዝር ይመልከቱ'}
                   </Link>

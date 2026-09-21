@@ -35,7 +35,7 @@ interface LotteryWheelProps {
 }
 
 const SEGMENT_COLORS = [
-  '#001f3f', // navy
+  '#0066ff', // navy
   '#0ea5a4', // teal
   '#7c3aed', // violet
   '#e11d48', // rose
@@ -49,13 +49,13 @@ const SEGMENT_COLORS = [
 
 // Placeholder segments shown before any draw so the wheel is always visible.
 const PLACEHOLDER_COLORS = [
-  '#001f3f',
+  '#0066ff',
   '#4a6ad4',
-  '#001f3f',
+  '#0066ff',
   '#4a6ad4',
-  '#001f3f',
+  '#0066ff',
   '#4a6ad4',
-  '#001f3f',
+  '#0066ff',
   '#4a6ad4',
 ];
 
@@ -293,7 +293,7 @@ export const LotteryWheel: React.FC<LotteryWheelProps> = ({
               );
             })}
             <circle cx={cx} cy={cy} r="34" fill="#1f2937" stroke="#ffffff" strokeWidth="4" />
-            <circle cx={cx} cy={cy} r="26" fill="#001f3f" stroke="#ffffff" strokeWidth="2" />
+            <circle cx={cx} cy={cy} r="26" fill="#0066ff" stroke="#ffffff" strokeWidth="2" />
             <text
               x={cx}
               y={cy}
@@ -321,7 +321,7 @@ export const LotteryWheel: React.FC<LotteryWheelProps> = ({
             <p className="text-xs font-bold text-brand-700 uppercase tracking-wide mb-1">
               Round Winner
             </p>
-            <p className="text-lg font-black text-brand-800">
+            <p className="text-lg font-black text-[#0042ad]">
               🏆 {winner.first_name} {winner.last_name}
             </p>
           </motion.div>
@@ -373,8 +373,8 @@ export const LotteryWheel: React.FC<LotteryWheelProps> = ({
                   key={c.id}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${
                     isWinner
-                      ? 'bg-brand-100 border-brand-300 text-brand-800 shadow-sm'
-                      : 'bg-gray-50 border-gray-200 text-[#00d9ff]'
+                      ? 'bg-brand-100 border-brand-300 text-[#0042ad] shadow-sm'
+                      : 'bg-gray-50 border-gray-200 text-[#0066ff]'
                   }`}
                 >
                   {isWinner && <span aria-hidden>🏆</span>}

@@ -26,7 +26,7 @@ export default function FormSuccess({
       >
         {icon}
       </motion.div>
-      <h3 className="text-2xl font-black text-brand-900 mb-2">{title}</h3>
+      <h3 className="text-2xl font-black text-[#0042ad] mb-2">{title}</h3>
       <p className="text-brand-700 text-sm">{message}</p>
     </motion.div>
   );

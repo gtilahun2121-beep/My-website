@@ -89,10 +89,10 @@ export default function AuthModal({
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="bg-gradient-to-r from-[#001f3f] to-[#001f3f] px-8 py-6 flex justify-between items-center">
+            <div className="bg-gradient-to-r from-white/40 to-white/35 px-5 py-4 sm:px-8 sm:py-6 flex justify-between items-center">
               <div>
-                <h2 className="text-2xl font-black text-[#00d9ff]">QalNet</h2>
-                <p className="text-sm text-[#00d9ff]/80 font-semibold mt-1">
+                <h2 className="text-2xl font-black text-[#0066ff]">QalNet</h2>
+                <p className="text-sm text-[#0066ff]/80 font-semibold mt-1">
                   {lang === 'en' ? 'Ethiopia\'s Digital Equb' : 'የኢትዮጵያ ዲጂታል Equb'}
                 </p>
               </div>
@@ -101,7 +101,7 @@ export default function AuthModal({
                   const shouldClose = confirm('Are you sure you want to close? You must register to access the system.');
                   if (shouldClose) onClose();
                 }}
-                className="text-2xl text-[#00d9ff] hover:opacity-70 transition-all"
+                className="text-2xl text-[#0066ff] hover:opacity-70 transition-all"
               >
                 ✕
               </button>
@@ -115,8 +115,8 @@ export default function AuthModal({
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex-1 py-4 px-4 font-bold text-sm transition-all flex items-center justify-center gap-2 ${
                     activeTab === tab.id
-                      ? 'bg-[#001f3f] text-[#00d9ff] border-b-4 border-[#001f3f]'
-                      : 'bg-gray-100 text-[#001f3f] hover:bg-gray-200'
+                      ? 'bg-[#0066ff] text-white border-b-4 border-[#0066ff]'
+                      : 'bg-gray-100 text-[#0066ff] hover:bg-gray-200'
                   }`}
                 >
                   <span className="text-lg">{tab.icon}</span>
@@ -126,7 +126,7 @@ export default function AuthModal({
             </div>
 
             {/* Content */}
-            <div className="overflow-y-auto max-h-[calc(90vh-180px)] p-8">
+            <div className="overflow-y-auto max-h-[calc(90vh-180px)] p-5 sm:p-8">
               <AnimatePresence mode="wait">
                 {activeTab === 'signup' && (
                   <motion.div

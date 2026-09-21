@@ -30,9 +30,9 @@ function DocsContent() {
     <>
       <Header lang={lang} onLanguageChange={handleLanguageChange} />
 
-      <section className="py-20 md:py-32 bg-white">
+      <section className="py-20 md:py-32 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-[#00d9ff] mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold text-[#0066ff] mb-4">
             {t.documentation}
           </h1>
           <p className="text-xl text-gray-600 mb-16">
@@ -47,7 +47,7 @@ function DocsContent() {
                 className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-8 border border-gray-200 hover:border-brand-400 hover:shadow-lg transition-all"
               >
                 <div className="text-4xl mb-4">{section.icon}</div>
-                <h3 className="font-bold text-lg text-[#00d9ff] hover:text-brand-600 transition-colors">
+                <h3 className="font-bold text-lg text-[#0066ff] hover:text-brand-600 transition-colors">
                   {section.title}
                 </h3>
               </Link>
@@ -55,8 +55,8 @@ function DocsContent() {
           </div>
 
           <div className="mt-16 bg-brand-50 border-l-4 border-brand-400 p-6 rounded">
-            <h3 className="font-bold text-brand-900 mb-2">API Documentation</h3>
-            <p className="text-brand-800">
+            <h3 className="font-bold text-[#0042ad] mb-2">API Documentation</h3>
+            <p className="text-[#0042ad]">
               Full API contracts and integration guides available in the technical specification document.
               Version 1.0 - Generated in accordance with the QalNet Enterprise System Architecture.
             </p>

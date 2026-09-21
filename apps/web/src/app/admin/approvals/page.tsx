@@ -105,7 +105,7 @@ export default function AdminApprovalsPage() {
           onClick={() => setTab('equbs')}
           className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-colors ${
             tab === 'equbs'
-              ? 'bg-gradient-to-r from-brand-600 to-brand-500 text-[#00d9ff] shadow-lg shadow-brand-900/40'
+              ? 'bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow-lg shadow-[#0066ff]/40'
               : 'bg-admin-card border border-admin-border text-admin-text-secondary hover:bg-admin-card-hover'
           }`}
         >
@@ -116,7 +116,7 @@ export default function AdminApprovalsPage() {
           onClick={() => setTab('memberships')}
           className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-colors ${
             tab === 'memberships'
-              ? 'bg-gradient-to-r from-brand-600 to-brand-500 text-[#00d9ff] shadow-lg shadow-brand-900/40'
+              ? 'bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow-lg shadow-[#0066ff]/40'
               : 'bg-admin-card border border-admin-border text-admin-text-secondary hover:bg-admin-card-hover'
           }`}
         >
@@ -226,7 +226,7 @@ function EqubRequestsSection({
                 type="button"
                 onClick={() => onApprove(req.id)}
                 disabled={busyId !== null}
-                className="px-4 py-2 rounded-lg bg-success-600 text-[#00d9ff] text-sm font-bold hover:bg-success-500 disabled:opacity-50 transition-colors"
+                className="px-4 py-2 rounded-lg bg-success-600 text-[#0066ff] text-sm font-bold hover:bg-success-500 disabled:opacity-50 transition-colors"
               >
                 {busyId === req.id ? 'Working…' : '✅ Approve & Create'}
               </button>
@@ -299,7 +299,7 @@ function MembershipsSection({
                 type="button"
                 onClick={() => onApprove(m.id)}
                 disabled={busyId !== null}
-                className="px-4 py-2 rounded-lg bg-success-600 text-[#00d9ff] text-sm font-bold hover:bg-success-500 disabled:opacity-50 transition-colors"
+                className="px-4 py-2 rounded-lg bg-success-600 text-[#0066ff] text-sm font-bold hover:bg-success-500 disabled:opacity-50 transition-colors"
               >
                 {busyId === m.id ? 'Working…' : '✅ Approve'}
               </button>

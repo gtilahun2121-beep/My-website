@@ -29,7 +29,7 @@ export default function EqubCard({ equb }: EqubCardProps) {
     <div className="bg-card rounded-card border border-gray-200 p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="font-black text-[#00d9ff] truncate">{equb.name}</p>
+          <p className="font-black text-[#0066ff] truncate">{equb.name}</p>
           <p className="mt-0.5 text-xs text-gray-500">
             Hosted by {hostName} · {equb.member_count}/{equb.total_rounds} members
           </p>
@@ -53,24 +53,24 @@ export default function EqubCard({ equb }: EqubCardProps) {
       <div className="mt-4 flex items-end justify-between">
         <div>
           <p className="text-xs font-semibold text-gray-400">Contribution</p>
-          <p className="text-lg font-black text-[#00d9ff]">{formatETB(equb.contribution_amount)}</p>
+          <p className="text-lg font-black text-[#0066ff]">{formatETB(equb.contribution_amount)}</p>
         </div>
         <div className="text-right">
           <p className="text-xs font-semibold text-gray-400">Payout pool</p>
-          <p className="text-base font-bold text-[#00d9ff]">{formatETB(equb.total_amount)}</p>
+          <p className="text-base font-bold text-[#0066ff]">{formatETB(equb.total_amount)}</p>
         </div>
       </div>
 
       <div className="mt-4 flex items-center gap-2">
         <Link
           href={`/equbs/${equb.id}`}
-          className="flex-1 text-center px-3 py-2 rounded-lg border border-gray-200 text-sm font-bold text-[#00d9ff] hover:bg-gray-50 transition-colors"
+          className="flex-1 text-center px-3 py-2 rounded-lg border border-gray-200 text-sm font-bold text-[#0066ff] hover:bg-gray-50 transition-colors"
         >
           View Equb
         </Link>
         <Link
           href="/wallet"
-          className="flex-1 text-center px-3 py-2 rounded-lg bg-brand-600 text-[#00d9ff] text-sm font-bold hover:bg-brand-700 transition-colors"
+          className="flex-1 text-center px-3 py-2 rounded-lg bg-brand-600 text-white text-sm font-bold hover:bg-brand-700 transition-colors"
         >
           Make Payment
         </Link>

@@ -83,9 +83,9 @@ export default function JoinEqubPage() {
     return (
       <main className="min-h-screen flex flex-col">
         <Header lang={lang} onLanguageChange={setLang} />
-        <div className="flex-grow flex items-center justify-center bg-gradient-to-b from-[#001f3f] to-[#001f3f]">
+        <div className="flex-grow flex items-center justify-center bg-gradient-to-b from-white/40 to-white/35">
           <div className="text-center">
-            <p className="text-xl font-bold text-[#00d9ff] mb-4">
+            <p className="text-xl font-bold text-[#0066ff] mb-4">
               {lang === 'en' ? 'Please log in to join an Equb' : 'Equb ለመቀላቀል ይግቡ'}
             </p>
           </div>
@@ -108,7 +108,7 @@ export default function JoinEqubPage() {
             transition={{ duration: 0.6 }}
             className="mb-12"
           >
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#00d9ff] mb-3">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#0066ff] mb-3">
               {lang === 'en' ? 'Join an Equb' : 'Equb ይቀላቀሉ'}
             </h1>
             <p className="text-lg text-gray-600 max-w-3xl">
@@ -139,10 +139,10 @@ export default function JoinEqubPage() {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-[#00d9ff]/10 border-l-4 border-[#00d9ff] p-4 mb-6 rounded-r-lg"
+              className="bg-[#0066ff]/10 border-l-4 border-[#0066ff] p-4 mb-6 rounded-r-lg"
             >
-              <p className="text-[#00d9ff] font-bold">✓ {lang === 'en' ? 'Success' : 'ተሳክቷል'}!</p>
-              <p className="text-[#00d9ff]/80 text-sm">{successMessage}</p>
+              <p className="text-[#0066ff] font-bold">✓ {lang === 'en' ? 'Success' : 'ተሳክቷል'}!</p>
+              <p className="text-[#0066ff]/80 text-sm">{successMessage}</p>
             </motion.div>
           )}
 
@@ -153,7 +153,7 @@ export default function JoinEqubPage() {
               placeholder={lang === 'en' ? 'Search Equbs by name...' : 'ስም ያህል ፈልግ...'}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#00d9ff] text-gray-800"
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#0066ff] text-gray-800"
             />
           </div>
 
@@ -161,7 +161,7 @@ export default function JoinEqubPage() {
           {loading && (
             <div className="flex items-center justify-center py-16">
               <div className="text-center">
-                <div className="w-12 h-12 rounded-full border-4 border-[#00d9ff]/20 border-t-[#00d9ff] animate-spin mx-auto mb-4" />
+                <div className="w-12 h-12 rounded-full border-4 border-[#0066ff]/20 border-t-[#0066ff] animate-spin mx-auto mb-4" />
                 <p className="text-gray-600 font-semibold">
                   {lang === 'en' ? 'Loading available Equbs...' : 'Equb ክለሳ በእንቅስቃሴ ላይ...'}
                 </p>
@@ -185,15 +185,15 @@ export default function JoinEqubPage() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.05 }}
-                      className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all border-t-4 border-[#001f3f] overflow-hidden"
+                      className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all border-t-4 border-[#0066ff] overflow-hidden"
                     >
                       {/* Card Header */}
-                      <div className="bg-gradient-to-r from-[#001f3f] to-[#001f3f] px-6 py-4">
-                        <h3 className="text-lg font-black text-[#00d9ff] mb-1">{equb.name || 'Unnamed Equb'}</h3>
+                      <div className="bg-gradient-to-r from-white/40 to-white/35 px-6 py-4">
+                        <h3 className="text-lg font-black text-[#0066ff] mb-1">{equb.name || 'Unnamed Equb'}</h3>
                         <span
                           className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase ${
                             equb.status === 'open'
-                              ? 'bg-[#00d9ff]/20 text-[#00d9ff]'
+                              ? 'bg-[#0066ff]/20 text-[#0066ff]'
                               : equb.status === 'active'
                               ? 'bg-[#0066ff]/20 text-[#0066ff]'
                               : 'bg-gray-200 text-gray-600'
@@ -210,7 +210,7 @@ export default function JoinEqubPage() {
                             <p className="text-xs text-gray-500 uppercase font-bold">
                               {lang === 'en' ? 'Contribution' : 'መዋጮ'}
                             </p>
-                            <p className="text-lg font-black text-[#00d9ff]">
+                            <p className="text-lg font-black text-[#0066ff]">
                               ETB {Number(equb.contribution_amount).toLocaleString()}
                             </p>
                           </div>
@@ -252,13 +252,13 @@ export default function JoinEqubPage() {
                             equb.open_slots === 0
                               ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
                               : joiningId === equb.id
-                              ? 'bg-[#0066ff]/50 text-[#00d9ff] cursor-wait'
-                              : 'bg-gradient-to-r from-[#001f3f] to-[#001f3f] text-[#00d9ff] hover:shadow-lg hover:scale-105'
+                              ? 'bg-[#0066ff]/50 text-[#0066ff] cursor-wait'
+                              : 'bg-[#0066ff] text-white hover:shadow-lg hover:scale-105'
                           }`}
                         >
                           {joiningId === equb.id ? (
                             <>
-                              <div className="w-4 h-4 rounded-full border-2 border-[#00d9ff]/50 border-t-[#00d9ff] animate-spin" />
+                              <div className="w-4 h-4 rounded-full border-2 border-[#0066ff]/50 border-t-[#0066ff] animate-spin" />
                               {lang === 'en' ? 'Joining...' : 'መቀላቀል...'}
                             </>
                           ) : equb.open_slots === 0 ? (
@@ -288,7 +288,7 @@ export default function JoinEqubPage() {
                   </p>
                   <button
                     onClick={() => setSearchTerm('')}
-                    className="text-[#00d9ff] font-bold mt-4 hover:underline"
+                    className="text-[#0066ff] font-bold mt-4 hover:underline"
                   >
                     {lang === 'en' ? 'Clear search' : 'ወጣ'}
                   </button>

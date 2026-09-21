@@ -1,11 +1,10 @@
 @import "tailwindcss";
 
 :root {
-  /* QalNet brand - Navy background with Cyan accents for contrast */
-  --background: #001f3f;
-  --foreground: #00d9ff;
-  --primary-navy: #001f3f;
-  --primary-cyan: #00d9ff;
+  /* QalNet brand - White background with Blue accents for contrast */
+  --background: #ffffff;
+  --foreground: #1f2937;
+  --primary-blue: #0066ff;
   --font-sans: var(--font-geist-sans), system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), monospace;
 }
@@ -17,42 +16,50 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Glass translucency applied to Tailwind's opaque white utility so the
+ * photo background shows through every card, modal, dropdown and chip. */
+.bg-white {
+  background-color: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
 /* ---------------------------------------------------------------------------
  * QalNet Brand System
- * A coherent 3-hue palette built from the brand identity:
- *   - Brand (cyan)        #00d9ff  → bright, energetic, primary accent
- *   - Accent (deep blue)  #0066ff  → trust, secondary action
- *   - Navy (dark)         #001f3f  → backgrounds, depth
+ * A coherent palette built from the brand identity:
+ *   - Brand (blue)         #0066ff  → bright, energetic, primary accent
+ *   - Accent (blue)        #0066ff  → trust, secondary action
+ *   - Dark (neutral)       #1f2937  → text and contrast
  * Each scale has a full range of distinct shades (50 = lightest, 950 = darkest)
  * so light/dark backgrounds, text, and status badges stay readable and clear.
  * ------------------------------------------------------------------------- */
 @theme {
-  /* ── Brand (cyan) scale: 50–400 bright tints, 500 primary cyan,
-   *    600–950 deep navy tones for text & action surfaces ─────────────── */
-  --color-brand-50: #e6fbff;
-  --color-brand-100: #ccf6ff;
-  --color-brand-200: #99edff;
-  --color-brand-300: #4de2ff;
-  --color-brand-400: #1adcff;
-  --color-brand-500: #00d9ff;
-  --color-brand-600: #00b3d6;
-  --color-brand-700: #0091b0;
-  --color-brand-800: #006f8a;
-  --color-brand-900: #004d61;
-  --color-brand-950: #00394a;
+  /* ── Brand (blue) scale: 50–300 light tints, 500 primary blue,
+   *    600–950 deep blue tones for text & action surfaces ────────────── */
+  --color-brand-50: #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-200: #bfdbfe;
+  --color-brand-300: #93c5fd;
+  --color-brand-400: #60a5fa;
+  --color-brand-500: #0066ff;
+  --color-brand-600: #0052d6;
+  --color-brand-700: #0042ad;
+  --color-brand-800: #003485;
+  --color-brand-900: #00265c;
+  --color-brand-950: #001a3d;
 
-  /* ── Accent (deep blue) scale: read as trust / secondary action ─────── */
-  --color-accent-50: #eff4ff;
-  --color-accent-100: #dbe8ff;
-  --color-accent-200: #bfd5ff;
-  --color-accent-300: #93b8ff;
-  --color-accent-400: #5f93ff;
+  /* ── Accent (blue) scale: read as trust / secondary action ─────────── */
+  --color-accent-50: #eff6ff;
+  --color-accent-100: #dbeafe;
+  --color-accent-200: #bfdbfe;
+  --color-accent-300: #93c5fd;
+  --color-accent-400: #60a5fa;
   --color-accent-500: #0066ff;
   --color-accent-600: #0052d6;
-  --color-accent-700: #0040a6;
-  --color-accent-800: #00337d;
-  --color-accent-900: #00295c;
-  --color-accent-950: #001a3a;
+  --color-accent-700: #0042ad;
+  --color-accent-800: #003485;
+  --color-accent-900: #00265c;
+  --color-accent-950: #001a3d;
 
   /* ── Emerald (success-oriented green) scale ─────────────────────────── */
   --color-emerald-50: #ecfdf5;
@@ -114,9 +121,9 @@
   --color-danger-800: #991b1b;
   --color-danger-900: #7f1d1d;
 
-  /* ── Gray scale ─────────────────────────────────────────────────────── */
-  --color-gray-50: #f9fafb;
-  --color-gray-100: #f3f4f6;
+  /* ── Gray scale (neutral, translucent light shades for photo bg) ── */
+  --color-gray-50: rgba(255, 255, 255, 0.38);
+  --color-gray-100: rgba(255, 255, 255, 0.5);
   --color-gray-200: #e5e7eb;
   --color-gray-300: #d1d5db;
   --color-gray-400: #9ca3af;
@@ -126,7 +133,75 @@
   --color-gray-800: #1f2937;
   --color-gray-900: #111827;
 
-  /* ── Slate scale ────────────────────────────────────────────────────── */
+  /* ── Slate scale (neutral gray, translucent light shades for photo bg) ── */
+  --color-slate-50: rgba(255, 255, 255, 0.38);
+  --color-slate-100: rgba(255, 255, 255, 0.5);
+  --color-slate-200: #e2e8f0;
+  --color-slate-300: #cbd5e1;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1e293b;
+  --color-slate-900: #0f172a;
+
+  /* ── Surfaces (translucent white so the photo shows through) ────────── */
+  --color-surface: rgba(255, 255, 255, 0.35);
+  --color-card: rgba(255, 255, 255, 0.42);
+
+  --radius-card: 16px;
+  --radius-control: 10px;
+
+  /* ── Admin light glass theme ────────────────────────────────────────── */
+  --color-admin-bg: rgba(248, 250, 252, 0.4);
+  --color-admin-sidebar: rgba(255, 255, 255, 0.56);
+  --color-admin-header: rgba(255, 255, 255, 0.54);
+  --color-admin-card: rgba(255, 255, 255, 0.44);
+  --color-admin-card-hover: rgba(255, 255, 255, 0.58);
+  --color-admin-elevated: rgba(248, 250, 252, 0.5);
+  --color-admin-border: rgba(226, 232, 240, 0.7);
+  --color-admin-border-subtle: rgba(226, 232, 240, 0.6);
+  --color-admin-border-strong: #0066ff;
+  --color-admin-text: #0f172a;
+  --color-admin-text-secondary: #475569;
+  --color-admin-muted: #64748b;
+  --color-admin-disabled: #94a3b8;
+
+  /* ── Admin drawer (light glass) ─────────────────────────────────────── */
+  --color-admin-nav-bg: rgba(255, 255, 255, 0.6);
+  --color-admin-nav-border: rgba(226, 232, 240, 0.7);
+  --color-admin-nav-elevated: rgba(248, 250, 252, 0.62);
+  --color-admin-nav-text: #0f172a;
+  --color-admin-nav-muted: #64748b;
+}
+
+/* Frosted-glass blur for translucent surface & admin backgrounds */
+.bg-surface,
+.bg-card,
+.bg-admin-bg,
+.bg-admin-sidebar,
+.bg-admin-header,
+.bg-admin-card,
+.bg-admin-card-hover,
+.bg-admin-elevated,
+.bg-admin-nav-bg {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ---------------------------------------------------------------------------
+ * Dashboard | light scope
+ * Applied to the member & admin dashboard shells. White surfaces with
+ * dark text and blue accents.
+ * ------------------------------------------------------------------------- */
+.dark-navy {
+  --foreground: #0f172a;
+
+  --color-surface: transparent;
+  --color-card: rgba(255, 255, 255, 0.45);
+
+  background: transparent;
+
   --color-slate-50: #f8fafc;
   --color-slate-100: #f1f5f9;
   --color-slate-200: #e2e8f0;
@@ -138,96 +213,38 @@
   --color-slate-800: #1e293b;
   --color-slate-900: #0f172a;
 
-  /* ── Surfaces ───────────────────────────────────────────────────────── */
-  --color-surface: #001f3f;
-  --color-card: #0a3456;
+  --color-accent-50: #eff6ff;
+  --color-accent-100: #dbeafe;
+  --color-accent-200: #bfdbfe;
+  --color-accent-300: #93c5fd;
+  --color-accent-400: #60a5fa;
+  --color-accent-500: #0066ff;
+  --color-accent-600: #0052d6;
+  --color-accent-700: #0042ad;
+  --color-accent-800: #003485;
+  --color-accent-900: #00265c;
 
-  --radius-card: 16px;
-  --radius-control: 10px;
-
-  /* ── Admin dark theme ────────────────────────────────────────────────── */
-  --color-admin-bg: #001f3f;
-  --color-admin-sidebar: #00284a;
-  --color-admin-header: #00284a;
-  --color-admin-card: #0a3456;
-  --color-admin-card-hover: #0a4d7a;
-  --color-admin-elevated: #0e3f66;
-  --color-admin-border: #0e4b70;
-  --color-admin-border-subtle: #1a5f8a;
+  --color-admin-bg: rgba(248, 250, 252, 0.4);
+  --color-admin-sidebar: rgba(255, 255, 255, 0.56);
+  --color-admin-header: rgba(255, 255, 255, 0.54);
+  --color-admin-card: rgba(255, 255, 255, 0.44);
+  --color-admin-card-hover: rgba(255, 255, 255, 0.58);
+  --color-admin-elevated: rgba(248, 250, 252, 0.5);
+  --color-admin-border: rgba(226, 232, 240, 0.7);
+  --color-admin-border-subtle: rgba(226, 232, 240, 0.6);
   --color-admin-border-strong: #0066ff;
-  --color-admin-text: #ffffff;
-  --color-admin-text-secondary: #9fd8e8;
-  --color-admin-muted: #8ab3cc;
-  --color-admin-disabled: #4a6a80;
-
-  /* ── Admin drawer (dark) ─────────────────────────────────────────────── */
-  --color-admin-nav-bg: #001f3f;
-  --color-admin-nav-border: #0e4b70;
-  --color-admin-nav-elevated: #0a3456;
-  --color-admin-nav-text: #ffffff;
-  --color-admin-nav-muted: #8ab3cc;
-}
-
-/* ---------------------------------------------------------------------------
- * Dark dashboard scope
- * Applied to the member & admin dashboard shells. Uses the brand navy
- * background with a subtle bright cyan glow at the top.
- * ------------------------------------------------------------------------- */
-.dark-navy {
-  --foreground: #ffffff;
-
-  --color-surface: #001f3f;
-  --color-card: #0a3456;
-
-  /* Dark background with cyan glow at top */
-  background-color: #001f3f;
-  background-image:
-    linear-gradient(180deg, #003d66 0%, #001f3f 40%),
-    linear-gradient(90deg, transparent 0%, rgba(0, 217, 255, 0.1) 50%, transparent 100%);
-  background-attachment: fixed;
-
-  --color-slate-50: #0a2a44;
-  --color-slate-100: #0e3453;
-  --color-slate-200: #143f63;
-  --color-slate-300: #1a4a70;
-  --color-slate-400: #2a5f85;
-  --color-slate-500: #8ab3cc;
-  --color-slate-600: #9fd8e8;
-  --color-slate-700: #c2ecf5;
-  --color-slate-800: #e6fbff;
-  --color-slate-900: #ffffff;
-
-  --color-accent-50: #0a2a44;
-  --color-accent-100: #143f63;
-  --color-accent-200: #1f5275;
-  --color-accent-300: #2a6590;
-  --color-accent-400: #3b7bb0;
-  --color-accent-500: #5f93ff;
-  --color-accent-600: #0066ff;
-  --color-accent-700: #85aaff;
-  --color-accent-800: #bfd5ff;
-  --color-accent-900: #dbe8ff;
-
-  --color-admin-bg: #001f3f;
-  --color-admin-sidebar: #00284a;
-  --color-admin-header: #00284a;
-  --color-admin-card: #0a3456;
-  --color-admin-card-hover: #0a4d7a;
-  --color-admin-elevated: #0e3f66;
-  --color-admin-border: #0e4b70;
-  --color-admin-border-subtle: #1a5f8a;
-  --color-admin-border-strong: #0066ff;
-  --color-admin-text: #ffffff;
-  --color-admin-text-secondary: #9fd8e8;
-  --color-admin-muted: #8ab3cc;
-  --color-admin-disabled: #4a6a80;
+  --color-admin-text: #0f172a;
+  --color-admin-text-secondary: #475569;
+  --color-admin-muted: #64748b;
+  --color-admin-disabled: #94a3b8;
 }
 
 body {
-  background-color: #001f3f;
-  background-image:
-    linear-gradient(180deg, #003d66 0%, #001f3f 40%),
-    linear-gradient(90deg, transparent 0%, rgba(0, 217, 255, 0.1) 50%, transparent 100%);
+  background-color: #f2f1ee;
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.12) 100%);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   background-attachment: fixed;
   color: var(--foreground);
   font-family: var(--font-sans);
@@ -235,10 +252,10 @@ body {
   min-height: 100vh;
 }
 
-/* Neon glow effects */
+/* Blue glow effects */
 .glow-cyan {
-  text-shadow: 0 0 10px rgba(0, 217, 255, 0.8), 0 0 20px rgba(0, 217, 255, 0.4);
-  color: #00d9ff;
+  text-shadow: 0 0 10px rgba(0, 102, 255, 0.8), 0 0 20px rgba(0, 102, 255, 0.4);
+  color: #0066ff;
 }
 
 .glow-blue {
@@ -247,8 +264,8 @@ body {
 }
 
 .glow-bright-blue {
-  text-shadow: 0 0 10px rgba(30, 127, 255, 0.8), 0 0 20px rgba(30, 127, 255, 0.4);
-  color: #1e7fff;
+  text-shadow: 0 0 10px rgba(0, 102, 255, 0.8), 0 0 20px rgba(0, 102, 255, 0.4);
+  color: #0066ff;
 }
 
 /* Custom Scrollbar for Code/Logs windows */
@@ -257,7 +274,7 @@ body {
   height: 6px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: #001f3f;
+  background: #f1f5f9;
   border-radius: 4px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
@@ -266,54 +283,61 @@ body {
   box-shadow: 0 0 10px rgba(0, 102, 255, 0.6);
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #00d9ff;
-  box-shadow: 0 0 15px rgba(0, 217, 255, 0.8);
+  background: #0052d6;
+  box-shadow: 0 0 15px rgba(0, 102, 255, 0.8);
 }
 
-/* Glassmorphism Classes — dark neon style */
+/* Glassmorphism Classes - light frosted style */
 .glass-panel {
-  background: rgba(15, 40, 71, 0.8);
-  border: 2px solid rgba(0, 217, 255, 0.4);
-  box-shadow: 0 8px 32px rgba(0, 102, 255, 0.25), inset 0 1px 0 rgba(0, 217, 255, 0.2);
+  background: rgba(255, 255, 255, 0.34);
+  border: 2px solid rgba(0, 102, 255, 0.25);
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .glass-panel-light {
-  background: rgba(26, 58, 82, 0.9);
-  border: 2px solid rgba(0, 217, 255, 0.5);
-  box-shadow: 0 4px 15px rgba(0, 217, 255, 0.3), inset 0 1px 0 rgba(0, 217, 255, 0.2);
+  background: rgba(255, 255, 255, 0.42);
+  border: 2px solid rgba(0, 102, 255, 0.3);
+  box-shadow: 0 4px 15px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
-/* Water-transparent form surface — with neon glow */
+/* Water-transparent form surface - with blue glow */
 .glass-form {
-  background: rgba(10, 31, 63, 0.6);
-  border: 2px solid rgba(0, 217, 255, 0.5);
-  box-shadow: 0 8px 32px rgba(0, 102, 255, 0.4), 0 0 30px rgba(0, 217, 255, 0.2), inset 0 1px 0 rgba(0, 217, 255, 0.3);
+  background: rgba(255, 255, 255, 0.3);
+  border: 2px solid rgba(0, 102, 255, 0.35);
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.12), 0 0 30px rgba(0, 102, 255, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
 }
 
 /* Darker overlay helper for modals */
 .glass-backdrop {
-  background: rgba(10, 15, 30, 0.6);
+  background: rgba(15, 23, 42, 0.5);
   backdrop-filter: blur(4px);
 }
 
-/* Neon glow home background */
+/* Home background (Light sky blue matching image palette) */
 .home-bg {
-  background-color: #001f3f;
-  background-image:
-    linear-gradient(180deg, #003d66 0%, #001f3f 40%),
-    linear-gradient(90deg, transparent 0%, rgba(0, 217, 255, 0.1) 50%, transparent 100%);
+  background: linear-gradient(180deg, #e8f3ff 0%, #d4e8f7 50%, #c5dff0 100%);
   background-attachment: fixed;
+  position: relative;
+  overflow: hidden;
 }
 
-/* Neon card effects */
+/* Card effects */
 .card-neon {
-  background: linear-gradient(135deg, rgba(26, 58, 82, 0.9) 0%, rgba(15, 40, 71, 0.9) 100%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.45) 0%, rgba(248, 250, 252, 0.38) 100%);
   border: 2px solid transparent;
-  border-image: linear-gradient(135deg, #0066ff, #00d9ff) 1;
+  border-image: linear-gradient(135deg, #0052d6, #0066ff) 1;
   transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   position: relative;
   overflow: hidden;
-  box-shadow: 0 0 20px rgba(0, 102, 255, 0.2);
+  box-shadow: 0 0 20px rgba(0, 102, 255, 0.12);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 
 .card-neon::before {
@@ -323,7 +347,7 @@ body {
   left: -2px;
   right: -2px;
   bottom: -2px;
-  background: linear-gradient(135deg, #0066ff, #00d9ff, #1e7fff);
+  background: linear-gradient(135deg, #0052d6, #0066ff, #60a5fa);
   border-radius: inherit;
   opacity: 0;
   z-index: -1;
@@ -332,72 +356,72 @@ body {
 
 .card-neon:hover {
   transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 20px 40px rgba(0, 102, 255, 0.5), 0 0 30px rgba(0, 217, 255, 0.4);
-  border-color: #00d9ff;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.15), 0 0 30px rgba(0, 102, 255, 0.2);
+  border-color: #0066ff;
 }
 
 .card-neon:hover::before {
-  opacity: 0.15;
+  opacity: 0.1;
 }
 
-/* Neon button glow */
+/* Button glow */
 .btn-neon {
-  background: linear-gradient(135deg, #0066ff, #00a8d6);
+  background: linear-gradient(135deg, #0066ff, #0052d6);
   color: #ffffff;
-  border: 2px solid #00d9ff;
-  box-shadow: 0 0 15px rgba(0, 102, 255, 0.5), inset 0 0 10px rgba(0, 217, 255, 0.2);
+  border: 2px solid #60a5fa;
+  box-shadow: 0 0 15px rgba(0, 102, 255, 0.3), inset 0 0 10px rgba(255, 255, 255, 0.12);
   transition: all 0.3s ease;
 }
 
 .btn-neon:hover {
-  box-shadow: 0 0 25px rgba(0, 217, 255, 0.8), 0 0 15px rgba(0, 102, 255, 0.6), inset 0 0 15px rgba(0, 217, 255, 0.3);
+  box-shadow: 0 0 25px rgba(0, 102, 255, 0.45), 0 0 15px rgba(0, 82, 214, 0.3), inset 0 0 15px rgba(255, 255, 255, 0.15);
   transform: translateY(-2px);
-  border-color: #00d9ff;
+  border-color: #93c5fd;
 }
 
 .btn-neon:active {
   transform: translateY(0);
 }
 
-/* Neon input focus */
+/* Input focus */
 .input-neon:focus {
-  border-color: #00d9ff;
-  box-shadow: 0 0 20px rgba(0, 217, 255, 0.6), 0 0 10px rgba(0, 102, 255, 0.4);
+  border-color: #0066ff;
+  box-shadow: 0 0 20px rgba(0, 102, 255, 0.3), 0 0 10px rgba(0, 82, 214, 0.15);
   outline: none;
 }
 
-/* Neon text effect */
+/* Text effects */
 .text-neon-cyan {
-  color: #00d9ff;
-  text-shadow: 0 0 10px rgba(0, 217, 255, 0.8);
+  color: #0066ff;
+  text-shadow: 0 0 10px rgba(0, 102, 255, 0.5);
 }
 
 .text-neon-blue {
   color: #0066ff;
-  text-shadow: 0 0 10px rgba(0, 102, 255, 0.8);
+  text-shadow: 0 0 10px rgba(0, 102, 255, 0.5);
 }
 
-/* Neon border glow */
+/* Border glow */
 .border-neon {
-  border-color: #00d9ff;
-  box-shadow: 0 0 10px rgba(0, 217, 255, 0.5), inset 0 0 10px rgba(0, 217, 255, 0.1);
+  border-color: #0066ff;
+  box-shadow: 0 0 10px rgba(0, 102, 255, 0.35), inset 0 0 10px rgba(0, 102, 255, 0.08);
 }
 
-/* Phone Bezel Shadow - Neon style */
+/* Phone Bezel Shadow */
 .phone-shadow {
-  box-shadow: 0 25px 50px -12px rgba(0, 102, 255, 0.6), 0 0 40px 2px rgba(0, 217, 255, 0.3), 0 0 60px 4px rgba(30, 127, 255, 0.2);
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.35), 0 0 40px 2px rgba(0, 102, 255, 0.15), 0 0 60px 4px rgba(0, 102, 255, 0.1);
 }
 
-/* Neon pulse animation */
+/* Pulse animation */
 @keyframes pulse-neon {
   0% {
-    box-shadow: 0 0 0 0 rgba(0, 217, 255, 0.8), 0 0 0 0 rgba(0, 102, 255, 0.6);
+    box-shadow: 0 0 0 0 rgba(0, 102, 255, 0.6), 0 0 0 0 rgba(0, 102, 255, 0.4);
   }
   50% {
-    box-shadow: 0 0 0 10px rgba(0, 217, 255, 0), 0 0 0 20px rgba(0, 102, 255, 0);
+    box-shadow: 0 0 0 10px rgba(0, 102, 255, 0), 0 0 0 20px rgba(0, 102, 255, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(0, 217, 255, 0), 0 0 0 0 rgba(0, 102, 255, 0);
+    box-shadow: 0 0 0 0 rgba(0, 102, 255, 0), 0 0 0 0 rgba(0, 102, 255, 0);
   }
 }
 
@@ -405,7 +429,7 @@ body {
   animation: pulse-neon 2s infinite;
 }
 
-/* Vibrant entrance animation - neon style */
+/* Vibrant entrance animation */
 @keyframes neon-bounce-in {
   0% {
     opacity: 0;
@@ -424,16 +448,16 @@ body {
   animation: neon-bounce-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
-/* Neon glow wave effect */
+/* Glow wave effect */
 @keyframes neon-glow-wave {
   0% {
-    box-shadow: 0 0 5px rgba(0, 102, 255, 0.5);
+    box-shadow: 0 0 5px rgba(0, 102, 255, 0.3);
   }
   50% {
-    box-shadow: 0 0 20px rgba(0, 217, 255, 0.8), 0 0 10px rgba(0, 102, 255, 0.6);
+    box-shadow: 0 0 20px rgba(0, 102, 255, 0.5), 0 0 10px rgba(0, 82, 214, 0.35);
   }
   100% {
-    box-shadow: 0 0 5px rgba(0, 102, 255, 0.5);
+    box-shadow: 0 0 5px rgba(0, 102, 255, 0.3);
   }
 }
 
@@ -460,9 +484,9 @@ body {
 /* USSD Screen styling */
 .ussd-screen {
   font-family: 'Courier New', Courier, monospace;
-  background-color: #001f3f;
-  color: #00d9ff;
-  text-shadow: 0.5px 0.5px 2px rgba(0, 217, 255, 0.5);
-  border: 2px solid #0e4b70;
-  box-shadow: inset 0 0 10px rgba(0, 102, 255, 0.3);
+  background-color: #ffffff;
+  color: #0066ff;
+  text-shadow: 0.5px 0.5px 2px rgba(0, 102, 255, 0.25);
+  border: 2px solid #cbd5e1;
+  box-shadow: inset 0 0 10px rgba(0, 102, 255, 0.15);
 }

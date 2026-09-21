@@ -111,7 +111,7 @@ export default function MemberDashboard({
       animate="visible"
     >
       {/* Header */}
-      <motion.div variants={itemVariants} className="bg-gradient-to-r from-[#001f3f] to-[#001f3f] rounded-2xl p-6 text-[#00d9ff]">
+      <motion.div variants={itemVariants} className="bg-gradient-to-r from-[#0066ff] to-[#0052d6] rounded-2xl p-6 text-white">
         <div className="flex justify-between items-start mb-4">
           <div>
             <h2 className="text-2xl font-black mb-2">💼 Welcome Back!</h2>
@@ -121,7 +121,7 @@ export default function MemberDashboard({
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={onSignOut}
-            className="px-4 py-2 bg-white text-[#001f3f] font-bold rounded-full hover:bg-gray-100 transition-all text-sm"
+            className="px-4 py-2 bg-[#0066ff] text-white font-bold rounded-full hover:bg-gray-100 transition-all text-sm"
           >
             🚪 Sign Out
           </motion.button>
@@ -131,7 +131,7 @@ export default function MemberDashboard({
       {/* Wallet Card */}
       <motion.div
         variants={itemVariants}
-        className="bg-gradient-to-br from-[#001f3f] to-[#001f3f] rounded-2xl p-6 text-[#00d9ff] shadow-lg"
+        className="bg-gradient-to-br from-[#0066ff] to-[#0052d6] rounded-2xl p-6 text-white shadow-lg"
       >
         <div className="mb-4">
           <p className="text-sm opacity-90 font-bold">Available Balance</p>
@@ -144,14 +144,14 @@ export default function MemberDashboard({
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={onPaymentClick}
-            className="flex-1 px-4 py-3 bg-[#001f3f] text-[#00d9ff] font-black rounded-full hover:shadow-lg transition-all"
+            className="flex-1 px-4 py-3 bg-[#0066ff] text-white font-black rounded-full hover:shadow-lg transition-all"
           >
             💳 Make Payment
           </motion.button>
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="flex-1 px-4 py-3 bg-white text-[#001f3f] font-bold rounded-full hover:bg-gray-100 transition-all"
+            className="flex-1 px-4 py-3 bg-[#0066ff] text-white font-bold rounded-full hover:bg-gray-100 transition-all"
           >
             📊 Withdraw
           </motion.button>
@@ -160,7 +160,7 @@ export default function MemberDashboard({
 
       {/* Active Equbs Section */}
       <motion.div variants={itemVariants}>
-        <h3 className="font-black text-[#00d9ff] text-lg mb-4 flex items-center gap-2">
+        <h3 className="font-black text-[#0066ff] text-lg mb-4 flex items-center gap-2">
           👥 Active Equbs ({activeEqubs.length})
         </h3>
         {loading ? (
@@ -174,7 +174,7 @@ export default function MemberDashboard({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.1 }}
                 onClick={() => router.push(`/equbs/${equb.id}`)}
-                className="bg-white border-2 border-[#001f3f] rounded-2xl p-4 hover:shadow-lg transition-all cursor-pointer"
+                className="bg-white border-2 border-[#0066ff] rounded-2xl p-4 hover:shadow-lg transition-all cursor-pointer"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="text-3xl">{equb.icon}</div>
@@ -189,7 +189,7 @@ export default function MemberDashboard({
                   </span>
                 </div>
 
-                <h4 className="font-black text-[#00d9ff] mb-2 text-sm">{equb.name}</h4>
+                <h4 className="font-black text-[#0066ff] mb-2 text-sm">{equb.name}</h4>
 
                 <div className="space-y-2 text-xs text-gray-600 mb-4">
                   <div className="flex justify-between">
@@ -198,19 +198,19 @@ export default function MemberDashboard({
                   </div>
                   <div className="flex justify-between">
                     <span>Contribution:</span>
-                    <span className="font-bold text-[#00d9ff]">
+                    <span className="font-bold text-[#0066ff]">
                       ETB {equb.monthlyContribution}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Round:</span>
-                    <span className="font-bold text-[#00d9ff]">{equb.currentRound} / {equb.totalRounds}</span>
+                    <span className="font-bold text-[#0066ff]">{equb.currentRound} / {equb.totalRounds}</span>
                   </div>
                 </div>
 
                 <div className="mb-4">
                   <p className="text-xs text-gray-500 mb-1">Total Pot</p>
-                  <p className="font-black text-[#00d9ff] text-sm">
+                  <p className="font-black text-[#0066ff] text-sm">
                     ETB {equb.totalPot.toLocaleString()}
                   </p>
                 </div>
@@ -219,7 +219,7 @@ export default function MemberDashboard({
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => router.push(`/equbs/${equb.id}`)}
-                  className="w-full py-2 bg-gradient-to-r from-[#001f3f] to-[#001f3f] text-[#00d9ff] font-bold rounded-lg text-sm hover:shadow-md transition-all"
+                  className="w-full py-2 bg-[#0066ff] text-white font-bold rounded-lg text-sm hover:shadow-md transition-all"
                 >
                   📋 View Details
                 </motion.button>
@@ -231,9 +231,9 @@ export default function MemberDashboard({
 
       {/* Quick Stats */}
       <motion.div variants={itemVariants}>
-        <h3 className="font-black text-[#00d9ff] text-lg mb-4">📊 Quick Stats</h3>
+        <h3 className="font-black text-[#0066ff] text-lg mb-4">📊 Quick Stats</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-gradient-to-br from-brand-50 to-brand-100 rounded-2xl p-4 border-2 border-brand-200">
+          <div className="bg-gradient-to-br from-brand-50/70 to-brand-100/60 rounded-2xl p-4 border-2 border-brand-200">
             <p className="text-xs text-brand-600 font-bold mb-2">Total Active</p>
             <h4 className="text-3xl font-black text-brand-700">{activeEqubs.length}</h4>
             <p className="text-xs text-brand-600 mt-2">Equb Groups</p>
@@ -245,10 +245,10 @@ export default function MemberDashboard({
             </h4>
             <p className="text-xs text-accent-600 mt-2">Total Contribution</p>
           </div>
-          <div className="bg-gradient-to-br from-teal-50 to-teal-100 rounded-2xl p-4 border-2 border-teal-200">
-            <p className="text-xs text-teal-600 font-bold mb-2">Received Payouts</p>
-            <h4 className="text-3xl font-black text-teal-700">{pastPayouts.length}</h4>
-            <p className="text-xs text-teal-600 mt-2">Successfully</p>
+          <div className="bg-gradient-to-br from-brand-50/70 to-brand-100/60 rounded-2xl p-4 border-2 border-brand-200">
+            <p className="text-xs text-brand-600 font-bold mb-2">Received Payouts</p>
+            <h4 className="text-3xl font-black text-brand-700">{pastPayouts.length}</h4>
+            <p className="text-xs text-brand-600 mt-2">Successfully</p>
           </div>
         </div>
       </motion.div>
@@ -256,7 +256,7 @@ export default function MemberDashboard({
       {/* Past Payouts */}
       {pastPayouts.length > 0 && (
         <motion.div variants={itemVariants}>
-          <h3 className="font-black text-[#00d9ff] text-lg mb-4">✓ Past Payouts</h3>
+          <h3 className="font-black text-[#0066ff] text-lg mb-4">✓ Past Payouts</h3>
           <div className="space-y-2">
             {pastPayouts.map((payout) => (
               <motion.div
@@ -266,7 +266,7 @@ export default function MemberDashboard({
               >
                 <div className="flex justify-between items-start">
                   <div>
-                    <p className="font-black text-[#00d9ff]">{payout.equbName}</p>
+                    <p className="font-black text-[#0066ff]">{payout.equbName}</p>
                     <p className="text-xs text-gray-500">
                       {new Date(payout.date).toLocaleDateString('en-US', {
                         year: 'numeric',
@@ -292,7 +292,7 @@ export default function MemberDashboard({
           className="text-center py-12 bg-gray-50 rounded-2xl"
         >
           <p className="text-4xl mb-3">🌟</p>
-          <h3 className="font-black text-[#00d9ff] mb-2">No Active Equbs Yet</h3>
+          <h3 className="font-black text-[#0066ff] mb-2">No Active Equbs Yet</h3>
           <p className="text-sm text-gray-600 mb-4">
             Join your first Equb group to start saving with your community
           </p>

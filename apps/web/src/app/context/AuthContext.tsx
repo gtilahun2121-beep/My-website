@@ -215,6 +215,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
 
+        // Never leave the app stuck in a loading state: a stalled /auth/refresh
+        // call (slow network, backend down) must not keep every Sign In/Create-
+        // account button showing a permanent spinner. Mark the restore as done
+        // up front, then attempt the silent refresh in the background.
+        setIsLoading(false);
+
         const payload = decodeJwtPayload(storedToken);
         const now = Math.floor(Date.now() / 1000);
         const tokenValid = !!payload && !!payload.exp && payload.exp > now;
@@ -234,17 +240,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (response.refresh_token) {
               localStorage.setItem(STORAGE.REFRESH_TOKEN, response.refresh_token);
             }
-            // Sync profile in background — don't block isLoading on the network call
+            // Sync profile in background — don't block the UI on the network call
             void syncProfile();
-            setIsLoading(false);
             return;
           }
 
           if (tokenValid) {
             setUser(JSON.parse(storedUser) as User);
-            // Sync profile in background — don't block isLoading on the network call
+            // Sync profile in background — don't block the UI on the network call
             void syncProfile();
-            setIsLoading(false);
             return;
           }
         } catch {
@@ -255,7 +259,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.removeItem(STORAGE.ACCESS_TOKEN);
         localStorage.removeItem(STORAGE.REFRESH_TOKEN);
         localStorage.removeItem(STORAGE.USER);
-        setIsLoading(false);
       })();
     });
   }, [syncProfile]);

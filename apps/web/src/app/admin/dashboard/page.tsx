@@ -135,6 +135,7 @@ export default function AdminDashboardPage() {
   const [approvals, setApprovals] = useState<PendingApprovalRow[]>([]);
   const [approvalsLoading, setApprovalsLoading] = useState(true);
   const [exportOpen, setExportOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
 
@@ -350,27 +351,28 @@ export default function AdminDashboardPage() {
   return (
     <>
       {/* ── Greeting + date + export ─────────────────────────────────────── */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
         <div>
-          <h2 className="text-2xl font-black text-admin-text">
+          <h2 className="text-xl md:text-2xl font-black text-admin-text">
             {greeting()}, Admin 👋
           </h2>
-          <p className="mt-1 text-sm text-admin-muted">
+          <p className="mt-1 text-xs md:text-sm text-admin-muted">
             Here&apos;s what&apos;s happening with your QalNet platform today.
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-lg bg-admin-card border border-admin-border text-sm font-semibold text-admin-text-secondary">
-            <svg viewBox="0 0 24 24" className="w-4 h-4 text-brand-600" {...stroke}>
+        <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2">
+          <div className="inline-flex items-center gap-2 px-2.5 md:px-3.5 py-2 md:py-2.5 rounded-lg bg-admin-card border border-admin-border text-xs md:text-sm font-semibold text-admin-text-secondary overflow-hidden">
+            <svg viewBox="0 0 24 24" className="w-3.5 md:w-4 h-3.5 md:h-4 text-brand-600 shrink-0" {...stroke}>
               <rect x="3" y="5" width="18" height="16" rx="2" />
               <path d="M8 3v4m8-4v4M3 10h18" />
             </svg>
-            {new Date().toLocaleDateString('en-GB', {
-              weekday: 'long',
-              day: '2-digit',
-              month: 'long',
-              year: 'numeric',
-            })}
+            <span className="truncate text-xs">
+              {new Date().toLocaleDateString('en-GB', {
+                weekday: 'short',
+                day: '2-digit',
+                month: 'short',
+              })}
+            </span>
           </div>
 
           <div className="relative" ref={exportRef}>
@@ -379,20 +381,21 @@ export default function AdminDashboardPage() {
               onClick={() => setExportOpen((v) => !v)}
               aria-haspopup="menu"
               aria-expanded={exportOpen}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-brand-600 text-[#00d9ff] text-sm font-bold hover:bg-brand-700 transition-colors shadow-sm"
+              className="inline-flex items-center justify-center md:justify-start gap-1.5 md:gap-2 px-3 md:px-4 py-2 md:py-2.5 rounded-lg bg-brand-600 text-white text-xs md:text-sm font-bold hover:bg-brand-700 transition-colors shadow-sm w-full md:w-auto"
             >
-              <svg viewBox="0 0 24 24" className="w-4 h-4" {...stroke}>
+              <svg viewBox="0 0 24 24" className="w-4 h-4 shrink-0" {...stroke}>
                 <path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
               </svg>
-              Export Report
-              <svg viewBox="0 0 24 24" className={`w-3.5 h-3.5 transition-transform ${exportOpen ? 'rotate-180' : ''}`} {...stroke}>
+              <span className="hidden sm:inline">Export Report</span>
+              <span className="sm:hidden">Export</span>
+              <svg viewBox="0 0 24 24" className={`w-3 md:w-3.5 h-3 md:h-3.5 transition-transform shrink-0 ${exportOpen ? 'rotate-180' : ''}`} {...stroke}>
                 <path d="m6 9 6 6 6-6" />
               </svg>
             </button>
             {exportOpen && (
               <div
                 role="menu"
-                className="absolute right-0 top-full mt-2 w-44 rounded-lg bg-admin-card border border-admin-border shadow-xl z-50 overflow-hidden py-1"
+                className="fixed sm:absolute right-0 top-full mt-0 sm:mt-2 w-full sm:w-44 rounded-none sm:rounded-lg bg-admin-card border-t border-admin-border sm:border shadow-xl z-50 overflow-hidden py-1"
               >
                 <button
                   type="button"
@@ -501,22 +504,22 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* ── Platform Activity ───────────────────────────────────────────── */}
-      <section className={`${cardCls} p-5`}>
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+      <section className={`${cardCls} p-4 md:p-5`}>
+        <div className="flex flex-col gap-3 md:gap-4 mb-4">
             <div>
               <h3 className={cardTitleCls}>Platform Activity</h3>
               <p className={cardSubtitleCls}>Registrations, payments, equbs &amp; joins · {rangeLabel}</p>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="inline-flex items-center rounded-lg border border-admin-border bg-admin-elevated p-0.5">
+            <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2">
+              <div className="inline-flex items-center rounded-lg border border-admin-border bg-admin-elevated p-0.5 w-full sm:w-auto overflow-x-auto">
                 {ranges.map((r) => (
                   <button
                     key={r.key}
                     type="button"
                     onClick={() => setRange(r.key)}
-                    className={`px-3 py-1 rounded-md text-xs font-bold transition-colors ${
+                    className={`px-2.5 md:px-3 py-1 rounded-md text-xs font-bold transition-colors whitespace-nowrap ${
                       range === r.key
-                        ? 'bg-brand-600 text-[#00d9ff] shadow'
+                        ? 'bg-brand-600 text-white shadow'
                         : 'text-admin-muted hover:text-admin-text'
                     }`}
                   >
@@ -525,16 +528,16 @@ export default function AdminDashboardPage() {
                 ))}
               </div>
               {range === 'custom' && (
-                <div className="grid w-full sm:w-auto grid-cols-[1fr_auto_1fr] items-center gap-1.5 rounded-lg border border-admin-border bg-admin-elevated p-1">
+                <div className="grid w-full sm:w-auto grid-cols-[1fr_auto_1fr] items-center gap-1 md:gap-1.5 rounded-lg border border-admin-border bg-admin-elevated p-1">
                   <input
                     type="date"
                     aria-label="Start date"
                     value={startDate}
                     max={endDate || todayIso()}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full min-w-0 rounded-md border border-admin-border bg-admin-card px-2 py-1 text-xs font-medium text-admin-text focus:outline-none focus:border-brand-500"
+                    className="w-full min-w-0 rounded-md border border-admin-border bg-admin-card px-1.5 md:px-2 py-1 text-xs font-medium text-admin-text focus:outline-none focus:border-brand-500"
                   />
-                  <span className="text-xs text-admin-muted">→</span>
+                  <span className="text-xs text-admin-muted text-center">→</span>
                   <input
                     type="date"
                     aria-label="End date"
@@ -542,7 +545,7 @@ export default function AdminDashboardPage() {
                     min={startDate || undefined}
                     max={todayIso()}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="w-full min-w-0 rounded-md border border-admin-border bg-admin-card px-2 py-1 text-xs font-medium text-admin-text focus:outline-none focus:border-brand-500"
+                    className="w-full min-w-0 rounded-md border border-admin-border bg-admin-card px-1.5 md:px-2 py-1 text-xs font-medium text-admin-text focus:outline-none focus:border-brand-500"
                   />
                 </div>
               )}
@@ -557,7 +560,7 @@ export default function AdminDashboardPage() {
               valueFormatter={(v) => String(v)}
             />
           )}
-          <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3 border-t border-admin-border pt-4">
+          <div className="mt-4 md:mt-5 grid grid-cols-2 sm:grid-cols-4 gap-2 md:gap-3 border-t border-admin-border pt-3 md:pt-4">
             {[
               { label: 'Today', value: activitySummary.today },
               { label: 'This Week', value: activitySummary.week },
@@ -565,7 +568,7 @@ export default function AdminDashboardPage() {
               { label: 'All Time', value: activitySummary.allTime },
             ].map((m) => (
               <div key={m.label} className="text-center">
-                <p className="text-xl font-black text-admin-text">{m.value}</p>
+                <p className="text-lg md:text-xl font-black text-admin-text">{m.value}</p>
                 <p className="text-xs font-semibold text-admin-muted mt-0.5">{m.label}</p>
               </div>
             ))}
@@ -576,7 +579,7 @@ export default function AdminDashboardPage() {
       <RecentPendingApprovals loading={approvalsLoading} rows={approvals} adminInitials={adminInitials} />
 
       {/* ── System overview | transactions ───────────────────────────────── */}
-      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] gap-4 md:gap-6 items-start">
         <SystemOverviewCard
           loading={loading}
           healthy={!!stats}
@@ -622,12 +625,12 @@ function RecentPendingApprovals({
 
   return (
     <section className={`${cardCls} overflow-hidden`}>
-      <div className="flex items-center justify-between px-5 py-4 border-b border-admin-border">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-4 px-4 md:px-5 py-3 md:py-4 border-b border-admin-border">
         <div>
           <h3 className={cardTitleCls}>Recent Pending Approvals</h3>
           <p className={cardSubtitleCls}>Requests awaiting administrative review</p>
         </div>
-        <Link href="/admin/approvals" className="text-xs font-bold text-brand-600 hover:text-brand-700">
+        <Link href="/admin/approvals" className="text-xs font-bold text-brand-600 hover:text-brand-700 inline-block">
           View all →
         </Link>
       </div>
@@ -635,39 +638,39 @@ function RecentPendingApprovals({
       {loading ? (
         <div className="divide-y divide-admin-border-subtle">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-4 px-5 py-4">
-              <div className="w-10 h-10 rounded-full bg-admin-elevated animate-pulse" />
-              <div className="flex-1 space-y-2">
+            <div key={i} className="flex items-center gap-3 md:gap-4 px-4 md:px-5 py-3 md:py-4">
+              <div className="w-10 h-10 rounded-full bg-admin-elevated animate-pulse shrink-0" />
+              <div className="flex-1 space-y-2 min-w-0">
                 <div className="h-4 w-48 rounded bg-admin-elevated animate-pulse" />
                 <div className="h-3 w-64 rounded bg-admin-elevated animate-pulse" />
               </div>
-              <div className="h-6 w-16 rounded bg-admin-elevated animate-pulse" />
+              <div className="h-6 w-16 rounded bg-admin-elevated animate-pulse shrink-0 hidden sm:block" />
             </div>
           ))}
         </div>
       ) : rows.length === 0 ? (
-        <p className="px-5 py-12 text-center text-sm text-admin-muted">No pending approvals — all caught up.</p>
+        <p className="px-4 md:px-5 py-8 md:py-12 text-center text-sm text-admin-muted">No pending approvals — all caught up.</p>
       ) : (
         <ul className="divide-y divide-admin-border-subtle">
           {rows.slice(0, 6).map((row, i) => (
-            <li key={`${row.type}-${row.name}-${i}`} className="flex items-center gap-4 px-5 py-3.5 hover:bg-admin-card-hover transition-colors">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${row.iconClass}`}>
-                <svg viewBox="0 0 24 24" className="w-5 h-5" {...stroke}>
+            <li key={`${row.type}-${row.name}-${i}`} className="flex items-center gap-3 md:gap-4 px-4 md:px-5 py-3 md:py-3.5 hover:bg-admin-card-hover transition-colors">
+              <div className={`w-9 md:w-10 h-9 md:h-10 rounded-full flex items-center justify-center shrink-0 ${row.iconClass}`}>
+                <svg viewBox="0 0 24 24" className="w-4.5 md:w-5 h-4.5 md:h-5" {...stroke}>
                   <path d={row.icon} />
                 </svg>
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-bold text-admin-text">{row.type}</p>
+                <p className="text-xs md:text-sm font-bold text-admin-text">{row.type}</p>
                 <p className="text-xs text-admin-muted mt-0.5 truncate">{row.name}</p>
               </div>
-              <span className="hidden sm:inline-flex px-2.5 py-1 rounded-full bg-admin-elevated text-[11px] font-bold text-admin-muted shrink-0">
+              <span className="hidden sm:inline-flex px-2 md:px-2.5 py-1 rounded-full bg-admin-elevated text-[10px] md:text-[11px] font-bold text-admin-muted shrink-0">
                 {row.category}
               </span>
               <div className="hidden md:block text-right shrink-0">
                 <p className="text-xs font-semibold text-admin-text-secondary">{formatShortDate(row.date)}</p>
                 <p className="text-[11px] text-admin-muted">{formatTime(row.date)}</p>
               </div>
-              <div className="w-8 h-8 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center text-[11px] font-black shrink-0">
+              <div className="w-7 md:w-8 h-7 md:h-8 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center text-[10px] md:text-[11px] font-black shrink-0">
                 {adminInitials}
               </div>
             </li>
@@ -739,15 +742,15 @@ function SystemOverviewCard({
   ];
 
   return (
-    <section className={`${cardCls} p-5`}>
-      <div className="flex items-center justify-between">
+    <section className={`${cardCls} p-4 md:p-5`}>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-4">
         <div>
           <h3 className={cardTitleCls}>System Overview</h3>
           <p className={cardSubtitleCls}>Key system metrics at a glance</p>
         </div>
         {lastUpdated && (
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-admin-muted">
-            <svg viewBox="0 0 24 24" className="w-3 h-3" {...stroke}>
+          <span className="inline-flex items-center gap-1 text-[10px] md:text-[11px] font-bold text-admin-muted whitespace-nowrap">
+            <svg viewBox="0 0 24 24" className="w-3 h-3 shrink-0" {...stroke}>
               <path d="M21 12a9 9 0 1 1-2.6-6.4M21 3v6h-6" />
             </svg>
             Updated {timeAgo(lastUpdated)}
@@ -756,25 +759,25 @@ function SystemOverviewCard({
       </div>
 
       {loading ? (
-        <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="mt-4 md:mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="h-20 rounded-xl bg-admin-elevated animate-pulse" />
           ))}
         </div>
       ) : (
-        <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="mt-4 md:mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           {metrics.map((m) => (
-            <div key={m.label} className="rounded-xl border border-admin-border p-4">
+            <div key={m.label} className="rounded-xl border border-admin-border p-3 md:p-4">
               <div className="flex items-center gap-2">
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${m.iconClass}`}>
-                  <svg viewBox="0 0 24 24" className="w-4 h-4" {...stroke}>
+                <div className={`w-7 md:w-8 h-7 md:h-8 rounded-lg flex items-center justify-center shrink-0 ${m.iconClass}`}>
+                  <svg viewBox="0 0 24 24" className="w-3.5 md:w-4 h-3.5 md:h-4" {...stroke}>
                     <path d={m.icon} />
                   </svg>
                 </div>
                 <p className="text-xs font-semibold text-admin-muted">{m.label}</p>
               </div>
-              <p className={`mt-3 text-xl font-black ${m.valueTone}`}>{m.value}</p>
-              <p className="text-[11px] font-semibold text-admin-muted mt-0.5">{m.sub}</p>
+              <p className={`mt-2 md:mt-3 text-lg md:text-xl font-black ${m.valueTone}`}>{m.value}</p>
+              <p className="text-[10px] md:text-[11px] font-semibold text-admin-muted mt-0.5">{m.sub}</p>
             </div>
           ))}
         </div>
@@ -800,12 +803,12 @@ function RecentTransactionsFeed({
 
   return (
     <section className={`${cardCls} overflow-hidden`}>
-      <div className="flex items-center justify-between px-5 py-4 border-b border-admin-border">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-4 px-4 md:px-5 py-3 md:py-4 border-b border-admin-border">
         <div>
           <h3 className={cardTitleCls}>Recent Transactions</h3>
           <p className={cardSubtitleCls}>Latest payments across all equbs</p>
         </div>
-        <Link href="/admin/finance" className="text-xs font-bold text-brand-600 hover:text-brand-700">
+        <Link href="/admin/finance" className="text-xs font-bold text-brand-600 hover:text-brand-700 inline-block">
           View all →
         </Link>
       </div>
@@ -813,38 +816,38 @@ function RecentTransactionsFeed({
       {loading && !transactions.length ? (
         <div className="divide-y divide-admin-border-subtle">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-4 px-5 py-4">
-              <div className="w-10 h-10 rounded-full bg-admin-elevated animate-pulse" />
-              <div className="flex-1 space-y-2">
+            <div key={i} className="flex items-center gap-3 md:gap-4 px-4 md:px-5 py-3 md:py-4">
+              <div className="w-10 h-10 rounded-full bg-admin-elevated animate-pulse shrink-0" />
+              <div className="flex-1 space-y-2 min-w-0">
                 <div className="h-4 w-40 rounded bg-admin-elevated animate-pulse" />
                 <div className="h-3 w-56 rounded bg-admin-elevated animate-pulse" />
               </div>
-              <div className="h-4 w-16 rounded bg-admin-elevated animate-pulse" />
+              <div className="h-4 w-16 rounded bg-admin-elevated animate-pulse shrink-0 hidden sm:block" />
             </div>
           ))}
         </div>
       ) : transactions.length === 0 ? (
-        <p className="px-5 py-12 text-center text-sm text-admin-muted">No transactions yet.</p>
+        <p className="px-4 md:px-5 py-8 md:py-12 text-center text-sm text-admin-muted">No transactions yet.</p>
       ) : (
         <ul className="divide-y divide-admin-border-subtle">
           {transactions.slice(0, 6).map((t) => (
-            <li key={t.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-admin-card-hover transition-colors">
-              <div className="w-10 h-10 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center shrink-0">
-                <svg viewBox="0 0 24 24" className="w-5 h-5" {...stroke}>
+            <li key={t.id} className="flex items-center gap-3 md:gap-4 px-4 md:px-5 py-3 md:py-3.5 hover:bg-admin-card-hover transition-colors">
+              <div className="w-9 md:w-10 h-9 md:h-10 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center shrink-0">
+                <svg viewBox="0 0 24 24" className="w-4.5 md:w-5 h-4.5 md:h-5" {...stroke}>
                   <path d="M3 10h18m0 0-4-4m4 4-4 4" />
                 </svg>
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-bold text-admin-text">Payment Received</p>
+                <p className="text-xs md:text-sm font-bold text-admin-text">Payment Received</p>
                 <p className="text-xs text-admin-muted mt-0.5 truncate">
                   From: {t.user_first_name} {t.user_last_name} · {t.equb_name} · round {t.round_number}
                 </p>
-                <p className="text-[11px] text-admin-muted mt-0.5">
+                <p className="text-[10px] md:text-[11px] text-admin-muted mt-0.5">
                   {formatShortDate(t.created_at)} · {formatTime(t.created_at)}
                 </p>
               </div>
               <div className="text-right shrink-0">
-                <p className="text-sm font-black text-success-600">+ETB {money(t.amount)}</p>
+                <p className="text-xs md:text-sm font-black text-success-600">+ETB {money(t.amount)}</p>
                 <StatusBadge tone={STATUS_TONE[t.status] ?? 'neutral'} variant="dark">
                   {statusLabel(t.status)}
                 </StatusBadge>
@@ -867,39 +870,39 @@ function TopEqubsCard({ loading, equbs }: { loading: boolean; equbs: AdminTopEqu
   const cardSubtitleCls = 'text-xs text-admin-muted';
 
   return (
-    <section className={`${cardCls} p-5`}>
-      <div className="flex items-center justify-between">
+    <section className={`${cardCls} p-4 md:p-5`}>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-4">
         <div>
           <h3 className={cardTitleCls}>Top Equbs</h3>
           <p className={cardSubtitleCls}>Largest circles by membership</p>
         </div>
-        <Link href="/admin/approvals" className="text-xs font-bold text-brand-600 hover:text-brand-700">
+        <Link href="/admin/approvals" className="text-xs font-bold text-brand-600 hover:text-brand-700 inline-block">
           View all
         </Link>
       </div>
 
       {loading && !equbs.length ? (
-        <div className="space-y-3 mt-4">
+        <div className="space-y-2.5 md:space-y-3 mt-3 md:mt-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="h-12 rounded-lg bg-admin-elevated animate-pulse" />
           ))}
         </div>
       ) : equbs.length === 0 ? (
-        <p className="py-8 text-center text-sm text-admin-muted">No equbs yet.</p>
+        <p className="py-6 md:py-8 text-center text-sm text-admin-muted">No equbs yet.</p>
       ) : (
-        <ul className="space-y-3 mt-4">
+        <ul className="space-y-2.5 md:space-y-3 mt-3 md:mt-4">
           {equbs.map((e) => (
             <li key={e.id}>
               <Link
                 href={`/equbs/${e.id}`}
-                className="flex items-center gap-3 p-3 rounded-xl border border-admin-border hover:border-brand-500/40 hover:bg-admin-elevated transition-colors"
+                className="flex items-center gap-2.5 md:gap-3 p-2.5 md:p-3 rounded-xl border border-admin-border hover:border-brand-500/40 hover:bg-admin-elevated transition-colors"
               >
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-600 to-brand-800 text-[#00d9ff] flex items-center justify-center font-black shrink-0">
+                <div className="w-9 md:w-10 h-9 md:h-10 rounded-xl bg-gradient-to-br from-brand-600 to-[#0052d6] text-white flex items-center justify-center font-black text-sm md:text-base shrink-0">
                   {e.name?.[0]?.toUpperCase() ?? 'E'}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="font-bold text-admin-text truncate">{e.name}</p>
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <p className="font-bold text-admin-text text-xs md:text-sm truncate">{e.name}</p>
                     <StatusBadge tone={EQUB_TONE[e.status] ?? 'neutral'} variant="dark">
                       {statusLabel(e.status)}
                     </StatusBadge>

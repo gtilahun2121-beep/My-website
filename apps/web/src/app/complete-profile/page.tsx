@@ -87,7 +87,7 @@ export default function CompleteProfilePage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col">
+    <main className="min-h-screen bg-gradient-to-b from-gray-50 to-slate-100 flex flex-col">
       <Header
         lang={lang}
         onLanguageChange={setLang}
@@ -95,8 +95,8 @@ export default function CompleteProfilePage() {
       />
 
       <div className="flex-grow py-12 px-4">
-        <div className="max-w-md mx-auto bg-white rounded-2xl p-8 border-t-4 border-[#001f3f]">
-          <h1 className="text-2xl font-bold text-[#00d9ff] mb-2">
+        <div className="max-w-md mx-auto bg-white rounded-2xl p-8 border-t-4 border-[#0066ff]">
+          <h1 className="text-2xl font-bold text-[#0066ff] mb-2">
             {lang === 'en' ? 'Complete Your Profile' : lang === 'am' ? 'የእርስዎን መገለጫ ያጠናቅቁ' : 'Madaallii Kee Guuti'}
           </h1>
           <p className="text-gray-600 mb-6">
@@ -140,7 +140,7 @@ export default function CompleteProfilePage() {
 
             {/* Profession */}
             <div>
-              <label className="block text-sm font-bold text-[#00d9ff] mb-2">
+              <label className="block text-sm font-bold text-[#0066ff] mb-2">
                 {lang === 'en'
                   ? 'Select Profession / Income Category *'
                   : lang === 'am'
@@ -150,7 +150,7 @@ export default function CompleteProfilePage() {
               <select
                 value={formData.profession}
                 onChange={(e) => handleFieldChange('profession', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#001f3f]"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066ff]"
               >
                 <option value="">
                   {lang === 'en' ? '-- Choose a category --' : '-- Filadhu --'}

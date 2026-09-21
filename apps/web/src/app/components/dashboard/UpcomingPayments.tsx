@@ -14,7 +14,7 @@ export default function UpcomingPayments({ equbs, loading }: UpcomingPaymentsPro
   return (
     <section className="bg-card rounded-card border border-gray-200">
       <div className="px-5 pt-5 pb-3">
-        <h2 className="text-lg font-black text-[#00d9ff]">Upcoming Payments</h2>
+        <h2 className="text-lg font-black text-[#0066ff]">Upcoming Payments</h2>
       </div>
 
       <div className="px-5 pb-5">
@@ -38,13 +38,13 @@ export default function UpcomingPayments({ equbs, loading }: UpcomingPaymentsPro
               return (
                 <div key={e.id} className="flex items-center justify-between gap-3 py-3">
                   <div className="min-w-0">
-                    <p className="text-sm font-bold text-[#00d9ff] truncate">{e.name}</p>
+                    <p className="text-sm font-bold text-[#0066ff] truncate">{e.name}</p>
                     <p className="text-xs text-gray-400">
                       Round {roundDue} of {e.total_rounds}
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-sm font-black text-[#00d9ff]">{formatETB(e.contribution_amount)}</p>
+                    <p className="text-sm font-black text-[#0066ff]">{formatETB(e.contribution_amount)}</p>
                     <Link
                       href="/wallet"
                       className="text-xs font-bold text-brand-600 hover:text-brand-700"

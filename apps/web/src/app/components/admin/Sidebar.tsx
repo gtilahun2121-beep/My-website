@@ -171,7 +171,7 @@ export default function Sidebar({
         item.disabled
           ? 'text-admin-nav-muted/50 cursor-not-allowed'
           : active
-            ? 'bg-brand-600 text-[#00d9ff]'
+            ? 'bg-brand-600 text-white'
             : 'text-admin-nav-muted hover:text-admin-nav-text hover:bg-brand-50'
       }`;
 
@@ -194,7 +194,7 @@ export default function Sidebar({
               <span className={labelHidden}>{item.label}</span>
               {badge != null && (
                 <span
-                  className={`ml-auto inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-brand-500 text-[#00d9ff] text-[11px] font-black ${
+                  className={`ml-auto inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-brand-500 text-white text-[11px] font-black ${
                     collapsed ? 'lg:hidden' : ''
                   }`}
                   aria-label={`${badge} pending ${item.label.toLowerCase()} items`}
@@ -237,7 +237,7 @@ export default function Sidebar({
           }`}
           aria-label="QalNet Admin Console — Dashboard"
         >
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-[#00d9ff] font-black text-lg shadow-lg shadow-brand-950/40 shrink-0">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white font-black text-lg shadow-lg shadow-[#0052d6]/40 shrink-0">
             Q
           </div>
           <div className={labelHidden}>
@@ -334,7 +334,7 @@ export default function Sidebar({
                     className="w-9 h-9 rounded-full object-cover shrink-0"
                   />
                 ) : (
-                  <div className="w-9 h-9 rounded-full bg-brand-600 text-[#00d9ff] flex items-center justify-center text-sm font-bold shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-brand-600 text-white flex items-center justify-center text-sm font-bold shrink-0">
                     {initials(user.firstName, user.lastName)}
                   </div>
                 )}
@@ -388,8 +388,8 @@ export default function Sidebar({
     const base =
       'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors';
     if (item.disabled) return `${base} text-gray-300 cursor-not-allowed`;
-    if (active) return `${base} bg-brand-100 text-brand-800`;
-    return `${base} text-gray-600 hover:bg-gray-100 hover:text-[#00d9ff]`;
+    if (active) return `${base} bg-brand-100 text-[#0042ad]`;
+    return `${base} text-gray-600 hover:bg-gray-100 hover:text-[#0066ff]`;
   };
 
   const renderMemberItem = (item: NavItem) =>
@@ -422,11 +422,11 @@ export default function Sidebar({
         className="flex items-center gap-3 px-5 h-16 border-b border-gray-100"
         onClick={onClose}
       >
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-[#00d9ff] font-black text-lg shadow-lg shadow-brand-900/50">
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white font-black text-lg shadow-lg shadow-[#0066ff]/50">
           Q
         </div>
         <div>
-          <p className="font-black leading-none text-[#00d9ff]">QalNet</p>
+          <p className="font-black leading-none text-[#0066ff]">QalNet</p>
           <p className="text-xs mt-0.5 text-gray-400">{'Ethiopia\'s Digital Equb'}</p>
         </div>
       </Link>
@@ -436,7 +436,7 @@ export default function Sidebar({
         ref={closeButtonRef}
         type="button"
         onClick={onClose}
-        className="lg:hidden absolute top-4 right-3 p-1.5 rounded-lg text-gray-400 hover:text-[#00d9ff] hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+        className="lg:hidden absolute top-4 right-3 p-1.5 rounded-lg text-gray-400 hover:text-[#0066ff] hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
         aria-label="Close navigation"
       >
         <svg viewBox="0 0 24 24" className="w-5 h-5" {...stroke}>
@@ -452,13 +452,13 @@ export default function Sidebar({
       {/* Help card */}
       <div className="px-3 pb-3">
         <div className="rounded-card p-4 bg-gray-50 border border-gray-100">
-          <p className="text-sm font-bold text-[#00d9ff]">Need help?</p>
+          <p className="text-sm font-bold text-[#0066ff]">Need help?</p>
           <p className="text-xs mt-1 text-gray-500">
             Our support team is ready to help you.
           </p>
           <button
             type="button"
-            className="mt-3 w-full py-2 rounded-lg bg-gradient-to-r from-brand-600 to-brand-500 text-[#00d9ff] text-xs font-bold hover:from-brand-500 hover:to-brand-400 transition-all"
+            className="mt-3 w-full py-2 rounded-lg bg-gradient-to-r from-brand-600 to-brand-500 text-white text-xs font-bold hover:from-brand-500 hover:to-brand-400 transition-all"
           >
             Contact Support
           </button>

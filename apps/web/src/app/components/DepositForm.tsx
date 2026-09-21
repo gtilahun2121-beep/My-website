@@ -156,7 +156,7 @@ export default function DepositForm({
       <div className="bg-white rounded-lg shadow-lg p-6 md:p-8">
         {/* Header */}
         <div className="mb-6">
-          <h2 className="text-2xl md:text-3xl font-bold text-[#00d9ff]">Make a Deposit</h2>
+          <h2 className="text-2xl md:text-3xl font-bold text-[#0066ff]">Make a Deposit</h2>
           <p className="text-gray-600 mt-1">Add funds to your wallet</p>
         </div>
 
@@ -165,7 +165,7 @@ export default function DepositForm({
           <div className="mb-4 p-4 bg-brand-50 border border-brand-200 rounded-lg flex items-start gap-3">
             <CheckCircle className="w-5 h-5 text-brand-600 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-brand-800 font-medium">Success</p>
+              <p className="text-[#0042ad] font-medium">Success</p>
               <p className="text-brand-700 text-sm">{message}</p>
             </div>
           </div>
@@ -176,7 +176,7 @@ export default function DepositForm({
           <div className="mb-4 p-4 bg-brand-50 border border-brand-200 rounded-lg flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-brand-600 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-brand-800 font-medium">Notice</p>
+              <p className="text-[#0042ad] font-medium">Notice</p>
               <p className="text-brand-700 text-sm">{message}</p>
             </div>
           </div>
@@ -186,7 +186,7 @@ export default function DepositForm({
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Phone Number */}
           <div>
-            <label htmlFor="phone" className="block text-sm font-medium text-[#00d9ff] mb-1">
+            <label htmlFor="phone" className="block text-sm font-medium text-[#0066ff] mb-1">
               Phone Number <span className="text-brand-500">*</span>
             </label>
             <input
@@ -210,7 +210,7 @@ export default function DepositForm({
 
           {/* PIN */}
           <div>
-            <label htmlFor="pin" className="block text-sm font-medium text-[#00d9ff] mb-1">
+            <label htmlFor="pin" className="block text-sm font-medium text-[#0066ff] mb-1">
               PIN <span className="text-brand-500">*</span>
             </label>
             <input
@@ -235,7 +235,7 @@ export default function DepositForm({
 
           {/* Amount */}
           <div>
-            <label htmlFor="amount" className="block text-sm font-medium text-[#00d9ff] mb-1">
+            <label htmlFor="amount" className="block text-sm font-medium text-[#0066ff] mb-1">
               Amount (ETB) <span className="text-brand-500">*</span>
             </label>
             <div className="relative">
@@ -261,14 +261,14 @@ export default function DepositForm({
             )}
             {formData.amount && !errors.amount && (
               <p className="text-gray-500 text-xs mt-1">
-                You will deposit: <span className="font-semibold text-[#00d9ff]">{parseInt(formData.amount).toLocaleString()} ETB</span>
+                You will deposit: <span className="font-semibold text-[#0066ff]">{parseInt(formData.amount).toLocaleString()} ETB</span>
               </p>
             )}
           </div>
 
           {/* Payment Method */}
           <div>
-            <label htmlFor="paymentMethod" className="block text-sm font-medium text-[#00d9ff] mb-1">
+            <label htmlFor="paymentMethod" className="block text-sm font-medium text-[#0066ff] mb-1">
               Payment Method <span className="text-brand-500">*</span>
             </label>
             <select
@@ -305,14 +305,14 @@ export default function DepositForm({
               type="button"
               onClick={onCancel}
               disabled={submitLoading || isLoading}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg font-medium text-[#00d9ff] hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg font-medium text-[#0066ff] hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitLoading || isLoading}
-              className="flex-1 px-4 py-2 bg-brand-900 hover:bg-brand-950 text-[#00d9ff] font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm md:text-base"
+              className="flex-1 px-4 py-2 bg-[#0066ff] hover:bg-[#0047b3] text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm md:text-base"
             >
               {submitLoading || isLoading ? (
                 <>
@@ -337,8 +337,8 @@ export default function DepositForm({
 
       {/* Info Box */}
       <div className="mt-6 bg-brand-50 border border-brand-200 rounded-lg p-4 md:p-6">
-        <h3 className="text-sm md:text-base font-semibold text-brand-900 mb-2">Transaction Information</h3>
-        <ul className="text-xs md:text-sm text-brand-800 space-y-2">
+        <h3 className="text-sm md:text-base font-semibold text-[#0042ad] mb-2">Transaction Information</h3>
+        <ul className="text-xs md:text-sm text-[#0042ad] space-y-2">
           <li className="flex gap-2">
             <span className="flex-shrink-0">•</span>
             <span>Deposits are processed within 30 seconds</span>

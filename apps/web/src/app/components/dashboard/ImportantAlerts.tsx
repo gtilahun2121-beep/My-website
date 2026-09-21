@@ -18,7 +18,7 @@ export default function ImportantAlerts({ notifications }: ImportantAlertsProps)
   return (
     <section className="bg-card rounded-card border border-gray-200">
       <div className="px-5 pt-5 pb-3">
-        <h2 className="text-lg font-black text-[#00d9ff]">Important Alerts</h2>
+        <h2 className="text-lg font-black text-[#0066ff]">Important Alerts</h2>
       </div>
 
       <div className="px-5 pb-5 space-y-3">
@@ -43,7 +43,7 @@ export default function ImportantAlerts({ notifications }: ImportantAlertsProps)
                 </svg>
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-bold text-[#00d9ff]">{n.title}</p>
+                <p className="text-sm font-bold text-[#0066ff]">{n.title}</p>
                 {n.body && <p className="mt-0.5 text-xs text-gray-500 line-clamp-2">{n.body}</p>}
               </div>
             </div>

@@ -61,7 +61,7 @@ export function EmptyState({ title, description, variant = 'light' }: EmptyState
           <path d="m20 20-3.2-3.2M8.5 11h5" />
         </svg>
       </div>
-      <p className={`mt-4 text-base font-bold ${dark ? 'text-admin-text' : 'text-[#00d9ff]'}`}>
+      <p className={`mt-4 text-base font-bold ${dark ? 'text-admin-text' : 'text-[#0066ff]'}`}>
         {title}
       </p>
       <p className={`mt-1 text-sm max-w-sm mx-auto ${dark ? 'text-admin-muted' : 'text-gray-500'}`}>
@@ -106,7 +106,7 @@ export function ErrorState({ title, description, onRetry, variant = 'light' }: E
           <path d="M12 8v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" />
         </svg>
       </div>
-      <p className={`mt-4 text-base font-bold ${dark ? 'text-admin-text' : 'text-[#00d9ff]'}`}>
+      <p className={`mt-4 text-base font-bold ${dark ? 'text-admin-text' : 'text-[#0066ff]'}`}>
         {title}
       </p>
       <p className={`mt-1 text-sm max-w-sm mx-auto ${dark ? 'text-admin-muted' : 'text-gray-500'}`}>
@@ -116,7 +116,7 @@ export function ErrorState({ title, description, onRetry, variant = 'light' }: E
         <button
           type="button"
           onClick={onRetry}
-          className="mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-600 text-[#00d9ff] text-sm font-bold hover:bg-brand-700 transition-colors"
+          className="mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-600 text-white text-sm font-bold hover:bg-brand-700 transition-colors"
         >
           <svg
             viewBox="0 0 24 24"

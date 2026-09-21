@@ -12,7 +12,7 @@ export default function MyEqubs({ equbs, loading, error }: MyEqubsProps) {
   return (
     <section className="bg-card rounded-card border border-gray-200">
       <div className="flex items-center justify-between px-5 pt-5 pb-3">
-        <h2 className="text-lg font-black text-[#00d9ff]">My Equbs</h2>
+        <h2 className="text-lg font-black text-[#0066ff]">My Equbs</h2>
         <Link
           href="/my-equbs"
           className="text-sm font-bold text-brand-600 hover:text-brand-700"
@@ -37,7 +37,7 @@ export default function MyEqubs({ equbs, loading, error }: MyEqubsProps) {
           <p className="text-sm text-danger-600">{error}</p>
         ) : equbs.length === 0 ? (
           <div className="rounded-card border border-dashed border-gray-300 px-6 py-10 text-center">
-            <p className="text-sm font-bold text-[#00d9ff]">No Equbs yet</p>
+            <p className="text-sm font-bold text-[#0066ff]">No Equbs yet</p>
             <p className="mt-1 text-sm text-gray-500">
               Use &quot;Join an Equb&quot; above to start saving together.
             </p>

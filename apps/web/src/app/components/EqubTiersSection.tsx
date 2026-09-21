@@ -49,7 +49,7 @@ export default function EqubTiersSection({
           viewport={{ once: true }}
           className="text-center"
         >
-          <h2 className="text-4xl md:text-5xl font-black text-[#00d9ff] mb-4">
+          <h2 className="text-4xl md:text-5xl font-black text-[#0066ff] mb-4">
             Choose Your Equb Tier
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
@@ -87,7 +87,7 @@ export default function EqubTiersSection({
           viewport={{ once: true }}
           className="bg-white rounded-xl shadow-lg p-8 md:p-12"
         >
-          <h3 className="text-3xl font-black text-[#00d9ff] mb-12 text-center">
+          <h3 className="text-3xl font-black text-[#0066ff] mb-12 text-center">
             Trusted by Thousands
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
@@ -117,11 +117,11 @@ export default function EqubTiersSection({
         viewport={{ once: true }}
         className="max-w-4xl mx-auto mt-20 text-center"
       >
-        <div className="bg-gradient-to-r from-brand-900 via-accent-600 to-brand-400 rounded-xl p-8 md:p-12 text-[#00d9ff]">
+        <div className="bg-gradient-to-r from-[#0066ff] via-accent-600 to-brand-400 rounded-xl p-8 md:p-12 text-white">
           <h3 className="text-3xl md:text-4xl font-black mb-4">
             Ready to Start Your Equb Journey?
           </h3>
-          <p className="text-lg text-[#00d9ff]/90 mb-8">
+          <p className="text-lg text-white/90 mb-8">
             Join thousands of Ethiopians saving together. Choose your tier and start today!
           </p>
           <button

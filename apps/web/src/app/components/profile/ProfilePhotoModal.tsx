@@ -73,7 +73,7 @@ export default function ProfilePhotoModal({ open, currentPhoto, onClose, onSave 
 
       <div className="relative w-full max-w-sm bg-card rounded-card border border-gray-200 shadow-2xl overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-          <h2 className="text-lg font-black text-[#00d9ff]">Profile Photo</h2>
+          <h2 className="text-lg font-black text-[#0066ff]">Profile Photo</h2>
           <button
             type="button"
             onClick={handleClose}
@@ -118,7 +118,7 @@ export default function ProfilePhotoModal({ open, currentPhoto, onClose, onSave 
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
-              className="w-full px-4 py-2.5 rounded-lg bg-brand-600 text-[#00d9ff] text-sm font-bold hover:bg-brand-700 transition-colors"
+              className="w-full px-4 py-2.5 rounded-lg bg-brand-600 text-white text-sm font-bold hover:bg-brand-700 transition-colors"
             >
               {preview ? 'Choose different photo' : 'Upload photo'}
             </button>
@@ -128,7 +128,7 @@ export default function ProfilePhotoModal({ open, currentPhoto, onClose, onSave 
                 type="button"
                 onClick={handleSave}
                 disabled={saving}
-                className="w-full px-4 py-2.5 rounded-lg bg-brand-600 text-[#00d9ff] text-sm font-bold hover:bg-brand-700 transition-colors"
+                className="w-full px-4 py-2.5 rounded-lg bg-brand-600 text-white text-sm font-bold hover:bg-brand-700 transition-colors"
               >
                 {saving ? 'Saving…' : 'Save Photo'}
               </button>

@@ -111,7 +111,7 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-brand-900 text-[#00d9ff] p-4 flex justify-between items-center">
+        <div className="sticky top-0 bg-[#0066ff] text-white p-4 flex justify-between items-center">
           <h2 className="text-xl font-bold">Payment</h2>
           <button
             onClick={onCancel}
@@ -136,7 +136,7 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({
               </div>
 
               {/* Payment Methods */}
-              <p className="font-semibold text-[#00d9ff] mb-4">Select Payment Method</p>
+              <p className="font-semibold text-[#0066ff] mb-4">Select Payment Method</p>
               <div className="space-y-3 mb-6">
                 {paymentMethods.map((method) => (
                   <button
@@ -145,14 +145,14 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({
                     disabled={!method.available}
                     className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
                       selectedMethod === method.id
-                        ? 'border-brand-900 bg-brand-50'
+                        ? 'border-[#0066ff] bg-brand-50'
                         : 'border-gray-200 hover:border-brand-300'
                     } ${!method.available ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <div className="flex items-start gap-3">
                       <span className="text-2xl">{method.icon}</span>
                       <div>
-                        <p className="font-semibold text-[#00d9ff]">{method.name}</p>
+                        <p className="font-semibold text-[#0066ff]">{method.name}</p>
                         <p className="text-sm text-gray-600">{method.description}</p>
                       </div>
                     </div>
@@ -183,14 +183,14 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({
               <div className="flex gap-3">
                 <button
                   onClick={onCancel}
-                  className="flex-1 border border-gray-300 text-[#00d9ff] px-4 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+                  className="flex-1 border border-gray-300 text-[#0066ff] px-4 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleInitiatePayment}
                   disabled={!selectedMethod || loading}
-                  className="flex-1 bg-brand-900 text-[#00d9ff] px-4 py-3 rounded-lg font-semibold hover:bg-brand-950 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 bg-[#0066ff] text-white px-4 py-3 rounded-lg font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? 'Processing...' : 'Proceed'}
                 </button>
@@ -209,7 +209,7 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({
           {step === 'confirmation' && (
             <div className="text-center py-8">
               <div className="text-6xl mb-4">✅</div>
-              <p className="text-lg font-semibold text-[#00d9ff] mb-2">
+              <p className="text-lg font-semibold text-[#0066ff] mb-2">
                 {checkoutResult?.status === 'pending'
                   ? 'Payment Queued'
                   : 'Payment Successful!'}
@@ -224,7 +224,7 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({
               )}
               <button
                 onClick={handleConfirm}
-                className="w-full bg-brand-900 text-[#00d9ff] px-4 py-3 rounded-lg font-semibold hover:bg-brand-950 transition-colors"
+                className="w-full bg-[#0066ff] text-white px-4 py-3 rounded-lg font-semibold hover:bg-[#0047b3] transition-colors"
               >
                 Continue
               </button>
@@ -239,13 +239,13 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({
               <div className="flex gap-3">
                 <button
                   onClick={() => setStep('method-selection')}
-                  className="flex-1 border border-gray-300 text-[#00d9ff] px-4 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+                  className="flex-1 border border-gray-300 text-[#0066ff] px-4 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
                 >
                   Try Again
                 </button>
                 <button
                   onClick={onCancel}
-                  className="flex-1 bg-brand-900 text-[#00d9ff] px-4 py-3 rounded-lg font-semibold hover:bg-brand-950 transition-colors"
+                  className="flex-1 bg-[#0066ff] text-white px-4 py-3 rounded-lg font-semibold hover:bg-[#0047b3] transition-colors"
                 >
                   Cancel
                 </button>

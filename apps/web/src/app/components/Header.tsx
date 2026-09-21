@@ -42,48 +42,27 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
 
   return (
     <>
-    <header className="bg-gradient-to-r from-[#001f3f] to-[#001f3f] shadow-2xl sticky top-0 z-50 border-b-4 border-[#001f3f]">
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div className="flex justify-between items-center gap-2 sm:gap-3">
-          {/* Left corner: profile + logo */}
-          <div className="flex items-center gap-3">
-            {/* Profile Avatar */}
-            {authenticated && (
-              <button
-                onClick={() => setProfileOpen(true)}
-                className="relative w-10 h-10 rounded-full overflow-hidden bg-white flex items-center justify-center text-[#00d9ff] font-black text-sm uppercase shadow-md hover:scale-105 transition-transform border-2 border-[#001f3f]"
-                aria-label="Open profile"
-              >
-                {user?.profilePhoto ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={user.profilePhoto}
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  initials
-                )}
-              </button>
-            )}
-            <Link href="/" className="flex items-center gap-3 group min-w-0">
-            <div className="w-10 h-10 shrink-0 bg-gradient-to-br from-[#001f3f] to-[#001f3f] rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-              <span className="text-[#00d9ff] font-black text-lg">ET</span>
+    <header className="bg-gradient-to-b from-blue-100 to-blue-50 shadow-lg sticky top-0 z-50 border-b border-blue-200">
+      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+        <div className="flex justify-between items-center gap-3 sm:gap-4">
+          {/* Left: Logo */}
+          <Link href="/" className="flex items-center gap-2 group shrink-0">
+            <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+              <span className="text-white font-black text-sm">QN</span>
             </div>
-            <div className="min-w-0">
-              <span className="block font-black text-xl sm:text-2xl text-[#00d9ff] drop-shadow-lg truncate">QalNet</span>
-              <p className="hidden sm:block text-xs text-[#00d9ff]/80 font-semibold -mt-1 truncate">Ethiopia&apos;s Digital Equb</p>
+            <div className="hidden sm:block">
+              <span className="block font-black text-lg text-blue-800">QalNet</span>
+              <p className="text-xs text-blue-600 font-medium -mt-1">Ethiopia's Digital Equb</p>
             </div>
           </Link>
-          </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-6">
+          {/* Center Navigation (Desktop) */}
+          <div className="hidden md:flex items-center gap-8 flex-1 justify-center">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-[#00d9ff] font-bold hover:text-[#00d9ff] transition-all"
+                className="text-blue-600 font-semibold hover:text-blue-800 transition-colors text-sm"
               >
                 {item.label}
               </Link>
@@ -91,58 +70,44 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
           </div>
 
           {/* Right Section */}
-          <div className="flex items-center gap-3">
-            {/* Notifications Bell */}
-            {authenticated && (
-              <button
-                onClick={openNotifications}
-                className="relative p-2 hover:bg-gray-200 rounded-full transition-all text-[#00d9ff]"
-                aria-label="Notifications"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                  />
-                </svg>
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-[#001f3f] border-2 border-white rounded-full text-[10px] font-black text-[#00d9ff] flex items-center justify-center">
-                    {unreadCount > 99 ? '99+' : unreadCount}
-                  </span>
-                )}
-              </button>
-            )}
-
+          <div className="flex items-center gap-2 sm:gap-3 ml-auto">
             {/* Language Selector */}
-            <select
-              value={lang}
-              onChange={(e) => onLanguageChange(e.target.value as Language)}
-              className="hidden sm:block px-4 py-2 border-2 border-[#001f3f] rounded-full text-sm bg-white text-[#00d9ff] font-bold cursor-pointer"
-            >
-              {(Object.keys(languages) as Language[]).map((l) => (
-                <option key={l} value={l}>
-                  {languages[l]}
-                </option>
-              ))}
-            </select>
+            <div className="hidden sm:flex items-center gap-2">
+              <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 00.948-.684l1.498-4.493a1 1 0 011.502 0l1.498 4.493a1 1 0 00.948.684H19a2 2 0 012 2v2a2 2 0 01-2 2H5a2 2 0 01-2-2V5z" />
+              </svg>
+              <select
+                value={lang}
+                onChange={(e) => onLanguageChange(e.target.value as Language)}
+                className="px-3 py-1.5 border border-blue-300 rounded-full text-xs bg-white text-blue-600 font-semibold cursor-pointer hover:bg-blue-50 transition-colors"
+              >
+                {(Object.keys(languages) as Language[]).map((l) => (
+                  <option key={l} value={l}>
+                    {languages[l]}
+                  </option>
+                ))}
+              </select>
+            </div>
 
             {/* Sign Up Button */}
             {!authenticated && (
               <button
                 onClick={onSignUpClick}
-                className="hidden sm:inline-block px-6 py-2 bg-gradient-to-r from-[#001f3f] to-[#001f3f] text-[#00d9ff] font-black rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all text-sm"
+                className="hidden sm:inline-flex items-center gap-2 px-5 py-2 bg-blue-600 text-white font-bold rounded-full shadow-md hover:bg-blue-700 hover:shadow-lg transition-all text-sm"
               >
-                ✍️ Sign Up
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                </svg>
+                Sign Up
               </button>
             )}
 
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 hover:bg-gray-200 rounded-full transition-all text-[#00d9ff] font-bold"
+              className="md:hidden p-2 hover:bg-blue-200 rounded-full transition-all text-blue-600"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
@@ -151,18 +116,21 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
 
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <div className="md:hidden mt-4 space-y-2 bg-gray-50 rounded-2xl p-4">
+          <div className="md:hidden mt-3 space-y-2 bg-white/60 backdrop-blur-sm rounded-xl p-3 border border-blue-200">
             {/* Mobile language picker */}
-            <div className="flex flex-wrap gap-2 pb-2 border-b border-gray-300">
+            <div className="flex flex-wrap gap-2 pb-2 border-b border-blue-200">
               {(Object.keys(languages) as Language[]).map((l) => (
                 <button
                   key={l}
                   type="button"
-                  onClick={() => onLanguageChange(l)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${
+                  onClick={() => {
+                    onLanguageChange(l);
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
                     lang === l
-                      ? 'bg-white text-[#00d9ff]'
-                      : 'bg-gray-100 text-[#00d9ff] hover:bg-gray-200'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-blue-100 text-blue-600 hover:bg-blue-200'
                   }`}
                 >
                   {languages[l]}
@@ -173,7 +141,7 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
               <Link
                 key={item.href}
                 href={item.href}
-                className="block px-4 py-3 text-[#00d9ff] font-bold hover:bg-gray-100 rounded-lg"
+                className="block px-4 py-2 text-blue-600 font-semibold hover:bg-blue-100 rounded-lg text-sm transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {item.label}
@@ -185,7 +153,7 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
                   onSignUpClick?.();
                   setMobileMenuOpen(false);
                 }}
-                className="w-full px-4 py-3 bg-gradient-to-r from-[#001f3f] to-[#001f3f] text-[#00d9ff] font-bold rounded-lg"
+                className="w-full px-4 py-2 bg-blue-600 text-white font-bold rounded-lg text-sm hover:bg-blue-700 transition-colors"
               >
                 Sign Up
               </button>

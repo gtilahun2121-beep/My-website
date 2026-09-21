@@ -6,7 +6,7 @@ export const TONE_STYLES: Record<BadgeTone, string> = {
   success: 'bg-success-100 text-success-700',
   warning: 'bg-warning-100 text-warning-700',
   danger: 'bg-danger-100 text-danger-700',
-  info: 'bg-brand-100 text-brand-800',
+  info: 'bg-brand-100 text-[#0042ad]',
   accent: 'bg-accent-100 text-accent-700',
   neutral: 'bg-gray-100 text-gray-600',
 };

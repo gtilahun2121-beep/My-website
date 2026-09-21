@@ -70,7 +70,7 @@ export default function HeroAnimation({
   ];
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-[#001f3f] via-[#001f3f] to-[#001f3f] py-20 md:py-32">
+    <section className="relative overflow-hidden bg-gradient-to-br from-white/35 via-white/20 to-white/35 py-20 md:py-32">
       {/* Floating background shapes */}
       <div className="absolute inset-0 overflow-hidden">
         {floatingShapes.map((shape, idx) => (
@@ -116,7 +116,7 @@ export default function HeroAnimation({
 
           {/* Main Headline */}
           <motion.h1
-            className="text-4xl sm:text-5xl md:text-7xl font-black text-[#00d9ff] mb-6 drop-shadow-lg glow-eth-gold"
+            className="text-4xl sm:text-5xl md:text-7xl font-black text-[#0066ff] mb-6 drop-shadow-lg glow-eth-gold"
             variants={itemVariants}
           >
             {heroTitle}
@@ -124,7 +124,7 @@ export default function HeroAnimation({
 
           {/* Subtitle */}
           <motion.p
-            className="text-2xl text-[#00d9ff] mb-4 font-bold drop-shadow-md"
+            className="text-2xl text-[#0066ff] mb-4 font-bold drop-shadow-md"
             variants={itemVariants}
           >
             {heroSubtitle}
@@ -132,7 +132,7 @@ export default function HeroAnimation({
 
           {/* Description */}
           <motion.p
-            className="text-lg text-[#00d9ff]/90 mb-10 drop-shadow-md"
+            className="text-lg text-[#0066ff]/90 mb-10 drop-shadow-md"
             variants={itemVariants}
           >
             {heroDescription}
@@ -150,7 +150,7 @@ export default function HeroAnimation({
             >
               <Link
                 href="/features"
-                className="inline-block px-8 py-4 bg-white text-[#00d9ff] font-bold rounded-full hover:shadow-2xl transition-all duration-300 text-lg"
+                className="inline-block px-8 py-4 bg-white text-[#0066ff] font-bold rounded-full hover:shadow-2xl transition-all duration-300 text-lg"
               >
                 {cta} ➜
               </Link>
@@ -165,7 +165,7 @@ export default function HeroAnimation({
             >
               <Link
                 href="/architecture"
-                className="inline-block px-8 py-4 bg-[#001f3f] text-[#00d9ff] font-bold rounded-full border-2 border-white hover:shadow-2xl transition-all duration-300 text-lg"
+                className="inline-block px-8 py-4 bg-[#0066ff] text-white font-bold rounded-full border-2 border-white hover:shadow-2xl transition-all duration-300 text-lg"
               >
                 {ctaSecondary} 🏗️
               </Link>

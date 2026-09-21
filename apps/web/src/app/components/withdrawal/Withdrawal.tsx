@@ -222,7 +222,7 @@ export const Withdrawal: React.FC<WithdrawalProps> = ({ balance, onSuccess, onCa
   return (
     <div className="bg-white rounded-2xl shadow-lg max-w-md w-full overflow-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#001f3f] to-[#001f3f] text-[#00d9ff] p-4 flex justify-between items-center">
+      <div className="bg-[#0066ff] text-white p-4 flex justify-between items-center">
         <div>
           <h2 className="text-xl font-bold">Withdrawal</h2>
           <p className="text-sm opacity-90">Transfer money to your bank or mobile money</p>
@@ -242,12 +242,12 @@ export const Withdrawal: React.FC<WithdrawalProps> = ({ balance, onSuccess, onCa
             <div key={label} className="flex items-center gap-2">
               <div
                 className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                  done ? 'bg-brand-500 text-[#00d9ff]' : active ? 'bg-[#001f3f] text-[#00d9ff]' : 'bg-gray-200 text-gray-500'
+                  done ? 'bg-brand-500 text-white' : active ? 'bg-[#0066ff] text-white' : 'bg-gray-200 text-gray-500'
                 }`}
               >
                 {done ? '✓' : i + 1}
               </div>
-              <span className={`text-xs font-medium ${active ? 'text-[#00d9ff]' : 'text-gray-500'}`}>{label}</span>
+              <span className={`text-xs font-medium ${active ? 'text-[#0066ff]' : 'text-gray-500'}`}>{label}</span>
               {i < 3 && <span className="w-4 h-px bg-gray-300" />}
             </div>
           );
@@ -264,24 +264,24 @@ export const Withdrawal: React.FC<WithdrawalProps> = ({ balance, onSuccess, onCa
 
           {step === 'pin-entry' && (
             <>
-              <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-4 mb-6 text-center border border-brand-100">
+              <div className="bg-gradient-to-r from-brand-50/70 to-brand-100/60 rounded-xl p-4 mb-6 text-center border border-brand-100">
                 <p className="text-sm text-gray-600 mb-1">Available Balance</p>
                 <p className="text-4xl font-bold text-brand-600">
                   ETB {balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </p>
               </div>
 
-              <label className="block font-semibold text-[#00d9ff] mb-2">Amount to Withdraw (ETB)</label>
+              <label className="block font-semibold text-[#0066ff] mb-2">Amount to Withdraw (ETB)</label>
               <input
                 type="number"
                 inputMode="decimal"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="Enter amount"
-                className="w-full p-4 rounded-lg border border-gray-300 focus:border-[#001f3f] focus:outline-none mb-4"
+                className="w-full p-4 rounded-lg border border-gray-300 focus:border-[#0066ff] focus:outline-none mb-4"
               />
 
-              <label className="block font-semibold text-[#00d9ff] mb-2">Enter your registered password / PIN</label>
+              <label className="block font-semibold text-[#0066ff] mb-2">Enter your registered password / PIN</label>
               <div className="relative mb-4">
                 <input
                   type={showPin ? 'text' : 'password'}
@@ -289,12 +289,12 @@ export const Withdrawal: React.FC<WithdrawalProps> = ({ balance, onSuccess, onCa
                   value={pin}
                   onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
                   placeholder=""
-                  className="w-full text-center text-2xl tracking-[0.5em] p-4 pr-14 rounded-lg border border-gray-300 focus:border-[#001f3f] focus:outline-none"
+                  className="w-full text-center text-2xl tracking-[0.5em] p-4 pr-14 rounded-lg border border-gray-300 focus:border-[#0066ff] focus:outline-none"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPin((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full text-gray-400 hover:text-[#00d9ff] hover:bg-gray-100 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full text-gray-400 hover:text-[#0066ff] hover:bg-gray-100 transition-colors"
                   aria-label={showPin ? 'Hide PIN' : 'Show PIN'}
                 >
                   <EyeIcon open={showPin} />
@@ -315,8 +315,8 @@ export const Withdrawal: React.FC<WithdrawalProps> = ({ balance, onSuccess, onCa
                     aria-checked={showPin}
                     aria-label="Toggle PIN visibility"
                     onClick={() => setShowPin((v) => !v)}
-                    className={`relative inline-flex items-center h-6 w-11 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#001f3f] focus:ring-offset-2 ${
-                      showPin ? 'bg-[#001f3f]' : 'bg-gray-300'
+                    className={`relative inline-flex items-center h-6 w-11 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#0066ff] focus:ring-offset-2 ${
+                      showPin ? 'bg-[#0066ff]' : 'bg-gray-300'
                     }`}
                   >
                     <span
@@ -331,7 +331,7 @@ export const Withdrawal: React.FC<WithdrawalProps> = ({ balance, onSuccess, onCa
               <button
                 onClick={handlePinConfirm}
                 disabled={!amount || !/^\d{6}$/.test(pin) || loading}
-                className="w-full bg-[#001f3f] text-[#00d9ff] px-4 py-3 rounded-lg font-semibold hover:bg-[#001f3f] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-[#0066ff] text-white px-4 py-3 rounded-lg font-semibold hover:bg-[#0066ff] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Verify PIN & Continue
               </button>
@@ -340,7 +340,7 @@ export const Withdrawal: React.FC<WithdrawalProps> = ({ balance, onSuccess, onCa
 
           {step === 'method-selection' && (
             <>
-              <p className="font-semibold text-[#00d9ff] mb-4">Select Withdrawal Method</p>
+              <p className="font-semibold text-[#0066ff] mb-4">Select Withdrawal Method</p>
               <div className="space-y-3 mb-6">
                 {withdrawalMethods.map((method) => (
                   <button
@@ -348,14 +348,14 @@ export const Withdrawal: React.FC<WithdrawalProps> = ({ balance, onSuccess, onCa
                     onClick={() => handleMethodSelect(method.id)}
                     className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
                       selectedMethod === method.id
-                        ? 'border-brand-900 bg-brand-50'
+                        ? 'border-[#0066ff] bg-brand-50'
                         : 'border-gray-200 hover:border-brand-300'
                     }`}
                   >
                     <div className="flex items-start gap-3">
                       <span className="text-2xl">{method.icon}</span>
                       <div>
-                        <p className="font-semibold text-[#00d9ff]">{method.name}</p>
+                        <p className="font-semibold text-[#0066ff]">{method.name}</p>
                         <p className="text-sm text-gray-600">{method.description}</p>
                       </div>
                     </div>
@@ -366,7 +366,7 @@ export const Withdrawal: React.FC<WithdrawalProps> = ({ balance, onSuccess, onCa
               <div className="flex gap-3">
                 <button
                   onClick={() => setStep('pin-entry')}
-                  className="flex-1 border border-gray-300 text-[#00d9ff] px-4 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+                  className="flex-1 border border-gray-300 text-[#0066ff] px-4 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
                 >
                   Back
                 </button>
@@ -376,7 +376,7 @@ export const Withdrawal: React.FC<WithdrawalProps> = ({ balance, onSuccess, onCa
 
           {step === 'account-entry' && (
             <>
-              <p className="font-semibold text-[#00d9ff] mb-4">
+              <p className="font-semibold text-[#0066ff] mb-4">
                 {selectedMethod === 'et_national_bank'
                   ? 'Enter the Ethiopian National Bank account number you want to transfer to'
                   : selectedMethod === 'telebirr'
@@ -410,7 +410,7 @@ export const Withdrawal: React.FC<WithdrawalProps> = ({ balance, onSuccess, onCa
 
               <button
                 onClick={handleLookupAccountName}
-                className="w-full bg-gray-100 text-[#00d9ff] px-4 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors mb-4"
+                className="w-full bg-gray-100 text-[#0066ff] px-4 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors mb-4"
               >
                 Look Up Account Name
               </button>
@@ -427,7 +427,7 @@ export const Withdrawal: React.FC<WithdrawalProps> = ({ balance, onSuccess, onCa
               <button
                 onClick={handleWithdraw}
                 disabled={!accountNumber || loading}
-                className="w-full bg-brand-900 text-[#00d9ff] px-4 py-3 rounded-lg font-semibold hover:bg-brand-950 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-[#0066ff] text-white px-4 py-3 rounded-lg font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Processing...' : 'Proceed with Withdrawal'}
               </button>
@@ -440,7 +440,7 @@ export const Withdrawal: React.FC<WithdrawalProps> = ({ balance, onSuccess, onCa
                   setShowComingSoon(false);
                   setError(null);
                 }}
-                className="w-full mt-3 border border-gray-300 text-[#00d9ff] px-4 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+                className="w-full mt-3 border border-gray-300 text-[#0066ff] px-4 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
               >
                 Back to Methods
               </button>
@@ -450,13 +450,13 @@ export const Withdrawal: React.FC<WithdrawalProps> = ({ balance, onSuccess, onCa
           {step === 'confirmation' && (
             <div className="text-center py-8">
               <div className="text-6xl mb-4">✅</div>
-              <p className="text-lg font-semibold text-[#00d9ff] mb-2">Withdrawal Successful!</p>
+              <p className="text-lg font-semibold text-[#0066ff] mb-2">Withdrawal Successful!</p>
               <p className="text-sm text-gray-600 mb-4">
                 ETB {parseFloat(amount).toLocaleString()} has been withdrawn from your wallet.
               </p>
               <button
                 onClick={onCancel}
-                className="w-full bg-brand-900 text-[#00d9ff] px-4 py-3 rounded-lg font-semibold hover:bg-brand-950 transition-colors"
+                className="w-full bg-[#0066ff] text-white px-4 py-3 rounded-lg font-semibold hover:bg-[#0047b3] transition-colors"
               >
                 Continue
               </button>
@@ -471,13 +471,13 @@ export const Withdrawal: React.FC<WithdrawalProps> = ({ balance, onSuccess, onCa
               <div className="flex gap-3">
                 <button
                   onClick={() => setStep('account-entry')}
-                  className="flex-1 border border-gray-300 text-[#00d9ff] px-4 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+                  className="flex-1 border border-gray-300 text-[#0066ff] px-4 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
                 >
                   Try Again
                 </button>
                 <button
                   onClick={onCancel}
-                  className="flex-1 bg-brand-900 text-[#00d9ff] px-4 py-3 rounded-lg font-semibold hover:bg-brand-950 transition-colors"
+                  className="flex-1 bg-[#0066ff] text-white px-4 py-3 rounded-lg font-semibold hover:bg-[#0047b3] transition-colors"
                 >
                   Cancel
                 </button>

@@ -39,13 +39,13 @@ const ToastNotification: React.FC<{ toast: Toast; onDismiss: () => void }> = ({ 
   const getBackgroundColor = (type: string) => {
     switch (type) {
       case 'success':
-        return 'bg-brand-900';
+        return 'bg-[#0066ff]';
       case 'error':
-        return 'bg-brand-900';
+        return 'bg-[#0066ff]';
       case 'warning':
         return 'bg-yellow-600';
       case 'info':
-        return 'bg-brand-900';
+        return 'bg-[#0066ff]';
       default:
         return 'bg-gray-600';
     }
@@ -53,7 +53,7 @@ const ToastNotification: React.FC<{ toast: Toast; onDismiss: () => void }> = ({ 
 
   return (
     <div
-      className={`${getBackgroundColor(toast.type)} text-[#00d9ff] px-4 py-3 rounded-lg shadow-lg flex items-start gap-3 mb-3 animate-slide-in`}
+      className={`${getBackgroundColor(toast.type)} text-[#0066ff] px-4 py-3 rounded-lg shadow-lg flex items-start gap-3 mb-3 animate-slide-in`}
       role="alert"
     >
       <span className="text-xl flex-shrink-0">{getIcon(toast.type)}</span>

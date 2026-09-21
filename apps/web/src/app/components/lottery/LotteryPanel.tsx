@@ -130,7 +130,7 @@ export const LotteryPanel: React.FC<LotteryPanelProps> = ({
     <div className="bg-white rounded-xl shadow-md p-6 sm:p-8 mt-6">
       <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
         <div>
-          <h2 className="text-xl font-black text-[#00d9ff] mb-1">
+          <h2 className="text-xl font-black text-[#0066ff] mb-1">
             🎰 {isHost || isAdmin ? 'Lottery Draw' : 'Lottery Results'}
           </h2>
           <p className="text-sm text-gray-500">
@@ -145,10 +145,10 @@ export const LotteryPanel: React.FC<LotteryPanelProps> = ({
             <button
               onClick={handleRunDraw}
               disabled={running || spinning}
-              className={`px-5 py-2.5 rounded-lg font-black text-[#00d9ff] transition-all ${
+              className={`px-5 py-2.5 rounded-lg font-black text-[#0066ff] transition-all ${
                 running || spinning
                   ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                  : 'bg-[#001f3f] hover:bg-[#001f3f]'
+                  : 'bg-[#0066ff] hover:bg-[#0066ff]'
               }`}
             >
               {running || spinning ? 'Spinning…' : '🎰 Run Draw'}
@@ -159,7 +159,7 @@ export const LotteryPanel: React.FC<LotteryPanelProps> = ({
               className={`px-4 py-2.5 rounded-lg font-bold transition-all ${
                 running || spinning
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-gray-100 text-[#00d9ff] hover:bg-gray-200'
+                  : 'bg-gray-100 text-[#0066ff] hover:bg-gray-200'
               }`}
             >
               🔄 Preview Spin
@@ -187,23 +187,23 @@ export const LotteryPanel: React.FC<LotteryPanelProps> = ({
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         <div className="bg-gray-50 rounded-lg p-3 text-center">
           <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wide">Round</p>
-          <p className="text-lg font-black text-[#00d9ff]">
+          <p className="text-lg font-black text-[#0066ff]">
             {currentRound && totalRounds ? `${currentRound}/${totalRounds}` : '—'}
           </p>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
           <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wide">Pot</p>
-          <p className="text-lg font-black text-[#00d9ff]">
+          <p className="text-lg font-black text-[#0066ff]">
             {potAmount ? `ETB ${Number(potAmount).toLocaleString()}` : '—'}
           </p>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
           <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wide">Eligible</p>
-          <p className="text-lg font-black text-[#00d9ff]">{candidates.length}</p>
+          <p className="text-lg font-black text-[#0066ff]">{candidates.length}</p>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
           <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wide">Draws</p>
-          <p className="text-lg font-black text-[#00d9ff]">{history?.total ?? 0}</p>
+          <p className="text-lg font-black text-[#0066ff]">{history?.total ?? 0}</p>
         </div>
       </div>
 
@@ -228,7 +228,7 @@ export const LotteryPanel: React.FC<LotteryPanelProps> = ({
       {/* History */}
       {history && history.total > 0 && (
         <div className="mt-8">
-          <h3 className="text-sm font-black text-[#00d9ff] text-gray-500 uppercase tracking-wide mb-3">
+          <h3 className="text-sm font-black text-[#0066ff] text-gray-500 uppercase tracking-wide mb-3">
             Previous Winners
           </h3>
           <ul className="divide-y divide-gray-100 border border-gray-100 rounded-lg overflow-hidden">
@@ -237,10 +237,10 @@ export const LotteryPanel: React.FC<LotteryPanelProps> = ({
                 key={d.id}
                 className="flex items-center justify-between px-4 py-3 bg-gray-50 text-sm"
               >
-                <span className="font-bold text-[#00d9ff]">
+                <span className="font-bold text-[#0066ff]">
                   Round {d.round_number}
                 </span>
-                <span className="text-[#00d9ff]">
+                <span className="text-[#0066ff]">
                   🏆 {d.winner_first_name} {d.winner_last_name}
                 </span>
                 <span className="text-xs text-gray-400">

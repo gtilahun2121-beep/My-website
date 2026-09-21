@@ -30,9 +30,9 @@ function SecurityContent() {
     <>
       <Header lang={lang} onLanguageChange={handleLanguageChange} />
 
-      <section className="py-20 md:py-32 bg-white">
+      <section className="py-20 md:py-32 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-[#00d9ff] mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold text-[#0066ff] mb-4">
             {t.securityTitle}
           </h1>
           <p className="text-xl text-gray-600 mb-16">
@@ -41,34 +41,34 @@ function SecurityContent() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
             {securityMeasures.map((measure, idx) => (
-              <div key={idx} className="bg-gradient-to-br from-[#001f3f] to-[#001f3f] rounded-lg p-8 border border-brand-400">
-                <h3 className="font-bold text-lg mb-2 text-[#00d9ff]">{measure.title}</h3>
+              <div key={idx} className="bg-gradient-to-br from-white/40 to-white/35 rounded-lg p-8 border border-brand-400">
+                <h3 className="font-bold text-lg mb-2 text-[#0066ff]">{measure.title}</h3>
                 <p className="text-brand-50">{measure.desc}</p>
               </div>
             ))}
           </div>
 
-          <div className="bg-gradient-to-r from-[#001f3f] to-[#001f3f] rounded-lg p-8 border border-brand-400">
-            <h3 className="text-2xl font-bold text-[#00d9ff] mb-4">Data Protection</h3>
+          <div className="bg-gradient-to-r from-white/40 to-white/35 rounded-lg p-8 border border-brand-400">
+            <h3 className="text-2xl font-bold text-[#0066ff] mb-4">Data Protection</h3>
             <ul className="space-y-3">
               <li className="flex items-start">
-                <span className="text-[#00d9ff] mr-3 font-bold">✓</span>
+                <span className="text-[#0066ff] mr-3 font-bold">✓</span>
                 <span className="text-brand-50">PII encrypted at application level with pgcrypto</span>
               </li>
               <li className="flex items-start">
-                <span className="text-[#00d9ff] mr-3 font-bold">✓</span>
+                <span className="text-[#0066ff] mr-3 font-bold">✓</span>
                 <span className="text-brand-50">Row-level security enforced at database policy level</span>
               </li>
               <li className="flex items-start">
-                <span className="text-[#00d9ff] mr-3 font-bold">✓</span>
+                <span className="text-[#0066ff] mr-3 font-bold">✓</span>
                 <span className="text-brand-50">Automated 90-day API key rotation</span>
               </li>
               <li className="flex items-start">
-                <span className="text-[#00d9ff] mr-3 font-bold">✓</span>
+                <span className="text-[#0066ff] mr-3 font-bold">✓</span>
                 <span className="text-brand-50">HashiCorp Vault secret management</span>
               </li>
               <li className="flex items-start">
-                <span className="text-[#00d9ff] mr-3 font-bold">✓</span>
+                <span className="text-[#0066ff] mr-3 font-bold">✓</span>
                 <span className="text-brand-50">Compliance with NBE Directive No. ONPS/10/2025</span>
               </li>
             </ul>

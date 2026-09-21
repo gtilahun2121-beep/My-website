@@ -68,7 +68,7 @@ export default function PasswordInput({
 
     return (
         <div className="flex flex-col gap-1">
-            {label && <label className="block text-sm font-bold text-[#00d9ff]">{label}</label>}
+            {label && <label className="block text-sm font-bold text-[#0066ff]">{label}</label>}
 
             <div className="relative flex items-center">
                 {icon && (
@@ -93,13 +93,13 @@ export default function PasswordInput({
                         disabled ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white',
                         error
                             ? 'border-brand-400 focus:ring-amber-300'
-                            : 'border-gray-300 focus:ring-[#001f3f] focus:border-[#001f3f]',
+                            : 'border-gray-300 focus:ring-[#0066ff] focus:border-[#0066ff]',
                     ].join(' ')}
                 />
                 <button
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
-                    className="absolute right-3 p-1 rounded-full text-gray-400 hover:text-[#00d9ff] hover:bg-gray-100 transition-colors"
+                    className="absolute right-3 p-1 rounded-full text-gray-400 hover:text-[#0066ff] hover:bg-gray-100 transition-colors"
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                     tabIndex={-1}
                 >

@@ -54,7 +54,7 @@ export default function RecentActivity({ transactions, loading }: RecentActivity
   return (
     <section className="bg-card rounded-card border border-gray-200">
       <div className="px-5 pt-5 pb-3">
-        <h2 className="text-lg font-black text-[#00d9ff]">Recent Activity</h2>
+        <h2 className="text-lg font-black text-[#0066ff]">Recent Activity</h2>
       </div>
 
       <div className="px-5 pb-5">
@@ -85,7 +85,7 @@ export default function RecentActivity({ transactions, loading }: RecentActivity
                     {meta.icon}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-bold text-[#00d9ff] truncate">
+                    <p className="text-sm font-bold text-[#0066ff] truncate">
                       {meta.label}
                       {txn.equb_name ? ` · ${txn.equb_name}` : ''}
                     </p>

@@ -195,12 +195,12 @@ export default function CreateAccountModal({
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="bg-gradient-to-r from-[#001f3f] to-[#001f3f] px-8 py-6 flex justify-between items-center rounded-t-2xl">
+            <div className="bg-gradient-to-r from-white/40 to-white/35 px-8 py-6 flex justify-between items-center rounded-t-2xl">
               <div>
-                <h2 className="text-2xl font-black text-[#00d9ff]">
+                <h2 className="text-2xl font-black text-[#0066ff]">
                   {step === 'account' ? '🏦 Create Account' : '✅ Verify OTP'}
                 </h2>
-                <p className="text-sm text-[#00d9ff]/80 font-semibold mt-1">
+                <p className="text-sm text-[#0066ff]/80 font-semibold mt-1">
                   {lang === 'en'
                     ? 'Complete your Equb profile'
                     : 'በእርስዎ Equb ተጠናቀቁ'}
@@ -208,7 +208,7 @@ export default function CreateAccountModal({
               </div>
               <button
                 onClick={handleClose}
-                className="text-2xl text-[#00d9ff] hover:opacity-70 transition-all"
+                className="text-2xl text-[#0066ff] hover:opacity-70 transition-all"
               >
                 ✕
               </button>
@@ -297,7 +297,7 @@ export default function CreateAccountModal({
 
                   <button
                     onClick={() => setStep('account')}
-                    className="w-full text-center text-sm text-gray-600 hover:text-[#00d9ff] font-semibold"
+                    className="w-full text-center text-sm text-gray-600 hover:text-[#0066ff] font-semibold"
                   >
                     ← {lang === 'en' ? 'Back' : 'ተመለስ'}
                   </button>

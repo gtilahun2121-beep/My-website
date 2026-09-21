@@ -180,7 +180,7 @@ export default function AdminAnalyticsPage() {
                   type="button"
                   onClick={() => setRange(r.key)}
                   className={`px-3 py-1 rounded-md text-xs font-bold transition-colors ${
-                    range === r.key ? 'bg-brand-600 text-[#00d9ff] shadow' : 'text-admin-muted hover:text-admin-text'
+                    range === r.key ? 'bg-brand-600 text-white shadow' : 'text-admin-muted hover:text-admin-text'
                   }`}
                 >
                   {r.label}
@@ -225,7 +225,7 @@ export default function AdminAnalyticsPage() {
           <button
             type="button"
             onClick={() => void load()}
-            className="mt-3 px-4 py-2 rounded-lg bg-brand-600 text-[#00d9ff] text-sm font-bold hover:bg-brand-700"
+            className="mt-3 px-4 py-2 rounded-lg bg-brand-600 text-white text-sm font-bold hover:bg-brand-700"
           >
             Retry
           </button>

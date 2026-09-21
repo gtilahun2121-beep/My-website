@@ -180,7 +180,7 @@ export default function AdminTransactionsPage() {
           type="button"
           onClick={() => setTab('payments')}
           className={`px-4 py-1.5 rounded-md text-sm font-bold transition-colors ${
-            tab === 'payments' ? 'bg-brand-600 text-[#00d9ff] shadow' : 'text-admin-muted hover:text-admin-text'
+            tab === 'payments' ? 'bg-brand-600 text-white shadow' : 'text-admin-muted hover:text-admin-text'
           }`}
         >
           Payments{payData ? ` (${payData.total})` : ''}
@@ -189,7 +189,7 @@ export default function AdminTransactionsPage() {
           type="button"
           onClick={() => setTab('payouts')}
           className={`px-4 py-1.5 rounded-md text-sm font-bold transition-colors ${
-            tab === 'payouts' ? 'bg-brand-600 text-[#00d9ff] shadow' : 'text-admin-muted hover:text-admin-text'
+            tab === 'payouts' ? 'bg-brand-600 text-white shadow' : 'text-admin-muted hover:text-admin-text'
           }`}
         >
           Payouts{poData ? ` (${poData.total})` : ''}

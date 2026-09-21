@@ -90,7 +90,7 @@ export default function CreateEqubPage() {
         <Header lang={lang} onLanguageChange={setLang} />
         <div className="flex-grow flex items-center justify-center">
           <div className="text-center">
-            <p className="text-xl font-bold text-[#00d9ff] mb-4">
+            <p className="text-xl font-bold text-[#0066ff] mb-4">
               {lang === 'en' ? 'Please log in to continue' : 'ለመቀጠል ይግቡ'}
             </p>
             <Link href="/" className="text-brand-600 hover:underline">
@@ -110,11 +110,11 @@ export default function CreateEqubPage() {
       <div className="flex-grow py-8 px-4">
         <div className="max-w-6xl mx-auto">
           {isAdmin ? (
-            <h1 className="text-3xl sm:text-4xl font-black text-[#00d9ff] mb-2">
+            <h1 className="text-3xl sm:text-4xl font-black text-[#0066ff] mb-2">
               {lang === 'en' ? 'Create an Equb 🆕' : 'እቁብ ይፍጠሩ 🆕'}
             </h1>
           ) : (
-            <h1 className="text-3xl sm:text-4xl font-black text-[#00d9ff] mb-2">
+            <h1 className="text-3xl sm:text-4xl font-black text-[#0066ff] mb-2">
               {lang === 'en' ? 'Request an Equb 🙋' : 'እቁብ ይጠይቁ 🙋'}
             </h1>
           )}
@@ -136,7 +136,7 @@ export default function CreateEqubPage() {
           {success ? (
             <div className="bg-brand-50 border-2 border-brand-400 rounded-xl p-8 text-center">
               <p className="text-5xl mb-4"></p>
-              <h3 className="text-2xl font-black text-brand-800 mb-2">
+              <h3 className="text-2xl font-black text-[#0042ad] mb-2">
                 {isAdmin
                   ? (lang === 'en' ? 'Equb Created!' : 'እቁብ ተፈጥሯል!')
                   : (lang === 'en' ? 'Request Submitted!' : 'ጥያቄ ቀርቧል!')}
@@ -151,10 +151,10 @@ export default function CreateEqubPage() {
             <>
               <PresetTemplates lang={lang} onSelectTemplate={handleSelectTemplate} />
 
-              <div data-form-section className="bg-white rounded-xl shadow-md p-8 border-t-4 border-[#001f3f] max-w-3xl">
+              <div data-form-section className="bg-white rounded-xl shadow-md p-8 border-t-4 border-[#0066ff] max-w-3xl">
               <div className="space-y-5">
                 <div>
-                  <label className="block text-sm font-bold text-[#00d9ff] mb-1">
+                  <label className="block text-sm font-bold text-[#0066ff] mb-1">
                     {lang === 'en' ? 'Equb Name' : 'የእቁብ ስም'}
                   </label>
                   <input
@@ -162,12 +162,12 @@ export default function CreateEqubPage() {
                     value={form.name}
                     onChange={(e) => set('name', e.target.value)}
                     placeholder={lang === 'en' ? 'e.g. Family Savings Circle' : 'ለምሳሌ የቤተሰብ ቁጠባ'}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:border-[#001f3f]"
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:border-[#0066ff]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-[#00d9ff] mb-1">
+                  <label className="block text-sm font-bold text-[#0066ff] mb-1">
                     {lang === 'en' ? 'Description (optional)' : 'መግለጫ (አማራጭ)'}
                   </label>
                   <textarea
@@ -175,42 +175,42 @@ export default function CreateEqubPage() {
                     onChange={(e) => set('description', e.target.value)}
                     rows={3}
                     placeholder={lang === 'en' ? 'What is this Equb about?' : 'ይህ እቁብ ስለምንድን ነው?'}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:border-[#001f3f]"
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:border-[#0066ff]"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-bold text-[#00d9ff] mb-1">
+                    <label className="block text-sm font-bold text-[#0066ff] mb-1">
                       {lang === 'en' ? 'Contribution (ETB)' : 'መዋጮ (ETB)'}
                     </label>
                     <input
                       type="number"
                       value={form.contribution_amount}
                       onChange={(e) => set('contribution_amount', e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:border-[#001f3f]"
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:border-[#0066ff]"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-[#00d9ff] mb-1">
+                    <label className="block text-sm font-bold text-[#0066ff] mb-1">
                       {lang === 'en' ? 'Total Rounds' : 'ጠቅላላ ዙሮች'}
                     </label>
                     <input
                       type="number"
                       value={form.total_rounds}
                       onChange={(e) => set('total_rounds', e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:border-[#001f3f]"
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:border-[#0066ff]"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-[#00d9ff] mb-1">
+                    <label className="block text-sm font-bold text-[#0066ff] mb-1">
                       {lang === 'en' ? 'Cycle (days)' : 'ዑደት (ቀናት)'}
                     </label>
                     <input
                       type="number"
                       value={form.cycle_days}
                       onChange={(e) => set('cycle_days', e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:border-[#001f3f]"
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:border-[#0066ff]"
                     />
                   </div>
                 </div>
@@ -224,7 +224,7 @@ export default function CreateEqubPage() {
                 <button
                   onClick={handleSubmit}
                   disabled={loading}
-                  className="w-full py-3 bg-gradient-to-r from-[#001f3f] to-[#001f3f] text-[#00d9ff] font-black rounded-lg hover:shadow-lg transition-all disabled:opacity-50"
+                  className="w-full py-3 bg-[#0066ff] text-white font-black rounded-lg hover:shadow-lg transition-all disabled:opacity-50"
                 >
                   {loading
                     ? (lang === 'en' ? 'Submitting...' : 'በመላክ ላይ...')

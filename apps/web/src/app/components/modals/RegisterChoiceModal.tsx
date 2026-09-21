@@ -74,13 +74,13 @@ export default function RegisterChoiceModal({
         initial={{ scale: 0.9, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 20 }}
-        className="bg-white rounded-2xl w-full max-w-2xl overflow-hidden"
+        className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="bg-gradient-to-r from-[#001f3f] to-[#001f3f] px-8 py-4 text-center">
-          <h2 className="text-xl font-black text-[#00d9ff] mb-1">QalNet</h2>
-          <p className="text-[#00d9ff]/90 font-semibold text-sm">
+        <div className="bg-gradient-to-r from-white/40 to-white/35 px-5 py-3 sm:px-8 sm:py-4 text-center">
+          <h2 className="text-xl font-black text-[#0066ff] mb-1">QalNet</h2>
+          <p className="text-[#0066ff]/90 font-semibold text-sm">
             {lang === 'en'
               ? 'Ethiopia\'s Digital Equb Platform'
               : lang === 'am'
@@ -90,9 +90,9 @@ export default function RegisterChoiceModal({
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-5 sm:p-6">
           <div className="mb-6 text-center">
-            <h3 className="text-xl font-bold text-[#00d9ff] mb-1">
+            <h3 className="text-xl font-bold text-[#0066ff] mb-1">
               {lang === 'en'
                 ? 'Welcome to QalNet'
                 : lang === 'am'
@@ -115,7 +115,7 @@ export default function RegisterChoiceModal({
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={onSignUp}
-              className="w-full bg-white text-[#00d9ff] px-6 py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all duration-300"
+              className="w-full bg-white text-[#0066ff] px-6 py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all duration-300"
             >
               <span>✍️</span>
               <span>{lang === 'en' ? 'Create New Account' : lang === 'am' ? 'አዲስ መስተዋወቅ ፍጠር' : 'Akkaunt Haaraa Uumuu'}</span>
@@ -126,7 +126,7 @@ export default function RegisterChoiceModal({
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={onSignIn}
-              className="w-full bg-white text-[#00d9ff] px-6 py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all duration-300"
+              className="w-full bg-white text-[#0066ff] px-6 py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all duration-300"
             >
               <span>🔐</span>
               <span>{lang === 'en' ? 'I Already Have an Account' : lang === 'am' ? 'ቀድሞ መስተዋወቅ አለብኝ' : 'Akkaunt Jira'}</span>
@@ -167,7 +167,7 @@ export default function RegisterChoiceModal({
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="w-full mt-6 py-2 text-xs text-gray-500 hover:text-[#00d9ff] transition-colors font-medium"
+            className="w-full mt-6 py-2 text-xs text-gray-500 hover:text-[#0066ff] transition-colors font-medium"
           >
             {lang === 'en' ? '← Back' : lang === 'am' ? '← ተመለስ' : '← Duubatti'}
           </button>

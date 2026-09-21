@@ -49,7 +49,7 @@ export const BottomNavigation: React.FC<BottomNavProps> = ({
           <span className="text-2xl">{item.icon}</span>
           <span className="text-xs mt-1 line-clamp-1">{item.label}</span>
           {item.id === 'more' && notificationCount > 0 && (
-            <span className="absolute top-1 right-1 bg-brand-500 text-[#00d9ff] text-xs rounded-full w-5 h-5 flex items-center justify-center">
+            <span className="absolute top-1 right-1 bg-brand-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
               {notificationCount}
             </span>
           )}

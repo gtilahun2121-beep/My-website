@@ -8,7 +8,7 @@ interface KpiCardProps {
 }
 
 const ACCENTS = {
-  brand: { light: 'bg-brand-100 text-brand-800', dark: 'bg-brand-500/15 text-brand-300' },
+  brand: { light: 'bg-brand-100 text-[#0042ad]', dark: 'bg-brand-500/15 text-brand-300' },
   accent: { light: 'bg-accent-100 text-accent-700', dark: 'bg-accent-500/15 text-accent-300' },
   warning: { light: 'bg-warning-100 text-warning-700', dark: 'bg-warning-500/15 text-warning-300' },
   success: { light: 'bg-success-100 text-success-700', dark: 'bg-success-500/15 text-success-300' },
@@ -44,7 +44,7 @@ export default function KpiCard({
           </p>
           <p
             className={`mt-2 text-3xl font-black ${
-              variant === 'dark' ? 'text-admin-text' : 'text-[#00d9ff]'
+              variant === 'dark' ? 'text-admin-text' : 'text-[#0066ff]'
             }`}
           >
             {value}

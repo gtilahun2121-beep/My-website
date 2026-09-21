@@ -85,7 +85,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
       {/* Step 0: Equb Selection */}
       {step === 'equb' && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <h3 className="text-2xl font-black text-[#00d9ff] mb-6 text-center">
+          <h3 className="text-2xl font-black text-[#0066ff] mb-6 text-center">
             🏢 Choose Your Equb Group
           </h3>
           <p className="text-center text-sm text-gray-600 mb-4">
@@ -98,7 +98,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
               placeholder="Search profession or income level..."
               value={searchEqub}
               onChange={(e) => setSearchEqub(e.target.value)}
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#001f3f] font-bold"
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#0066ff] font-bold"
             />
           </div>
 
@@ -110,17 +110,17 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                 whileHover={{ scale: 1.02 }}
                 className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
                   selectedEqub?.id === equb.id
-                    ? 'border-[#001f3f] bg-[#001f3f]/10'
+                    ? 'border-[#0066ff] bg-[#0066ff]/10'
                     : 'border-gray-300 bg-gray-50 hover:shadow-lg hover:bg-gray-100'
                 }`}
               >
                 <div className="flex items-start gap-3">
                   <span className="text-3xl">{equb.icon}</span>
                   <div className="flex-1">
-                    <h4 className="font-black text-[#00d9ff] text-sm">{equb.name}</h4>
+                    <h4 className="font-black text-[#0066ff] text-sm">{equb.name}</h4>
                     <p className="text-xs text-gray-600 mb-2">{equb.description}</p>
                     <div className="flex gap-2 flex-wrap text-xs">
-                      <span className="px-2 py-1 bg-[#001f3f]/10 text-[#00d9ff] rounded font-bold">
+                      <span className="px-2 py-1 bg-[#0066ff]/10 text-[#0066ff] rounded font-bold">
                         ETB {equb.monthlyPayment}/mo
                       </span>
                       <span className={`px-2 py-1 rounded font-bold ${
@@ -161,7 +161,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
             disabled={!selectedEqub}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="w-full py-3 bg-gradient-to-r from-[#001f3f] to-[#001f3f] text-[#00d9ff] font-black rounded-lg hover:shadow-lg transition-all duration-300 disabled:opacity-50"
+            className="w-full py-3 bg-[#0066ff] text-white font-black rounded-lg hover:shadow-lg transition-all duration-300 disabled:opacity-50"
           >
             ✓ Continue with Selected Equb
           </motion.button>
@@ -171,13 +171,13 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
       {/* Step 1: Phone Number */}
       {step === 'phone' && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <h3 className="text-2xl font-black text-[#00d9ff] mb-6 text-center">
+          <h3 className="text-2xl font-black text-[#0066ff] mb-6 text-center">
             ✍️ Sign Up
           </h3>
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-bold text-[#00d9ff] mb-2">
+              <label className="block text-sm font-bold text-[#0066ff] mb-2">
                 Phone Number
               </label>
               <input
@@ -185,9 +185,9 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                 placeholder="+251911223344"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#001f3f] font-bold text-lg"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#0066ff] font-bold text-lg"
               />
-              <p className="text-xs text-[#ffffff] mt-1">
+              <p className="text-xs text-gray-500 mt-1">
                 Include country code (e.g., +251 for Ethiopia)
               </p>
             </div>
@@ -211,7 +211,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
               disabled={loading}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="w-full py-3 bg-gradient-to-r from-[#001f3f] to-[#001f3f] text-[#00d9ff] font-black rounded-full hover:shadow-lg transition-all duration-300 disabled:opacity-50"
+              className="w-full py-3 bg-[#0066ff] text-white font-black rounded-full hover:shadow-lg transition-all duration-300 disabled:opacity-50"
             >
               {loading ? '⏳ Sending OTP...' : '✓ Continue'}
             </motion.button>
@@ -221,7 +221,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                 setStep('equb');
                 setError('');
               }}
-              className="w-full py-2 text-[#00d9ff] font-bold hover:underline mt-2"
+              className="w-full py-2 text-[#0066ff] font-bold hover:underline mt-2"
             >
               ← Change Equb Group
             </button>
@@ -232,13 +232,13 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
       {/* Step 2: User Details */}
       {step === 'details' && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <h3 className="text-2xl font-black text-[#00d9ff] mb-6 text-center">
+          <h3 className="text-2xl font-black text-[#0066ff] mb-6 text-center">
             ✍️ Complete Your Profile
           </h3>
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-bold text-[#00d9ff] mb-2">
+              <label className="block text-sm font-bold text-[#0066ff] mb-2">
                 Full Name (as per ID)
               </label>
               <input
@@ -246,12 +246,12 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                 placeholder="Aisha Mohammed"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#001f3f] font-bold"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#0066ff] font-bold"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-[#00d9ff] mb-2">
+              <label className="block text-sm font-bold text-[#0066ff] mb-2">
                 6-Digit Security PIN
               </label>
               <div className="relative">
@@ -261,13 +261,13 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                   maxLength={6}
                   value={pin}
                   onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
-                  className="w-full px-4 pr-11 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#001f3f] font-bold text-2xl text-center tracking-widest"
+                  className="w-full px-4 pr-11 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#0066ff] font-bold text-2xl text-center tracking-widest"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPin((v) => !v)}
                   aria-label="Show/Hide PIN"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:text-[#00d9ff] hover:bg-gray-100 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:text-[#0066ff] hover:bg-gray-100 transition-colors"
                 >
                   {!showPin ? (
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -276,13 +276,13 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                   )}
                 </button>
               </div>
-              <p className="text-xs text-[#ffffff] mt-1">
+              <p className="text-xs text-gray-500 mt-1">
                 Remember this PIN - you&apos;ll use it to login
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-[#00d9ff] mb-2">
+              <label className="block text-sm font-bold text-[#0066ff] mb-2">
                 Fayda Number (Kebele ID)
               </label>
               <input
@@ -290,9 +290,9 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                 placeholder="12345678"
                 value={faydaNumber}
                 onChange={(e) => setFaydaNumber(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#001f3f] font-bold"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#0066ff] font-bold"
               />
-              <p className="text-xs text-[#ffffff] mt-1">
+              <p className="text-xs text-gray-500 mt-1">
                 Your Kebele ID for verification
               </p>
             </div>
@@ -308,7 +308,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
               disabled={loading}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="w-full py-3 bg-gradient-to-r from-[#001f3f] to-[#001f3f] text-[#00d9ff] font-black rounded-full hover:shadow-lg transition-all duration-300 disabled:opacity-50"
+              className="w-full py-3 bg-[#0066ff] text-white font-black rounded-full hover:shadow-lg transition-all duration-300 disabled:opacity-50"
             >
               {loading ? '⏳ Creating Account...' : '🎉 Complete Registration'}
             </motion.button>
@@ -318,7 +318,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
                 setStep('phone');
                 setError('');
               }}
-              className="w-full py-2 text-[#00d9ff] font-bold hover:underline"
+              className="w-full py-2 text-[#0066ff] font-bold hover:underline"
             >
               ← Back
             </button>
@@ -334,7 +334,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
           className="text-center"
         >
           <div className="text-6xl mb-6 animate-bounce">🎉</div>
-          <h3 className="text-2xl font-black text-[#00d9ff] mb-4">
+          <h3 className="text-2xl font-black text-[#0066ff] mb-4">
             Registration Successful!
           </h3>
           <p className="text-gray-600 mb-6">
@@ -342,7 +342,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
           </p>
 
           <div className="bg-gray-100 border-2 border-gray-300 rounded-lg p-4 mb-6 text-left">
-            <p className="text-sm font-bold text-[#00d9ff] mb-2">✓ Account Details:</p>
+            <p className="text-sm font-bold text-[#0066ff] mb-2">✓ Account Details:</p>
             <p className="text-xs text-gray-600">
               📱 Phone: {phoneNumber}
             </p>
@@ -368,7 +368,7 @@ export default function RegistrationForm({ onSuccess, onError }: RegistrationFor
             onClick={() => window.location.href = '/'}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="w-full py-3 bg-gradient-to-r from-[#001f3f] to-[#001f3f] text-[#00d9ff] font-black rounded-full hover:shadow-lg transition-all duration-300"
+            className="w-full py-3 bg-[#0066ff] text-white font-black rounded-full hover:shadow-lg transition-all duration-300"
           >
             🏠 Go to Home
           </motion.button>

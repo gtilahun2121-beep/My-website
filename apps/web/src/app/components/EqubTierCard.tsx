@@ -32,7 +32,7 @@ export default function EqubTierCard({
         'Quick liquidity',
         'Small daily amounts',
       ],
-      color: 'from-brand-900 to-accent-600',
+      color: 'from-[#0066ff] to-accent-600',
       lightColor: 'bg-brand-50',
       borderColor: 'border-brand-200',
       badge: 'Most Popular',
@@ -52,7 +52,7 @@ export default function EqubTierCard({
         'Balanced pace',
         'Moderate amounts',
       ],
-      color: 'from-brand-900 to-accent-600',
+      color: 'from-[#0066ff] to-accent-600',
       lightColor: 'bg-brand-50',
       borderColor: 'border-brand-200',
       badge: 'Best Balance',
@@ -72,7 +72,7 @@ export default function EqubTierCard({
         'Larger capital',
         'Premium members',
       ],
-      color: 'from-brand-900 to-accent-600',
+      color: 'from-[#0066ff] to-accent-600',
       lightColor: 'bg-brand-50',
       borderColor: 'border-brand-200',
       badge: 'Premium',
@@ -94,15 +94,15 @@ export default function EqubTierCard({
       >
         {/* Premium Badge */}
         {isPopular && (
-          <div className={`absolute top-0 right-0 bg-gradient-to-r ${data.color} text-[#00d9ff] px-4 py-1 rounded-bl-lg text-sm font-bold`}>
+          <div className={`absolute top-0 right-0 bg-gradient-to-r ${data.color} text-white px-4 py-1 rounded-bl-lg text-sm font-bold`}>
             {data.badge}
           </div>
         )}
 
         {/* Header with Title */}
-        <div className={`bg-gradient-to-r ${data.color} text-[#00d9ff] p-6`}>
+        <div className={`bg-gradient-to-r ${data.color} text-white p-6`}>
           <h3 className="text-2xl font-black mb-2">{data.title}</h3>
-          <p className="text-[#00d9ff]/90 text-sm font-semibold">{data.targetUsers}</p>
+          <p className="text-white/90 text-sm font-semibold">{data.targetUsers}</p>
         </div>
 
         {/* Content */}
@@ -112,26 +112,26 @@ export default function EqubTierCard({
             {/* Duration */}
             <div>
               <p className="text-xs text-gray-600 font-semibold">Duration</p>
-              <p className="text-sm font-bold text-[#00d9ff]">{data.duration}</p>
+              <p className="text-sm font-bold text-[#0066ff]">{data.duration}</p>
             </div>
 
             {/* Contribution */}
             <div>
               <p className="text-xs text-gray-600 font-semibold">Contribution</p>
-              <p className="text-sm font-bold text-[#00d9ff]">{data.contribution}</p>
+              <p className="text-sm font-bold text-[#0066ff]">{data.contribution}</p>
               <p className="text-xs text-gray-500">{data.frequency}</p>
             </div>
 
             {/* Members */}
             <div>
               <p className="text-xs text-gray-600 font-semibold">Members</p>
-              <p className="text-sm font-bold text-[#00d9ff]">{data.members}</p>
+              <p className="text-sm font-bold text-[#0066ff]">{data.members}</p>
             </div>
 
             {/* Pot Size */}
             <div>
               <p className="text-xs text-gray-600 font-semibold">Pot Size</p>
-              <p className="text-sm font-bold text-[#00d9ff]">{data.potSize}</p>
+              <p className="text-sm font-bold text-[#0066ff]">{data.potSize}</p>
             </div>
           </div>
 
@@ -140,10 +140,10 @@ export default function EqubTierCard({
 
           {/* Features */}
           <div>
-            <p className="text-xs font-bold text-[#00d9ff] mb-3">What you get:</p>
+            <p className="text-xs font-bold text-[#0066ff] mb-3">What you get:</p>
             <ul className="space-y-2">
               {data.features.map((feature, idx) => (
-                <li key={idx} className="flex items-center gap-2 text-sm text-[#00d9ff]">
+                <li key={idx} className="flex items-center gap-2 text-sm text-[#0066ff]">
                   <span className={`w-2 h-2 rounded-full bg-gradient-to-r ${data.color}`}></span>
                   {feature}
                 </li>
@@ -154,7 +154,7 @@ export default function EqubTierCard({
           {/* Join Button */}
           <button
             onClick={() => onJoin?.(tier)}
-            className={`w-full py-3 px-4 bg-gradient-to-r ${data.color} text-[#00d9ff] font-bold rounded-lg hover:shadow-lg transition-all hover:scale-105 flex items-center justify-center gap-2`}
+            className={`w-full py-3 px-4 bg-gradient-to-r ${data.color} text-white font-bold rounded-lg hover:shadow-lg transition-all hover:scale-105 flex items-center justify-center gap-2`}
           >
             <span>Join {tier === 'DAILY' ? 'Daily' : tier === 'WEEKLY' ? 'Weekly' : 'Monthly'} Equb</span>
           </button>

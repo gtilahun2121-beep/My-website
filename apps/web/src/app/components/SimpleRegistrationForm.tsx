@@ -90,9 +90,9 @@ export default function SimpleRegistrationForm({
       <div className="mb-8">
         <div className="flex justify-between mb-4">
           {[1, 2, 3, 4].map(s => (
-            <div key={s} className={`flex-1 text-center ${s <= step ? 'text-[#00d9ff]' : 'text-gray-400'}`}>
+            <div key={s} className={`flex-1 text-center ${s <= step ? 'text-[#0066ff]' : 'text-gray-400'}`}>
               <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold mx-auto mb-2 ${
-                s < step ? 'bg-[#001f3f] text-[#00d9ff]' : s === step ? 'bg-[#001f3f] text-[#00d9ff] border-2 border-white' : 'bg-gray-200'
+                s < step ? 'bg-[#0066ff] text-white' : s === step ? 'bg-[#0066ff] text-white border-2 border-white' : 'bg-gray-200'
               }`}>
                 {s < step ? '✓' : s}
               </div>
@@ -101,7 +101,7 @@ export default function SimpleRegistrationForm({
           ))}
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2">
-          <div className="bg-[#001f3f] h-2 rounded-full transition-all" style={{ width: `${(step/4)*100}%` }} />
+          <div className="bg-[#0066ff] h-2 rounded-full transition-all" style={{ width: `${(step/4)*100}%` }} />
         </div>
       </div>
 
@@ -115,7 +115,7 @@ export default function SimpleRegistrationForm({
             placeholder="First Name"
             value={formData.firstName}
             onChange={e => updateField('firstName', e.target.value)}
-            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#001f3f] focus:outline-none"
+            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#0066ff] focus:outline-none"
           />
           {errors.firstName && <p className="text-brand-600 text-sm">{errors.firstName}</p>}
           
@@ -124,7 +124,7 @@ export default function SimpleRegistrationForm({
             placeholder="Last Name"
             value={formData.lastName}
             onChange={e => updateField('lastName', e.target.value)}
-            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#001f3f] focus:outline-none"
+            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#0066ff] focus:outline-none"
           />
           {errors.lastName && <p className="text-brand-600 text-sm">{errors.lastName}</p>}
 
@@ -136,7 +136,7 @@ export default function SimpleRegistrationForm({
                 setErrors({ firstName: 'Min 2 chars', lastName: 'Min 2 chars' });
               }
             }}
-            className="w-full bg-[#001f3f] text-[#00d9ff] font-bold py-3 rounded-lg hover:bg-[#001f3f] mt-6"
+            className="w-full bg-[#0066ff] text-white font-bold py-3 rounded-lg hover:bg-[#0066ff] mt-6"
           >
             Next →
           </button>
@@ -151,7 +151,7 @@ export default function SimpleRegistrationForm({
             placeholder="+2519xxxxxxxx or +2517xxxxxxxx"
             value={formData.phoneNumber}
             onChange={e => updateField('phoneNumber', e.target.value)}
-            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#001f3f] focus:outline-none"
+            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#0066ff] focus:outline-none"
           />
           {errors.phoneNumber && <p className="text-brand-600 text-sm">{errors.phoneNumber}</p>}
 
@@ -160,14 +160,14 @@ export default function SimpleRegistrationForm({
             placeholder="user@gmail.com"
             value={formData.email}
             onChange={e => updateField('email', e.target.value)}
-            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#001f3f] focus:outline-none"
+            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#0066ff] focus:outline-none"
           />
           {errors.email && <p className="text-brand-600 text-sm">{errors.email}</p>}
 
           <div className="flex gap-3">
             <button
               onClick={() => setStep(1)}
-              className="flex-1 border-2 border-[#001f3f] text-[#00d9ff] font-bold py-3 rounded-lg hover:bg-gray-50"
+              className="flex-1 border-2 border-[#0066ff] text-[#0066ff] font-bold py-3 rounded-lg hover:bg-gray-50"
             >
               ← Back
             </button>
@@ -187,7 +187,7 @@ export default function SimpleRegistrationForm({
                   setErrors(errs);
                 }
               }}
-              className="flex-1 bg-[#001f3f] text-[#00d9ff] font-bold py-3 rounded-lg hover:bg-[#001f3f]"
+              className="flex-1 bg-[#0066ff] text-white font-bold py-3 rounded-lg hover:bg-[#0066ff]"
             >
               Next →
             </button>
@@ -204,7 +204,7 @@ export default function SimpleRegistrationForm({
             value={formData.fayda}
             onChange={e => updateField('fayda', e.target.value)}
             disabled={fayda.verified}
-            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#001f3f] focus:outline-none disabled:bg-gray-100"
+            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#0066ff] focus:outline-none disabled:bg-gray-100"
           />
           {errors.fayda && <p className="text-brand-600 text-sm">{errors.fayda}</p>}
 
@@ -212,7 +212,7 @@ export default function SimpleRegistrationForm({
             <div className="bg-brand-50 border-2 border-brand-300 rounded-lg p-4 flex items-center gap-3">
               <span className="text-2xl">✓</span>
               <div>
-                <p className="font-bold text-brand-800">Identity Verified</p>
+                <p className="font-bold text-[#0042ad]">Identity Verified</p>
                 <p className="text-sm text-brand-700">Fayda ID confirmed</p>
               </div>
             </div>
@@ -231,7 +231,7 @@ export default function SimpleRegistrationForm({
             }}
             disabled={fayda.verified || fayda.verifying}
             className={`w-full font-bold py-3 rounded-lg ${
-              fayda.verified ? 'bg-brand-100 text-brand-800 cursor-not-allowed' : 'bg-brand-900 text-[#00d9ff] hover:bg-brand-950'
+              fayda.verified ? 'bg-brand-100 text-[#0042ad] cursor-not-allowed' : 'bg-[#0066ff] text-white hover:bg-[#0047b3]'
             }`}
           >
             {fayda.verifying ? '⏳ Verifying...' : fayda.verified ? '✓ Verified' : 'Verify with Fayda'}
@@ -240,7 +240,7 @@ export default function SimpleRegistrationForm({
           <div className="flex gap-3">
             <button
               onClick={() => setStep(2)}
-              className="flex-1 border-2 border-[#001f3f] text-[#00d9ff] font-bold py-3 rounded-lg hover:bg-gray-50"
+              className="flex-1 border-2 border-[#0066ff] text-[#0066ff] font-bold py-3 rounded-lg hover:bg-gray-50"
             >
               ← Back
             </button>
@@ -248,7 +248,7 @@ export default function SimpleRegistrationForm({
               onClick={() => fayda.verified && setStep(4)}
               disabled={!fayda.verified}
               className={`flex-1 font-bold py-3 rounded-lg ${
-                fayda.verified ? 'bg-[#001f3f] text-[#00d9ff] hover:bg-[#001f3f]' : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                fayda.verified ? 'bg-[#0066ff] text-white hover:bg-[#0066ff]' : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               }`}
             >
               Next →
@@ -260,7 +260,7 @@ export default function SimpleRegistrationForm({
       {/* STEP 4 */}
       {step === 4 && (
         <div className="space-y-4">
-          <p className="bg-brand-50 border-2 border-brand-300 rounded-lg p-4 text-sm text-brand-900 font-semibold">
+          <p className="bg-brand-50 border-2 border-brand-300 rounded-lg p-4 text-sm text-[#0042ad] font-semibold">
             We sent a 5-digit OTP to your phone
           </p>
 
@@ -270,13 +270,13 @@ export default function SimpleRegistrationForm({
             value={formData.otp}
             onChange={e => updateField('otp', e.target.value)}
             maxLength={5}
-            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#001f3f] focus:outline-none text-center text-2xl tracking-widest"
+            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#0066ff] focus:outline-none text-center text-2xl tracking-widest"
           />
           {errors.otp && <p className="text-brand-600 text-sm text-center">{errors.otp}</p>}
           {errors.submit && <p className="text-brand-600 text-sm text-center">{errors.submit}</p>}
 
           <div className="bg-brand-50 border-2 border-brand-200 rounded-lg p-4">
-            <h4 className="font-bold text-brand-900 text-sm mb-3">🔒 Security</h4>
+            <h4 className="font-bold text-[#0042ad] text-sm mb-3">🔒 Security</h4>
             <div className="space-y-2 text-sm text-brand-700">
               <div className="flex items-center gap-2"><span>🔒</span><span>End-to-end encryption</span></div>
               <div className="flex items-center gap-2"><span>✅</span><span>Fayda verified</span></div>
@@ -288,14 +288,14 @@ export default function SimpleRegistrationForm({
           <div className="flex gap-3">
             <button
               onClick={() => setStep(3)}
-              className="flex-1 border-2 border-[#001f3f] text-[#00d9ff] font-bold py-3 rounded-lg hover:bg-gray-50"
+              className="flex-1 border-2 border-[#0066ff] text-[#0066ff] font-bold py-3 rounded-lg hover:bg-gray-50"
             >
               ← Back
             </button>
             <button
               onClick={handleCreateAccount}
               disabled={submitting}
-              className="flex-1 bg-[#001f3f] text-[#00d9ff] font-bold py-3 rounded-lg hover:bg-[#001f3f] disabled:opacity-50"
+              className="flex-1 bg-[#0066ff] text-white font-bold py-3 rounded-lg hover:bg-[#0066ff] disabled:opacity-50"
             >
               {submitting ? '⏳ Creating...' : '🎉 Create Account'}
             </button>

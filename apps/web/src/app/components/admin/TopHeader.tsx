@@ -84,7 +84,7 @@ export default function TopHeader({ title, subtitle, onMenuClick, variant = 'adm
   const iconBtnCls = isAdmin
     ? 'text-admin-muted hover:bg-admin-card hover:text-admin-text'
     : 'text-gray-500 hover:bg-gray-100';
-  const titleCls = isAdmin ? 'text-admin-text' : 'text-[#00d9ff]';
+  const titleCls = isAdmin ? 'text-admin-text' : 'text-[#0066ff]';
   const subtitleCls = isAdmin ? 'text-admin-muted' : 'text-gray-400';
   const searchCls = isAdmin
     ? 'bg-admin-card border-admin-border placeholder:text-admin-disabled text-admin-text focus:ring-brand-500/40 focus:border-brand-500'
@@ -181,7 +181,7 @@ export default function TopHeader({ title, subtitle, onMenuClick, variant = 'adm
               <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5m6 0v1a3 3 0 1 1-6 0v-1m6 0H9" />
             </svg>
             {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-danger-500 border-2 border-white text-[10px] font-black text-[#00d9ff] flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-danger-500 border-2 border-white text-[10px] font-black text-[#0066ff] flex items-center justify-center">
                 {unreadCount > 99 ? '99+' : unreadCount}
               </span>
             )}

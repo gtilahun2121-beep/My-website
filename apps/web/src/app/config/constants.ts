@@ -177,18 +177,18 @@ export const VALIDATION = {
 export const UI = {
   // Colors - synced with the QalNet brand system in globals.css
   COLORS: {
-    PRIMARY: '#00d9ff', // Brand cyan (primary accent)
-    PRIMARY_DARK: '#001f3f', // Brand navy (surfaces / dark)
-    ACCENT: '#0066ff', // Deep blue (secondary action)
+    PRIMARY: '#0066ff', // Brand blue (primary accent)
+    PRIMARY_DARK: '#003485', // Deep brand blue
+    ACCENT: '#0066ff', // Blue (secondary action)
     SUCCESS: '#10b981',
     ERROR: '#ef4444',
     WARNING: '#f59e0b',
     INFO: '#0066ff',
-    SECONDARY: '#64748b', // Slate gray
-    BACKGROUND: '#001f3f', // Brand navy background
+    SECONDARY: '#64748b', // Gray
+    BACKGROUND: '#ffffff', // Page background
     BACKGROUND_LIGHT: '#ffffff',
-    CARD: '#0a3456',
-    TEXT_PRIMARY: '#ffffff',
+    CARD: '#ffffff',
+    TEXT_PRIMARY: '#1f2937',
     TEXT_ON_LIGHT: '#1f2937',
     TEXT_SECONDARY: '#6b7280',
     BORDER: '#e5e7eb',

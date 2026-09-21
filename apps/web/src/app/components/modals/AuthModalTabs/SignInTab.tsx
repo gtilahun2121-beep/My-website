@@ -61,22 +61,30 @@ export default function SignInTab({ lang = defaultLanguage, onSuccess, onError }
     if (!identifier) {
       newErrors.phoneNumber = 'Email or phone number is required';
     } else {
-      const looksLikeEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
+      // More robust email detection: must contain @
+      const looksLikeEmail = identifier.includes('@');
       if (looksLikeEmail) {
         const emailValidation = ValidationSchema.validateEmail(identifier);
-        if (!emailValidation.valid) newErrors.phoneNumber = emailValidation.error || 'Invalid email';
+        if (!emailValidation.valid) {
+          newErrors.phoneNumber = emailValidation.error || 'Invalid email address';
+        }
       } else {
+        // Treat as phone number
         const phoneValidation = ValidationSchema.validatePhone(identifier);
         if (!phoneValidation.valid) {
-          newErrors.phoneNumber = 'Enter a valid email or Ethiopian phone number';
+          newErrors.phoneNumber = phoneValidation.error || 'Enter a valid Ethiopian phone number (e.g., +2519xxxxxxxx or 09xxxxxxxx)';
         }
       }
     }
 
     if (!formData.pin) {
       newErrors.pin = 'PIN is required';
-    } else if (!/^\d{4,6}$/.test(formData.pin)) {
-      newErrors.pin = 'PIN must be 4-6 digits';
+    } else if (formData.pin.length < 4) {
+      newErrors.pin = 'PIN must be at least 4 digits';
+    } else if (formData.pin.length > 6) {
+      newErrors.pin = 'PIN cannot exceed 6 digits';
+    } else if (!/^\d+$/.test(formData.pin)) {
+      newErrors.pin = 'PIN must contain only digits';
     }
 
     setErrors(newErrors);
@@ -86,7 +94,7 @@ export default function SignInTab({ lang = defaultLanguage, onSuccess, onError }
   const handleSubmit = async () => {
     try {
       if (!validateForm()) {
-        onError?.('Validation Error', 'Please check your phone and PIN');
+        onError?.('Validation Error', 'Please check your email/phone and PIN');
         return;
       }
 
@@ -99,18 +107,24 @@ export default function SignInTab({ lang = defaultLanguage, onSuccess, onError }
         setMfaToken(error.mfaToken);
         setOtpCode('');
         setTwoFactorError('');
-        onSuccess?.('Two-Factor Authentication', 'Enter the code from your authenticator app', 3000);
+        onSuccess?.('Two-Factor Authentication Required', 'Enter the code from your authenticator app', 4000);
         return;
       }
       const message = error instanceof Error ? error.message : 'Sign in failed';
       
-      // Check if user not found - suggest signup
-      if (message.includes('not found') || message.includes('404')) {
-        onError?.('User Not Found', 'This phone number is not registered. Please sign up first.', 5000);
-      } else if (message.includes('PIN') || message.includes('credentials')) {
+      // Parse error messages and provide actionable feedback
+      if (message.toLowerCase().includes('not found') || message.toLowerCase().includes('404')) {
+        onError?.('User Not Found', 'This phone number or email is not registered. Please sign up first.', 5000);
+        setErrors({ phoneNumber: 'User not found' });
+      } else if (message.toLowerCase().includes('pin') || message.toLowerCase().includes('credentials')) {
         onError?.('Invalid PIN', 'The PIN you entered is incorrect. Please try again.', 3000);
+        setErrors({ pin: 'Incorrect PIN' });
+      } else if (message.toLowerCase().includes('disabled')) {
+        onError?.('Account Disabled', 'Your account has been disabled. Contact support for assistance.', 5000);
+      } else if (message.toLowerCase().includes('locked')) {
+        onError?.('Account Locked', 'Too many failed attempts. Please try again later.', 5000);
       } else {
-        onError?.('Error', message);
+        onError?.('Sign In Failed', message, 4000);
       }
     }
   };
@@ -118,20 +132,39 @@ export default function SignInTab({ lang = defaultLanguage, onSuccess, onError }
   const handle2FASubmit = async () => {
     setTwoFactorError('');
     const code = otpCode.trim();
-    if (code.length < 6 || code.length > 20) {
-      setTwoFactorError('Enter the 6-digit code from your authenticator app, or a backup code');
+    
+    // Validate code length - accept TOTP (6 digits) or backup codes (longer)
+    if (!code) {
+      setTwoFactorError('Please enter your authentication code');
       return;
     }
+    
+    if (code.length < 6) {
+      setTwoFactorError('Code must be at least 6 characters');
+      return;
+    }
+    
+    if (code.length > 20) {
+      setTwoFactorError('Code is too long');
+      return;
+    }
+    
     setTwoFactorLoading(true);
     try {
-      if (!mfaToken) throw new Error('Missing MFA token');
+      if (!mfaToken) throw new Error('Missing MFA token - please try signing in again');
       await verify2FALogin(mfaToken, code);
       setSuccessMessage('✓ Signed in successfully!');
       onSuccess?.('Sign In Successful', 'Welcome back to QalNet!', 3000);
       router.push(homePathForStoredUser());
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Verification failed';
-      setTwoFactorError(message);
+      const message = error instanceof Error ? error.message : '2FA verification failed';
+      if (message.toLowerCase().includes('invalid') || message.toLowerCase().includes('incorrect')) {
+        setTwoFactorError('Invalid code. Please try again or use a backup code.');
+      } else if (message.toLowerCase().includes('expired')) {
+        setTwoFactorError('Code expired. Please sign in again.');
+      } else {
+        setTwoFactorError(message);
+      }
     } finally {
       setTwoFactorLoading(false);
     }
@@ -143,8 +176,8 @@ export default function SignInTab({ lang = defaultLanguage, onSuccess, onError }
 
   if (mfaToken) {
     return (
-      <div className="space-y-4">
-        <h3 className="text-lg font-bold text-[#00d9ff] mb-4">
+      <div className="space-y-3 md:space-y-4">
+        <h3 className="text-base md:text-lg font-bold text-[#0066ff] mb-3 md:mb-4">
           {lang === 'en' ? 'Two-Factor Authentication' : lang === 'am' ? 'የሁለት-ደረጃ ማረጋገጫ' : 'Iggantoota Lama'} 
         </h3>
 
@@ -153,8 +186,9 @@ export default function SignInTab({ lang = defaultLanguage, onSuccess, onError }
           type="text"
           value={otpCode}
           onChange={(value) => setOtpCode(value.replace(/[^A-Za-z0-9-]/g, '').slice(0, 20))}
-          placeholder="000000"
+          placeholder={lang === 'en' ? 'Enter 6-digit code or backup code' : 'Koodii seensuu'}
           error={twoFactorError}
+          hint={lang === 'en' ? 'Enter the 6-digit code from your authenticator app' : undefined}
         />
 
         <FormButton
@@ -168,28 +202,33 @@ export default function SignInTab({ lang = defaultLanguage, onSuccess, onError }
 
         <button
           type="button"
-          onClick={() => setMfaToken(null)}
-          className="w-full text-xs text-gray-500 text-center hover:text-[#00d9ff]"
+          onClick={() => {
+            setMfaToken(null);
+            setOtpCode('');
+            setTwoFactorError('');
+          }}
+          className="w-full text-xs md:text-sm text-gray-500 text-center hover:text-[#0066ff] transition-colors py-2"
         >
-          ← Back to PIN
+          ← Back to sign in
         </button>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-bold text-[#00d9ff] mb-4">
+    <div className="space-y-3 md:space-y-4">
+      <h3 className="text-base md:text-lg font-bold text-[#0066ff] mb-3 md:mb-4">
         {lang === 'en' ? 'Sign In to Your Account' : lang === 'am' ? 'ወደ መስተዋወቅ ወደ ውስጥ ግባ' : lang === 'om' ? 'Seensa Akkauntaa Keessan' : 'Seensa Akkauntaa Keessan'}
       </h3>
 
       <FormInput
-        label={lang === 'en' ? 'Phone Number' : lang === 'am' ? 'ስልክ ቁጥር' : lang === 'om' ? 'Lakkoofsa Bilbilaa' : 'Lakkoofsa Bilbilaa'}
+        label={lang === 'en' ? 'Phone Number or Email' : lang === 'am' ? 'ስልክ ቁጥር ወይም ኢሜይል' : lang === 'om' ? 'Lakkoofsa Bilbilaa ykn Iimaalii' : 'Lakkoofsa Bilbilaa ykn Iimaalii'}
         type="tel"
         value={formData.phoneNumber}
         onChange={(value) => handleFieldChange('phoneNumber', value)}
-        placeholder="+2519 xxxxxxxx"
+        placeholder={lang === 'en' ? '+2519xxxxxxxx or email@domain.com' : '+2519xxxxxxxx'}
         error={errors.phoneNumber}
+        hint={lang === 'en' ? 'Enter your phone number or email address' : undefined}
       />
 
       <FormInput
@@ -200,6 +239,7 @@ export default function SignInTab({ lang = defaultLanguage, onSuccess, onError }
         placeholder="••••"
         maxLength={6}
         error={errors.pin}
+        hint={lang === 'en' ? 'Your security PIN (4-6 digits)' : undefined}
       />
 
       <FormButton
@@ -211,7 +251,7 @@ export default function SignInTab({ lang = defaultLanguage, onSuccess, onError }
         {isLoading ? '⏳ Processing...' : lang === 'en' ? 'Sign In' : lang === 'am' ? 'ወደ ውስጥ ግባ' : 'Seensa'}
       </FormButton>
 
-      <p className="text-xs text-gray-500 text-center">
+      <p className="text-xs md:text-sm text-gray-500 text-center pt-2">
         {lang === 'en' ? "Don't have an account? Click the \"Sign Up\" tab" : lang === 'am' ? 'መስተዋወቅ እንደሌገደበ? \"ምዝገባ\" tab ን ጠቅ ያድርጉ' : 'Akkaunt hin qabaatu? \"Galmaa\" tab keessatti cuqaasi'}
       </p>
     </div>

@@ -12,7 +12,7 @@ export default function DashboardHeader({ firstName, isNewUser }: DashboardHeade
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
-        <h1 className="text-2xl sm:text-3xl font-black text-[#00d9ff]">
+        <h1 className="text-2xl sm:text-3xl font-black text-[#0066ff]">
           {greeting}, {firstName || 'there'}
         </h1>
         <p className="mt-1 text-sm text-gray-500">
@@ -24,7 +24,7 @@ export default function DashboardHeader({ firstName, isNewUser }: DashboardHeade
 
       <Link
         href="/join-equb"
-        className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-brand-600 text-[#00d9ff] text-sm font-bold hover:bg-brand-700 transition-colors shrink-0"
+        className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-brand-600 text-white text-sm font-bold hover:bg-brand-700 transition-colors shrink-0"
       >
         <svg
           viewBox="0 0 24 24"

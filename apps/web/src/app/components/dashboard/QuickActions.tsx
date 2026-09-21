@@ -77,7 +77,7 @@ export default function QuickActions() {
   return (
     <section className="bg-card rounded-card border border-gray-200">
       <div className="px-5 pt-5 pb-3">
-        <h2 className="text-lg font-black text-[#00d9ff]">Quick Actions</h2>
+        <h2 className="text-lg font-black text-[#0066ff]">Quick Actions</h2>
         <p className="mt-0.5 text-xs text-gray-500">What would you like to do next?</p>
       </div>
 
@@ -92,7 +92,7 @@ export default function QuickActions() {
               {action.icon}
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-bold text-[#00d9ff]">{action.label}</p>
+              <p className="text-sm font-bold text-[#0066ff]">{action.label}</p>
               <p className="mt-0.5 text-xs text-gray-500">{action.description}</p>
             </div>
           </Link>

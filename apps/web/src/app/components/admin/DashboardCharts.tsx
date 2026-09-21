@@ -54,7 +54,7 @@ function smoothPath(points: { x: number; y: number }[]): string {
 export function AreaChart({
   data,
   height = 240,
-  color = '#001f3f',
+  color = '#0066ff',
   valueFormatter,
 }: AreaChartProps) {
   const H = height;

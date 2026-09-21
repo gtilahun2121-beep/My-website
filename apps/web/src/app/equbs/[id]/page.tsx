@@ -106,7 +106,7 @@ export default function EqubDetailPage() {
             <p className="text-xl font-bold text-gray-800 mb-4">
               {lang === 'en' ? 'Please log in' : 'ይግቡ'}
             </p>
-            <Link href="/" className="text-[#00d9ff] hover:underline">
+            <Link href="/" className="text-[#0066ff] hover:underline">
               {lang === 'en' ? 'Go to Home' : 'ወደ ቤት ሂድ'}
             </Link>
           </div>
@@ -124,7 +124,7 @@ export default function EqubDetailPage() {
         <div className="max-w-4xl mx-auto">
           <button
             onClick={() => router.back()}
-            className="text-sm text-[#00d9ff] font-bold hover:underline mb-6"
+            className="text-sm text-[#0066ff] font-bold hover:underline mb-6"
           >
             ← {lang === 'en' ? 'Back' : 'ተመለስ'}
           </button>
@@ -149,7 +149,7 @@ export default function EqubDetailPage() {
                   <span
                     className={`px-3 py-1 rounded-full text-xs font-black uppercase ${
                       equb.status === 'open'
-                        ? 'bg-[#00d9ff]/20 text-[#00d9ff]'
+                        ? 'bg-[#0066ff]/20 text-[#0066ff]'
                         : equb.status === 'active'
                           ? 'bg-[#0066ff]/20 text-[#0066ff]'
                           : 'bg-gray-100 text-gray-500'
@@ -168,7 +168,7 @@ export default function EqubDetailPage() {
                     <p className="text-xs text-gray-500 uppercase font-bold mb-1">
                       {lang === 'en' ? 'Contribution' : 'መዋጮ'}
                     </p>
-                    <p className="text-lg sm:text-xl font-black text-[#00d9ff] break-all">
+                    <p className="text-lg sm:text-xl font-black text-[#0066ff] break-all">
                       ETB {Number(equb.contribution_amount).toLocaleString()}
                     </p>
                   </div>
@@ -213,7 +213,7 @@ export default function EqubDetailPage() {
                 </div>
 
                 {notice && (
-                  <div className={`border rounded-lg p-4 mb-4 ${notice.startsWith('Failed') || notice.startsWith('You are already') ? 'bg-[#0066ff]/10 border-[#0066ff] text-[#0066ff]' : 'bg-[#00d9ff]/10 border-[#00d9ff] text-[#00d9ff]'}`}>
+                  <div className={`border rounded-lg p-4 mb-4 ${notice.startsWith('Failed') || notice.startsWith('You are already') ? 'bg-[#0066ff]/10 border-[#0066ff] text-[#0066ff]' : 'bg-[#0066ff]/10 border-[#0066ff] text-[#0066ff]'}`}>
                     {notice}
                   </div>
                 )}
@@ -241,7 +241,7 @@ export default function EqubDetailPage() {
                         className={`w-full py-3 font-black rounded-lg transition-all ${
                           disabled
                             ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                            : 'bg-[#0066ff] text-white hover:bg-[#00d9ff] hover:text-[#0a1f3f]'
+                            : 'bg-[#0066ff] text-white hover:bg-[#0047b3] hover:text-white'
                         }`}
                       >
                         {joining ? (lang === 'en' ? 'Submitting...' : 'በመላክ ላይ...') : label}
@@ -254,7 +254,7 @@ export default function EqubDetailPage() {
                           className={`w-full py-3 font-black rounded-lg transition-all ${
                             activating
                               ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                              : 'bg-[#00d9ff] text-[#0a1f3f] hover:bg-[#0066ff] hover:text-white'
+                              : 'bg-[#0066ff] text-white hover:bg-[#0047b3] hover:text-white'
                           }`}
                         >
                           {activating
@@ -266,7 +266,7 @@ export default function EqubDetailPage() {
                       {isMember && equb.status === 'active' && equb.current_round >= 1 && (
                         <button
                           onClick={() => setShowPayment(true)}
-                          className="w-full py-3 font-black rounded-lg bg-[#0066ff] text-white hover:bg-[#00d9ff] hover:text-[#0a1f3f] transition-all"
+                          className="w-full py-3 font-black rounded-lg bg-[#0066ff] text-white hover:bg-[#0047b3] hover:text-white transition-all"
                         >
                           {lang === 'en' ? `Pay for Round ${equb.current_round}` : `ለዙር ${equb.current_round} ይክፈሉ`}
                         </button>

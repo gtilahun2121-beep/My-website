@@ -198,7 +198,7 @@ export default function RegistrationFormRefactored({
             disabled={!selectedEqub}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="w-full py-3 mt-6 bg-gradient-to-r from-[#001f3f] to-[#001f3f] text-[#00d9ff] font-black rounded-full hover:shadow-lg transition-all duration-300 disabled:opacity-50"
+            className="w-full py-3 mt-6 bg-[#0066ff] text-white font-black rounded-full hover:shadow-lg transition-all duration-300 disabled:opacity-50"
           >
             ✓ Continue with Selected Equb
           </motion.button>
@@ -218,7 +218,7 @@ export default function RegistrationFormRefactored({
           />
           <button
             onClick={handleBackFromPhone}
-            className="w-full py-2 mt-4 text-[#00d9ff] font-bold hover:underline"
+            className="w-full py-2 mt-4 text-[#0066ff] font-bold hover:underline"
           >
             ← Change Equb Group
           </button>
@@ -229,7 +229,7 @@ export default function RegistrationFormRefactored({
       {step === 'otp' && (
         <>
           <div className="mb-4 bg-gray-100 border-2 border-gray-300 rounded-lg p-3">
-            <p className="text-xs text-[#00d9ff] font-bold">📱 Phone: {phoneNumber}</p>
+            <p className="text-xs text-[#0066ff] font-bold">📱 Phone: {phoneNumber}</p>
           </div>
           <OtpVerificationStep
             otp={otp}
@@ -247,8 +247,8 @@ export default function RegistrationFormRefactored({
       {step === 'details' && (
         <>
           <div className="mb-4 bg-gray-100 border-2 border-gray-300 rounded-lg p-3 space-y-1">
-            <p className="text-xs text-[#00d9ff] font-bold">📱 Phone: {phoneNumber}</p>
-            <p className="text-xs text-[#00d9ff] font-bold">🏢 Equb: {selectedEqub?.name}</p>
+            <p className="text-xs text-[#0066ff] font-bold">📱 Phone: {phoneNumber}</p>
+            <p className="text-xs text-[#0066ff] font-bold">🏢 Equb: {selectedEqub?.name}</p>
           </div>
           <DetailsEntryStep
             fullName={fullName}
@@ -277,20 +277,20 @@ export default function RegistrationFormRefactored({
             icon="🎉"
           />
           <div className="mt-6 bg-gray-100 border-2 border-gray-300 rounded-lg p-4 space-y-2 text-sm">
-            <p className="font-bold text-[#00d9ff] mb-3">Account Summary:</p>
-            <p className="text-[#00d9ff]">
+            <p className="font-bold text-[#0066ff] mb-3">Account Summary:</p>
+            <p className="text-[#0066ff]">
               <span className="font-bold">👤 Name:</span> {fullName}
             </p>
-            <p className="text-[#00d9ff]">
+            <p className="text-[#0066ff]">
               <span className="font-bold">📱 Phone:</span> {phoneNumber}
             </p>
-            <p className="text-[#00d9ff]">
+            <p className="text-[#0066ff]">
               <span className="font-bold">🏢 Equb:</span> {selectedEqub?.name}
             </p>
-            <p className="text-[#00d9ff]">
+            <p className="text-[#0066ff]">
               <span className="font-bold">💵 Monthly:</span> ETB {selectedEqub?.monthlyPayment}
             </p>
-            <p className="text-[#00d9ff]">
+            <p className="text-[#0066ff]">
               <span className="font-bold">🎫 Fayda:</span> {faydaNumber}
             </p>
           </div>
@@ -298,7 +298,7 @@ export default function RegistrationFormRefactored({
             onClick={() => window.location.href = '/auth?tab=login'}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="w-full py-3 mt-6 bg-gradient-to-r from-[#001f3f] to-[#001f3f] text-[#00d9ff] font-black rounded-full hover:shadow-lg transition-all"
+            className="w-full py-3 mt-6 bg-[#0066ff] text-white font-black rounded-full hover:shadow-lg transition-all"
           >
             🔐 Go to Sign In
           </motion.button>

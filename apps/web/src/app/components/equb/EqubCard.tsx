@@ -63,7 +63,7 @@ export const EqubCard: React.FC<EqubCardProps> = ({
         </p>
         <div className="w-full bg-gray-200 rounded-full h-2">
           <div
-            className="bg-brand-900 h-2 rounded-full"
+            className="bg-[#0066ff] h-2 rounded-full"
             style={{ width: `${equb.progressPercent}%` }}
             role="progressbar"
             aria-valuenow={equb.progressPercent}
@@ -78,7 +78,7 @@ export const EqubCard: React.FC<EqubCardProps> = ({
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
       {/* Header */}
-      <div className="bg-gradient-to-r from-brand-900 to-accent-600 text-[#00d9ff] p-4">
+      <div className="bg-gradient-to-r from-[#0066ff] to-accent-600 text-white p-4">
         <div className="flex justify-between items-start mb-2">
           <div>
             <h2 className="text-lg font-bold">{equb.name}</h2>
@@ -135,7 +135,7 @@ export const EqubCard: React.FC<EqubCardProps> = ({
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div
-              className="bg-brand-900 h-2 rounded-full transition-all"
+              className="bg-[#0066ff] h-2 rounded-full transition-all"
               style={{ width: `${equb.progressPercent}%` }}
               role="progressbar"
               aria-valuenow={equb.progressPercent}
@@ -188,7 +188,7 @@ export const EqubCard: React.FC<EqubCardProps> = ({
           {equb.unpaidRoundsCount > 0 && onPayNow && (
             <button
               onClick={() => onPayNow(equb.id)}
-              className="flex-1 bg-brand-900 text-[#00d9ff] px-4 py-2 rounded-lg font-semibold hover:bg-brand-950 transition-colors"
+              className="flex-1 bg-[#0066ff] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#0047b3] transition-colors"
             >
               {translations.pay_now[language]}
             </button>
@@ -196,14 +196,14 @@ export const EqubCard: React.FC<EqubCardProps> = ({
           {equb.payoutMechanism === 'auction' && onPlaceBid && (
             <button
               onClick={() => onPlaceBid(equb.id)}
-              className="flex-1 bg-brand-900 text-[#00d9ff] px-4 py-2 rounded-lg font-semibold hover:bg-brand-950 transition-colors"
+              className="flex-1 bg-[#0066ff] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#0047b3] transition-colors"
             >
               {translations.place_bid[language]}
             </button>
           )}
           <button
             onClick={() => onViewDetails(equb.id)}
-            className="flex-1 border border-brand-900 text-brand-600 px-4 py-2 rounded-lg font-semibold hover:bg-brand-50 transition-colors"
+            className="flex-1 border border-[#0066ff] text-brand-600 px-4 py-2 rounded-lg font-semibold hover:bg-brand-50 transition-colors"
           >
             View Details
           </button>

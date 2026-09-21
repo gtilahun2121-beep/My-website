@@ -16,11 +16,11 @@ interface FormButtonProps {
 
 const variantStyles: Record<ButtonVariant, string> = {
     primary:
-        'bg-[#001f3f] text-[#00d9ff] hover:bg-[#001f3f] active:scale-[0.98]',
+        'bg-[#0066ff] text-white hover:bg-[#0066ff] active:scale-[0.98]',
     secondary:
-        'border-2 border-[#001f3f] text-[#00d9ff] bg-white hover:bg-gray-50 active:scale-[0.98]',
+        'border-2 border-[#0066ff] text-white bg-white hover:bg-gray-50 active:scale-[0.98]',
     danger:
-        'bg-[#001f3f] text-[#00d9ff] hover:bg-[#a50e1f] active:scale-[0.98]',
+        'bg-[#0066ff] text-white hover:bg-[#a50e1f] active:scale-[0.98]',
 };
 
 export default function FormButton({

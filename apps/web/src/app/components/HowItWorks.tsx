@@ -60,7 +60,7 @@ export default function HowItWorks({ title, steps }: HowItWorksProps) {
   };
 
   return (
-    <section className="py-20 md:py-32 bg-white relative overflow-hidden">
+    <section className="py-20 md:py-32 bg-slate-50 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <motion.div
@@ -70,10 +70,10 @@ export default function HowItWorks({ title, steps }: HowItWorksProps) {
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-4xl md:text-5xl font-black text-[#00d9ff] mb-4">
+          <h2 className="text-4xl md:text-5xl font-black text-[#0066ff] mb-4">
             🔄 {title}
           </h2>
-          <p className="text-xl text-[#ffffff]">
+          <p className="text-xl text-gray-600">
             Simple steps to start saving together
           </p>
         </motion.div>
@@ -97,7 +97,7 @@ export default function HowItWorks({ title, steps }: HowItWorksProps) {
                 >
                   {/* Icon */}
                   <motion.div
-                    className="mx-auto mb-4 w-16 h-16 bg-gradient-to-br from-[#001f3f] to-[#001f3f] rounded-full flex items-center justify-center shadow-lg"
+                    className="mx-auto mb-4 w-16 h-16 bg-gradient-to-br from-white/40 to-white/35 rounded-full flex items-center justify-center shadow-lg"
                     custom={idx}
                     variants={iconVariants}
                     initial="hidden"
@@ -107,12 +107,12 @@ export default function HowItWorks({ title, steps }: HowItWorksProps) {
                   </motion.div>
 
                   {/* Number Badge */}
-                  <div className="absolute -top-4 -right-4 w-10 h-10 bg-[#001f3f] rounded-full flex items-center justify-center font-black text-[#00d9ff] shadow-lg">
+                  <div className="absolute -top-4 -right-4 w-10 h-10 bg-[#0066ff] rounded-full flex items-center justify-center font-black text-white shadow-lg">
                     {step.number}
                   </div>
 
                   {/* Content */}
-                  <h3 className="text-xl font-black text-[#00d9ff] mb-2">
+                  <h3 className="text-xl font-black text-[#0066ff] mb-2">
                     {step.title}
                   </h3>
                   <p className="text-gray-600 text-sm">
@@ -123,7 +123,7 @@ export default function HowItWorks({ title, steps }: HowItWorksProps) {
                 {/* Animated Connector Arrow */}
                 {idx < steps.length - 1 && (
                   <motion.div
-                    className="hidden lg:block absolute top-1/4 -right-6 w-12 h-1 bg-gradient-to-r from-[#001f3f] to-[#001f3f]"
+                    className="hidden lg:block absolute top-1/4 -right-6 w-12 h-1 bg-gradient-to-r from-white/40 to-white/35"
                     custom={idx}
                     variants={connectorVariants}
                     initial="hidden"
@@ -131,7 +131,7 @@ export default function HowItWorks({ title, steps }: HowItWorksProps) {
                     style={{ transformOrigin: 'left' }}
                   >
                     {/* Arrow head */}
-                    <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-0 h-0 border-l-4 border-t-3 border-b-3 border-l-[#001f3f] border-t-transparent border-b-transparent"></div>
+                    <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-0 h-0 border-l-4 border-t-3 border-b-3 border-l-[#0066ff] border-t-transparent border-b-transparent"></div>
                   </motion.div>
                 )}
               </div>
@@ -152,7 +152,7 @@ export default function HowItWorks({ title, steps }: HowItWorksProps) {
                   <div className="flex gap-6">
                     {/* Icon */}
                     <motion.div
-                      className="w-16 h-16 flex-shrink-0 bg-gradient-to-br from-[#001f3f] to-[#001f3f] rounded-full flex items-center justify-center shadow-lg"
+                      className="w-16 h-16 flex-shrink-0 bg-gradient-to-br from-white/40 to-white/35 rounded-full flex items-center justify-center shadow-lg"
                       custom={idx}
                       variants={iconVariants}
                       initial="hidden"
@@ -164,10 +164,10 @@ export default function HowItWorks({ title, steps }: HowItWorksProps) {
                     {/* Content */}
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="inline-block w-8 h-8 bg-[#001f3f] rounded-full text-center leading-8 font-black text-[#00d9ff]">
+                        <span className="inline-block w-8 h-8 bg-[#0066ff] rounded-full text-center leading-8 font-black text-white">
                           {step.number}
                         </span>
-                        <h3 className="text-lg font-black text-[#00d9ff]">
+                        <h3 className="text-lg font-black text-[#0066ff]">
                           {step.title}
                         </h3>
                       </div>
@@ -181,7 +181,7 @@ export default function HowItWorks({ title, steps }: HowItWorksProps) {
                 {/* Vertical Connector */}
                 {idx < steps.length - 1 && (
                   <motion.div
-                    className="ml-8 h-8 w-1 bg-gradient-to-b from-[#001f3f] to-[#001f3f]"
+                    className="ml-8 h-8 w-1 bg-gradient-to-b from-white/40 to-white/35"
                     custom={idx}
                     variants={connectorVariants}
                     initial="hidden"

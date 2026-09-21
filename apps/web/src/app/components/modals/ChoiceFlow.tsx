@@ -94,10 +94,10 @@ export default function ChoiceFlow({
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="bg-gradient-to-r from-[#001f3f] to-[#001f3f] px-8 py-6 flex justify-between items-center">
+              <div className="bg-gradient-to-r from-white/40 to-white/35 px-5 py-4 sm:px-8 sm:py-6 flex justify-between items-center">
                 <div>
-                  <h2 className="text-2xl font-black text-[#00d9ff]">QalNet</h2>
-                  <p className="text-sm text-[#00d9ff]/80 font-semibold mt-1">
+                  <h2 className="text-2xl font-black text-[#0066ff]">QalNet</h2>
+                  <p className="text-sm text-[#0066ff]/80 font-semibold mt-1">
                     {lang === 'en'
                       ? "Ethiopia's Digital Equb"
                       : 'የኢትዮጵያ ዲጂታል Equb'}
@@ -106,7 +106,7 @@ export default function ChoiceFlow({
                 <div className="flex gap-2">
                   <button
                     onClick={handleBackToChoice}
-                    className="text-xl text-[#00d9ff] hover:opacity-70 transition-all px-3 py-2 rounded-lg hover:bg-gray-200"
+                    className="text-xl text-[#0066ff] hover:opacity-70 transition-all px-3 py-2 rounded-lg hover:bg-gray-200"
                     title={lang === 'en' ? 'Back' : 'ተመለስ'}
                   >
                     ←
@@ -120,7 +120,7 @@ export default function ChoiceFlow({
                       );
                       if (shouldClose) onClose();
                     }}
-                    className="text-2xl text-[#00d9ff] hover:opacity-70 transition-all"
+                    className="text-2xl text-[#0066ff] hover:opacity-70 transition-all"
                   >
                     ✕
                   </button>
@@ -128,7 +128,7 @@ export default function ChoiceFlow({
               </div>
 
               {/* Content */}
-              <div className="overflow-y-auto max-h-[calc(90vh-120px)] p-8">
+              <div className="overflow-y-auto max-h-[calc(90vh-120px)] p-5 sm:p-8">
                 <SignUpTab
                   lang={lang}
                   onSuccess={handleAuthSuccess}
@@ -157,10 +157,10 @@ export default function ChoiceFlow({
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="bg-gradient-to-r from-[#001f3f] to-[#001f3f] px-8 py-6 flex justify-between items-center">
+              <div className="bg-gradient-to-r from-white/40 to-white/35 px-5 py-4 sm:px-8 sm:py-6 flex justify-between items-center">
                 <div>
-                  <h2 className="text-2xl font-black text-[#00d9ff]">QalNet</h2>
-                  <p className="text-sm text-[#00d9ff]/80 font-semibold mt-1">
+                  <h2 className="text-2xl font-black text-[#0066ff]">QalNet</h2>
+                  <p className="text-sm text-[#0066ff]/80 font-semibold mt-1">
                     {lang === 'en'
                       ? "Ethiopia's Digital Equb"
                       : 'የኢትዮጵያ ዲጂታል Equb'}
@@ -169,7 +169,7 @@ export default function ChoiceFlow({
                 <div className="flex gap-2">
                   <button
                     onClick={handleBackToChoice}
-                    className="text-xl text-[#00d9ff] hover:opacity-70 transition-all px-3 py-2 rounded-lg hover:bg-gray-200"
+                    className="text-xl text-[#0066ff] hover:opacity-70 transition-all px-3 py-2 rounded-lg hover:bg-gray-200"
                     title={lang === 'en' ? 'Back' : 'ተመለስ'}
                   >
                     ←
@@ -183,7 +183,7 @@ export default function ChoiceFlow({
                       );
                       if (shouldClose) onClose();
                     }}
-                    className="text-2xl text-[#00d9ff] hover:opacity-70 transition-all"
+                    className="text-2xl text-[#0066ff] hover:opacity-70 transition-all"
                   >
                     ✕
                   </button>
@@ -191,7 +191,7 @@ export default function ChoiceFlow({
               </div>
 
               {/* Content */}
-              <div className="overflow-y-auto max-h-[calc(90vh-120px)] p-8">
+              <div className="overflow-y-auto max-h-[calc(90vh-120px)] p-5 sm:p-8">
                 <SignInTab
                   lang={lang}
                   onSuccess={handleAuthSuccess}

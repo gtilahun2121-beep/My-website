@@ -39,8 +39,8 @@ export default function PromoFeatures({ features, title, subtitle }: PromoFeatur
   return (
     <section className="py-20 md:py-32 bg-gray-50 relative overflow-hidden">
       {/* Background decoration - clean circles without blur */}
-      <div className="absolute top-0 right-0 w-72 h-72 bg-[#00d9ff]/10 rounded-full"></div>
-      <div className="absolute bottom-0 left-0 w-72 h-72 bg-[#001f3f]/5 rounded-full"></div>
+      <div className="absolute top-0 right-0 w-72 h-72 bg-[#0066ff]/10 rounded-full"></div>
+      <div className="absolute bottom-0 left-0 w-72 h-72 bg-[#0066ff]/5 rounded-full"></div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header */}
@@ -51,10 +51,10 @@ export default function PromoFeatures({ features, title, subtitle }: PromoFeatur
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-4xl md:text-5xl font-black text-[#00d9ff] mb-4">
+          <h2 className="text-4xl md:text-5xl font-black text-[#0066ff] mb-4">
             🎁 {title}
           </h2>
-          <p className="text-xl text-[#ffffff]">{subtitle}</p>
+          <p className="text-xl text-gray-600">{subtitle}</p>
         </motion.div>
 
         {/* Features Grid */}
@@ -73,20 +73,20 @@ export default function PromoFeatures({ features, title, subtitle }: PromoFeatur
               whileHover={{ scale: 1.08, y: -12 }}
             >
               {/* Icon background glow */}
-              <div className="absolute inset-0 bg-gradient-to-br from-[#001f3f]/5 to-[#001f3f]/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-[#ffffff]/5 to-[#ffffff]/30/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
               <div className="relative z-10">
                 <div className="text-5xl mb-4 transform group-hover:scale-125 group-hover:-rotate-12 transition-transform duration-300">
                   {feature.icon}
                 </div>
-                <h3 className="font-black text-lg text-[#00d9ff] mb-3 group-hover:text-[#00d9ff] transition-colors">
+                <h3 className="font-black text-lg text-[#0066ff] mb-3 group-hover:text-[#0066ff] transition-colors">
                   {feature.title}
                 </h3>
-                <p className="text-sm text-gray-600 mb-4 group-hover:text-[#00d9ff] transition-colors">
+                <p className="text-sm text-gray-600 mb-4 group-hover:text-[#0066ff] transition-colors">
                   {feature.description}
                 </p>
-                <div className="pt-4 border-t border-[#001f3f]/30">
-                  <p className="text-sm font-black text-[#00d9ff]">{feature.highlight}</p>
+                <div className="pt-4 border-t border-[#0066ff]/30">
+                  <p className="text-sm font-black text-[#0066ff]">{feature.highlight}</p>
                 </div>
               </div>
             </motion.div>

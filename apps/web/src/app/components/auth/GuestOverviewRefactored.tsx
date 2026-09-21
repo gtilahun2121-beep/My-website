@@ -62,7 +62,7 @@ export default function GuestOverviewRefactored({ onJoinClick }: GuestOverviewRe
       {/* Hero Section */}
       <motion.div
         variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
-        className="bg-gradient-to-r from-[#001f3f] to-[#001f3f] rounded-2xl p-6 text-[#00d9ff]"
+        className="bg-gradient-to-r from-[#0066ff] to-[#0052d6] rounded-2xl p-6 text-white"
       >
         <h2 className="text-2xl font-black mb-3">👋 Welcome to QalNet!</h2>
         <p className="text-sm leading-relaxed">
@@ -84,7 +84,7 @@ export default function GuestOverviewRefactored({ onJoinClick }: GuestOverviewRe
         variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
         className="space-y-3"
       >
-        <h3 className="font-black text-[#00d9ff] text-lg">
+        <h3 className="font-black text-[#0066ff] text-lg">
           🏢 Available Equb Groups ({displayedEqubs.length})
         </h3>
         <div className="grid grid-cols-1 gap-3 max-h-96 overflow-y-auto">
@@ -110,7 +110,7 @@ export default function GuestOverviewRefactored({ onJoinClick }: GuestOverviewRe
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={onJoinClick}
-          className="w-full py-3 bg-gradient-to-r from-[#001f3f] to-[#001f3f] text-[#00d9ff] font-black rounded-full hover:shadow-lg transition-all duration-300"
+          className="w-full py-3 bg-[#0066ff] text-white font-black rounded-full hover:shadow-lg transition-all duration-300"
         >
           🚀 Start Your Equb Journey
         </motion.button>
