@@ -28,7 +28,17 @@ export default function Home() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col bg-white">
+    <main 
+      className="flex min-h-screen flex-col"
+      style={{
+        backgroundImage: 'url(/system-bg.jpeg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed',
+        backgroundColor: '#dbeafe'
+      }}
+    >
       <Header
         lang={lang}
         onLanguageChange={handleLanguageChange}
@@ -47,71 +57,52 @@ export default function Home() {
 
       <div className="flex-grow">
         {/* Hero Section */}
-        <section 
-          className="relative overflow-hidden px-4 py-12 sm:py-16 md:py-24"
-          style={{
-            backgroundImage: 'url(/system-bg.jpeg)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center right',
-            backgroundRepeat: 'no-repeat',
-            backgroundAttachment: 'fixed',
-            minHeight: '600px'
-          }}
-        >
-          {/* Dark overlay for better text readability */}
-          <div className="absolute inset-0 bg-gradient-to-r from-white via-white/70 to-transparent"></div>
-
-          <div className="relative z-10 mx-auto max-w-7xl">
-            <div className="grid grid-cols-1 items-center md:grid-cols-2">
-              {/* Left Content */}
-              <div className="space-y-6 pr-0 md:pr-12">
-                {/* Tagline */}
-                <div className="flex items-center gap-2">
-                  <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center text-white text-xs font-bold">
-                    👥
-                  </div>
-                  <span className="text-sm font-semibold text-blue-600">
-                    {lang === 'en' ? 'Together for a Brighter Future' : 'አንድ ላይ ለበለጠ ወደፊት'}
-                  </span>
+        <section className="relative px-4 py-12 sm:py-16 md:py-20">
+          <div className="mx-auto max-w-7xl">
+            <div className="max-w-2xl space-y-6 pt-8 sm:pt-12 md:pt-16">
+              {/* Tagline */}
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center text-white text-xs font-bold">
+                  👥
                 </div>
-
-                {/* Main Heading */}
-                <div>
-                  <h1 className="text-4xl font-black leading-tight text-blue-900 sm:text-5xl md:text-6xl">
-                    {lang === 'en' 
-                      ? "QalNet Ethiopia's Digital Equb" 
-                      : "QalNet የኢትዮጵያ ዲጂታል ኢኩብ"}
-                  </h1>
-                </div>
-
-                {/* Subheading */}
-                <p className="max-w-md text-base text-gray-700 sm:text-lg font-medium">
-                  {lang === 'en'
-                    ? 'Secure, transparent, and built for communities. Digital savings, stronger together.'
-                    : 'ደህንነታዊ፣ ግልጽ፣ እና ለማህበረሰብ የተገነባ። ዲጂታል ቁጠባ፣ አንድ ላይ ጠንካራ።'}
-                </p>
-
-                {/* CTA Button */}
-                <div className="flex flex-wrap gap-4 pt-4">
-                  <button
-                    onClick={() => setShowAuthModal(true)}
-                    className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-8 py-3 font-bold text-white shadow-lg transition-all hover:bg-blue-700 hover:shadow-xl"
-                  >
-                    <span>👤</span>
-                    <span>{lang === 'en' ? 'Get Started' : 'ጀምር'}</span>
-                    <span>→</span>
-                  </button>
-                </div>
+                <span className="text-sm font-semibold text-blue-600">
+                  {lang === 'en' ? 'Together for a Brighter Future' : 'አንድ ላይ ለበለጠ ወደፊት'}
+                </span>
               </div>
 
-              {/* Right side - Background image shows through */}
-              <div className="hidden md:block"></div>
+              {/* Main Heading */}
+              <div>
+                <h1 className="text-5xl sm:text-6xl md:text-7xl font-black leading-tight text-blue-900">
+                  {lang === 'en' 
+                    ? "QalNet Ethiopia's\nDigital Equb" 
+                    : "QalNet የኢትዮጵያ\nዲጂታል ኢኩብ"}
+                </h1>
+              </div>
+
+              {/* Subheading */}
+              <p className="max-w-xl text-base sm:text-lg text-gray-700 font-medium leading-relaxed">
+                {lang === 'en'
+                  ? 'Secure, transparent, and built for communities. Digital savings, stronger together.'
+                  : 'ደህንነታዊ፣ ግልጽ፣ እና ለማህበረሰብ የተገነባ። ዲጂታል ቁጠባ፣ አንድ ላይ ጠንካራ።'}
+              </p>
+
+              {/* CTA Button */}
+              <div className="pt-4">
+                <button
+                  onClick={() => setShowAuthModal(true)}
+                  className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-8 py-3 font-bold text-white shadow-lg transition-all hover:bg-blue-700 hover:shadow-xl hover:scale-105"
+                >
+                  <span>👤</span>
+                  <span>{lang === 'en' ? 'Get Started' : 'ጀምር'}</span>
+                  <span>→</span>
+                </button>
+              </div>
             </div>
           </div>
         </section>
 
         {/* Features Section */}
-        <section className="px-4 py-16 sm:py-20">
+        <section className="px-4 py-16 sm:py-20 bg-white/80 backdrop-blur-sm">
           <div className="mx-auto max-w-7xl">
             <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
               {/* Feature 1 */}
