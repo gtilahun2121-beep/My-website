@@ -13,11 +13,11 @@ export default function UpcomingPayments({ equbs, loading }: UpcomingPaymentsPro
 
   return (
     <section className="bg-card rounded-card border border-gray-200">
-      <div className="px-5 pt-5 pb-3">
-        <h2 className="text-lg font-black text-[#0066ff]">Upcoming Payments</h2>
+      <div className="px-4 pt-2 pb-1.5">
+        <h2 className="text-sm font-black text-[#0066ff]">Upcoming Payments</h2>
       </div>
 
-      <div className="px-5 pb-5">
+      <div className="px-4 pb-2.5">
         {loading ? (
           <div className="space-y-3" aria-busy="true">
             {Array.from({ length: 3 }).map((_, i) => (
@@ -28,7 +28,7 @@ export default function UpcomingPayments({ equbs, loading }: UpcomingPaymentsPro
             ))}
           </div>
         ) : items.length === 0 ? (
-          <p className="text-sm text-gray-500">
+          <p className="text-xs text-gray-500">
             No payments scheduled. When you join an active Equb, upcoming contributions will show here.
           </p>
         ) : (
@@ -36,7 +36,7 @@ export default function UpcomingPayments({ equbs, loading }: UpcomingPaymentsPro
             {items.map((e) => {
               const roundDue = Math.min(e.current_round + 1, e.total_rounds);
               return (
-                <div key={e.id} className="flex items-center justify-between gap-3 py-3">
+                <div key={e.id} className="flex items-center justify-between gap-3 py-2">
                   <div className="min-w-0">
                     <p className="text-sm font-bold text-[#0066ff] truncate">{e.name}</p>
                     <p className="text-xs text-gray-400">

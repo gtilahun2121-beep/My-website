@@ -17,22 +17,22 @@ export default function ImportantAlerts({ notifications }: ImportantAlertsProps)
 
   return (
     <section className="bg-card rounded-card border border-gray-200">
-      <div className="px-5 pt-5 pb-3">
-        <h2 className="text-lg font-black text-[#0066ff]">Important Alerts</h2>
+      <div className="px-4 pt-3 pb-2">
+        <h2 className="text-base font-black text-[#0066ff]">Important Alerts</h2>
       </div>
 
-      <div className="px-5 pb-5 space-y-3">
+      <div className="px-4 pb-3 space-y-2">
         {unread.map((n) => {
           const tone = CATEGORY_TONE[n.category] ?? CATEGORY_TONE.operational;
           return (
             <div
               key={n.id}
-              className="flex items-start gap-3 rounded-xl border border-gray-200 bg-gray-50 p-4"
+              className="flex items-start gap-3 rounded-xl border border-gray-200 bg-gray-50 p-3"
             >
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${tone.iconBg}`}>
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${tone.iconBg}`}>
                 <svg
                   viewBox="0 0 24 24"
-                  className={`w-4.5 h-4.5 ${tone.text}`}
+                  className={`w-4 h-4 ${tone.text}`}
                   fill="none"
                   stroke="currentColor"
                   strokeWidth={1.8}

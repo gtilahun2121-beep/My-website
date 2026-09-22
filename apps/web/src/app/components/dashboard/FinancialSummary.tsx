@@ -16,7 +16,6 @@ const kpiIcon = (path: string) => (
 );
 
 interface FinancialSummaryProps {
-  balance: number | null;
   totalSaved: number | null;
   activeEqubs: number | null;
   nextPayment: { amount: number | null; label: string } | null;
@@ -24,21 +23,13 @@ interface FinancialSummaryProps {
 }
 
 export default function FinancialSummary({
-  balance,
   totalSaved,
   activeEqubs,
   nextPayment,
   loading,
 }: FinancialSummaryProps) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-      <KpiCard
-        label="Total Balance"
-        value={loading && balance === null ? '—' : formatETB(balance ?? 0)}
-        hint="Available wallet balance"
-        accent="brand"
-        icon={kpiIcon('M21 12a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2m0-6v6m0-6V6a2 2 0 0 0-2-2H4M4 12a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2m0-6v6')}
-      />
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
       <KpiCard
         label="Total Saved"
         value={loading && totalSaved === null ? '—' : formatETB(totalSaved ?? 0)}

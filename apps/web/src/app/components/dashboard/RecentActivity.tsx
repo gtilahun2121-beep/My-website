@@ -53,16 +53,16 @@ export default function RecentActivity({ transactions, loading }: RecentActivity
 
   return (
     <section className="bg-card rounded-card border border-gray-200">
-      <div className="px-5 pt-5 pb-3">
-        <h2 className="text-lg font-black text-[#0066ff]">Recent Activity</h2>
+      <div className="px-4 pt-2 pb-1.5">
+        <h2 className="text-sm font-black text-[#0066ff]">Recent Activity</h2>
       </div>
 
-      <div className="px-5 pb-5">
+      <div className="px-4 pb-2.5">
         {loading ? (
           <div className="space-y-3" aria-busy="true">
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-gray-100 animate-pulse" />
+                <div className="w-8 h-8 rounded-full bg-gray-100 animate-pulse" />
                 <div className="flex-1 space-y-1.5">
                   <div className="h-3 w-2/3 rounded bg-gray-100 animate-pulse" />
                   <div className="h-3 w-1/3 rounded bg-gray-100 animate-pulse" />
@@ -72,7 +72,7 @@ export default function RecentActivity({ transactions, loading }: RecentActivity
             ))}
           </div>
         ) : items.length === 0 ? (
-          <p className="text-sm text-gray-500">No activity yet. Your wallet transactions will appear here.</p>
+          <p className="text-xs text-gray-500">No activity yet. Your wallet transactions will appear here.</p>
         ) : (
           <div className="divide-y divide-slate-100">
             {items.map((txn) => {
@@ -80,8 +80,8 @@ export default function RecentActivity({ transactions, loading }: RecentActivity
               const outgoing = txn.direction === 'payment' || txn.direction === 'withdrawal';
               const time = formatDate(txn.paid_at || txn.created_at);
               return (
-                <div key={txn.id} className="flex items-center gap-3 py-3">
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${meta.tone.iconBg}`}>
+                <div key={txn.id} className="flex items-center gap-3 py-2">
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${meta.tone.iconBg}`}>
                     {meta.icon}
                   </div>
                   <div className="min-w-0 flex-1">

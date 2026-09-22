@@ -10,12 +10,12 @@ export default function DashboardHeader({ firstName, isNewUser }: DashboardHeade
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
       <div>
-        <h1 className="text-2xl sm:text-3xl font-black text-[#0066ff]">
+        <h1 className="text-lg sm:text-xl font-black text-[#0066ff]">
           {greeting}, {firstName || 'there'}
         </h1>
-        <p className="mt-1 text-sm text-gray-500">
+        <p className="mt-0.5 text-xs text-gray-500">
           {isNewUser
             ? 'Good morning, Welcome to QalNet. Join your first Equb to start saving with your community.'
             : "Here's what's happening with your Equbs today."}
@@ -24,11 +24,11 @@ export default function DashboardHeader({ firstName, isNewUser }: DashboardHeade
 
       <Link
         href="/join-equb"
-        className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-brand-600 text-white text-sm font-bold hover:bg-brand-700 transition-colors shrink-0"
+        className="inline-flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg bg-brand-600 text-white text-xs font-bold hover:bg-brand-700 transition-colors shrink-0"
       >
         <svg
           viewBox="0 0 24 24"
-          className="w-4 h-4"
+          className="w-3.5 h-3.5"
           fill="none"
           stroke="currentColor"
           strokeWidth={2}

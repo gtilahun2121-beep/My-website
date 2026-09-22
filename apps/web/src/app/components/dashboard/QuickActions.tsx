@@ -76,24 +76,23 @@ export default function QuickActions() {
 
   return (
     <section className="bg-card rounded-card border border-gray-200">
-      <div className="px-5 pt-5 pb-3">
-        <h2 className="text-lg font-black text-[#0066ff]">Quick Actions</h2>
-        <p className="mt-0.5 text-xs text-gray-500">What would you like to do next?</p>
+      <div className="px-4 pt-2 pb-1.5">
+        <h2 className="text-sm font-black text-[#0066ff]">Quick Actions</h2>
       </div>
 
-      <div className="px-5 pb-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="px-4 pb-2.5 grid grid-cols-1 sm:grid-cols-3 gap-2">
         {actions.map((action) => (
           <Link
             key={action.label}
             href={action.href}
-            className="flex items-start gap-3 rounded-xl border border-gray-200 p-4 hover:border-brand-300 hover:shadow-sm transition-all"
+            className="flex items-center gap-2.5 rounded-xl border border-gray-200 px-3 py-2 hover:border-brand-300 hover:shadow-sm transition-all"
           >
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${action.iconBg}`}>
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${action.iconBg}`}>
               {action.icon}
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-bold text-[#0066ff]">{action.label}</p>
-              <p className="mt-0.5 text-xs text-gray-500">{action.description}</p>
+              <p className="text-[13px] font-bold text-[#0066ff] leading-tight">{action.label}</p>
+              <p className="mt-0.5 text-[11px] text-gray-500 truncate leading-tight">{action.description}</p>
             </div>
           </Link>
         ))}

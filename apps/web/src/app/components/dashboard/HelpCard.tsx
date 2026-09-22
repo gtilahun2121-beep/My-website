@@ -2,20 +2,22 @@ import Link from 'next/link';
 
 export default function HelpCard() {
   return (
-    <section className="rounded-card bg-gradient-to-br from-brand-700 to-brand-600 text-white p-5">
-      <h2 className="text-lg font-black">Need help?</h2>
-      <p className="mt-1 text-sm text-brand-100">
-        Our support team is ready to answer your questions about Equbs, payments, and your account.
-      </p>
+    <section className="rounded-card bg-gradient-to-br from-brand-700 to-brand-600 text-white p-4">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-base font-black">Need help?</h2>
+        <p className="hidden sm:block text-xs text-brand-100 max-w-[14rem]">
+          Support is ready for your Equbs, payments and account questions.
+        </p>
+      </div>
 
-      <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2">
+      <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
         <Link
           href="/security"
-          className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-gray-100 text-sm font-bold hover:bg-gray-200 transition-colors"
+          className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-gray-100 text-xs font-bold hover:bg-gray-200 transition-colors"
         >
           <svg
             viewBox="0 0 24 24"
-            className="w-4 h-4"
+            className="w-3.5 h-3.5"
             fill="none"
             stroke="currentColor"
             strokeWidth={1.8}
@@ -30,11 +32,11 @@ export default function HelpCard() {
           type="button"
           title="Coming soon"
           disabled
-          className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-gray-100 text-sm font-bold opacity-60 cursor-not-allowed"
+          className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-gray-100 text-xs font-bold opacity-60 cursor-not-allowed"
         >
           <svg
             viewBox="0 0 24 24"
-            className="w-4 h-4"
+            className="w-3.5 h-3.5"
             fill="none"
             stroke="currentColor"
             strokeWidth={1.8}
@@ -49,11 +51,11 @@ export default function HelpCard() {
           type="button"
           title="Coming soon"
           disabled
-          className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-gray-100 text-sm font-bold opacity-60 cursor-not-allowed"
+          className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-gray-100 text-xs font-bold opacity-60 cursor-not-allowed"
         >
           <svg
             viewBox="0 0 24 24"
-            className="w-4 h-4"
+            className="w-3.5 h-3.5"
             fill="none"
             stroke="currentColor"
             strokeWidth={1.8}

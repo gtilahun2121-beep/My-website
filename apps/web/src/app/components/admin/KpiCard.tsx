@@ -27,35 +27,35 @@ export default function KpiCard({
 
   return (
     <div
-      className={`rounded-card border p-5 transition-colors ${
+      className={`rounded-card border p-2.5 transition-colors ${
         variant === 'dark'
           ? 'bg-admin-card border-admin-border hover:bg-admin-card-hover'
           : 'bg-card border-gray-200 shadow-sm'
       }`}
     >
-      <div className="flex items-start justify-between">
-        <div>
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
           <p
-            className={`text-sm font-semibold ${
+            className={`text-[10px] font-semibold truncate ${
               variant === 'dark' ? 'text-admin-muted' : 'text-gray-500'
             }`}
           >
             {label}
           </p>
           <p
-            className={`mt-2 text-3xl font-black ${
+            className={`mt-0.5 text-lg font-black truncate ${
               variant === 'dark' ? 'text-admin-text' : 'text-[#0066ff]'
             }`}
           >
             {value}
           </p>
         </div>
-        <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${iconBg}`}>
+        <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${iconBg}`}>
           {icon}
         </div>
       </div>
       <p
-        className={`mt-3 text-xs font-medium ${
+        className={`mt-1 text-[10px] font-medium truncate ${
           variant === 'dark' ? 'text-admin-disabled' : 'text-gray-400'
         }`}
       >

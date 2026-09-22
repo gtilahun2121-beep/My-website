@@ -1113,6 +1113,63 @@ export const equbAPI = {
       method: 'GET',
       params,
     }),
+
+  // Member Management Methods
+  inviteMember: (equbId: string, data: { email: string; personalMessage?: string }) =>
+    request<{ success: boolean; message: string }>(`/equbs/${equbId}/members/invite`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  bulkInviteMembers: (equbId: string, data: { emails: string[]; personalMessage?: string }) =>
+    request<{ successful: number; failed: number; details: Array<{ email: string; success: boolean; message: string }> }>(
+      `/equbs/${equbId}/members/bulk-invite`,
+      { method: 'POST', body: JSON.stringify(data) }
+    ),
+
+  acceptInvitation: (invitationId: string) =>
+    request<{ success: boolean; message: string }>(`/equbs/invitations/${invitationId}/accept`, {
+      method: 'POST',
+    }),
+
+  rejectInvitation: (invitationId: string, data: { action: 'reject'; reason?: string }) =>
+    request<{ success: boolean; message: string }>(`/equbs/invitations/${invitationId}/reject`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  getPendingInvitations: (params?: { page?: number; limit?: number }) =>
+    request<{ invitations: any[]; total: number }>(`/equbs/invitations/pending`, {
+      method: 'GET',
+      params,
+    }),
+
+  leaveMember: (equbId: string, data: { reason?: string }) =>
+    request<{ success: boolean; message: string }>(`/equbs/${equbId}/members/leave`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  removeMember: (equbId: string, memberId: string, data: { reason: string; refund: boolean }) =>
+    request<{ success: boolean; message: string }>(`/equbs/${equbId}/members/${memberId}`, {
+      method: 'DELETE',
+      body: JSON.stringify(data),
+    }),
+
+  getEqubMembers: (equbId: string, page: number = 1, limit: number = 20) =>
+    request<any>(`/equbs/${equbId}/members`, {
+      method: 'GET',
+      params: { page, limit },
+    }),
+
+  getMemberStats: (equbId: string, memberId: string) =>
+    request<any>(`/equbs/${equbId}/members/${memberId}/stats`, { method: 'GET' }),
+
+  searchEqubMembers: (equbId: string, query: string) =>
+    request<{ members: any[] }>(`/equbs/${equbId}/members/search`, {
+      method: 'GET',
+      params: { q: query },
+    }),
 };
 
 // ---------------------------------------------------------------------------

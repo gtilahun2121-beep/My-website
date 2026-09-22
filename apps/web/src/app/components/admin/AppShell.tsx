@@ -64,7 +64,7 @@ export default function AppShell({ title, subtitle, variant = 'admin', children 
           menuButtonRef={menuButtonRef}
         />
         <main
-          className={`flex-1 px-4 sm:px-6 py-6 space-y-6 ${
+          className={`flex-1 px-4 sm:px-6 py-4 space-y-4 ${
             isAdmin ? 'text-admin-text' : ''
           }`}
         >

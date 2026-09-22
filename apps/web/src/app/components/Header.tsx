@@ -24,10 +24,7 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
 
   const { user, isAuthenticated: authAuthenticated } = useAuth();
   const authenticated = isAuthenticated || authAuthenticated;
-  const { unreadCount, refresh } = useNotifications(authenticated);
-
-  const initials =
-    (user?.firstName?.[0] || '') + (user?.lastName?.[0] || '') || '👤';
+  const { refresh } = useNotifications(authenticated);
 
   const navItems = [
     { label: t.home, href: '/' },
@@ -42,138 +39,127 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
 
   return (
     <>
-    <header className="bg-gradient-to-b from-blue-100 to-blue-50 shadow-lg sticky top-0 z-50 border-b border-blue-200">
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
-        <div className="flex justify-between items-center gap-3 sm:gap-4">
-          {/* Left: Logo */}
-          <Link href="/" className="flex items-center gap-2 group shrink-0">
-            <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
-              <span className="text-white font-black text-sm">QN</span>
-            </div>
-            <div className="hidden sm:block">
-              <span className="block font-black text-lg text-blue-800">QalNet</span>
-              <p className="text-xs text-blue-600 font-medium -mt-1">Ethiopia's Digital Equb</p>
-            </div>
-          </Link>
+      <header className="sticky top-0 z-50 px-3 pt-5 sm:px-6 lg:px-8">
+        <nav className="mx-auto max-w-[1300px] rounded-full border border-white/70 bg-white/70 px-3 py-3 shadow-[0_18px_45px_rgba(59,130,246,0.12)] backdrop-blur-xl sm:px-5 lg:px-7">
+          <div className="flex items-center justify-between gap-3 sm:gap-4">
+            <Link href="/" className="group flex shrink-0 items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-500 shadow-md ring-2 ring-white/60">
+                <span className="text-base font-black text-white">QN</span>
+              </div>
+              <div className="hidden sm:block">
+                <span className="block text-[1.8rem] font-black leading-none tracking-[-0.06em] text-blue-800">QalNet</span>
+                <p className="mt-0.5 text-[0.7rem] font-medium text-blue-600">Ethiopia&apos;s Digital Equb</p>
+              </div>
+            </Link>
 
-          {/* Center Navigation (Desktop) */}
-          <div className="hidden md:flex items-center gap-8 flex-1 justify-center">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="text-blue-600 font-semibold hover:text-blue-800 transition-colors text-sm"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </div>
-
-          {/* Right Section */}
-          <div className="flex items-center gap-2 sm:gap-3 ml-auto">
-            {/* Language Selector */}
-            <div className="hidden sm:flex items-center gap-2">
-              <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 00.948-.684l1.498-4.493a1 1 0 011.502 0l1.498 4.493a1 1 0 00.948.684H19a2 2 0 012 2v2a2 2 0 01-2 2H5a2 2 0 01-2-2V5z" />
-              </svg>
-              <select
-                value={lang}
-                onChange={(e) => onLanguageChange(e.target.value as Language)}
-                className="px-3 py-1.5 border border-blue-300 rounded-full text-xs bg-white text-blue-600 font-semibold cursor-pointer hover:bg-blue-50 transition-colors"
-              >
-                {(Object.keys(languages) as Language[]).map((l) => (
-                  <option key={l} value={l}>
-                    {languages[l]}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Sign Up Button */}
-            {!authenticated && (
-              <button
-                onClick={onSignUpClick}
-                className="hidden sm:inline-flex items-center gap-2 px-5 py-2 bg-blue-600 text-white font-bold rounded-full shadow-md hover:bg-blue-700 hover:shadow-lg transition-all text-sm"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                </svg>
-                Sign Up
-              </button>
-            )}
-
-            {/* Mobile Menu Toggle */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 hover:bg-blue-200 rounded-full transition-all text-blue-600"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Navigation */}
-        {mobileMenuOpen && (
-          <div className="md:hidden mt-3 space-y-2 bg-white/60 backdrop-blur-sm rounded-xl p-3 border border-blue-200">
-            {/* Mobile language picker */}
-            <div className="flex flex-wrap gap-2 pb-2 border-b border-blue-200">
-              {(Object.keys(languages) as Language[]).map((l) => (
-                <button
-                  key={l}
-                  type="button"
-                  onClick={() => {
-                    onLanguageChange(l);
-                    setMobileMenuOpen(false);
-                  }}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-                    lang === l
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-blue-100 text-blue-600 hover:bg-blue-200'
+            <div className="hidden flex-1 items-center justify-center gap-8 md:flex">
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`text-[0.95rem] font-semibold transition-colors ${
+                    item.href === '/'
+                      ? 'rounded-full bg-blue-100 px-4 py-2 text-blue-700'
+                      : 'text-blue-600 hover:text-blue-800'
                   }`}
                 >
-                  {languages[l]}
-                </button>
+                  {item.label}
+                </Link>
               ))}
             </div>
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="block px-4 py-2 text-blue-600 font-semibold hover:bg-blue-100 rounded-lg text-sm transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {item.label}
-              </Link>
-            ))}
-            {!authenticated && (
-              <button
-                onClick={() => {
-                  onSignUpClick?.();
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full px-4 py-2 bg-blue-600 text-white font-bold rounded-lg text-sm hover:bg-blue-700 transition-colors"
-              >
-                Sign Up
-              </button>
-            )}
-          </div>
-        )}
-      </nav>
-    </header>
 
-    {/* Drawers (Rendered outside the header to avoid backdrop-blur containing block breaking fixed positioning) */}
-    <ProfileDrawer
-      isOpen={profileOpen && authenticated}
-      onClose={() => setProfileOpen(false)}
-      language={lang}
-    />
-    <NotificationsDrawer
-      isOpen={notificationsOpen && authenticated}
-      onClose={() => setNotificationsOpen(false)}
-      language={lang}
-    />
+            <div className="ml-auto flex items-center gap-2 sm:gap-3">
+              <div className="hidden items-center gap-2 sm:flex">
+                <button className="flex items-center gap-2 rounded-full border border-blue-200 bg-white/80 px-3 py-2 text-sm font-medium text-blue-600 shadow-sm">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                    <path d="M12 3a9 9 0 0 0 0 18m0-18a9 9 0 0 1 0 18M3 12h18" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <span>{languages[lang]}</span>
+                  <svg className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M5.25 7.5 10 12.25 14.75 7.5H5.25Z" />
+                  </svg>
+                </button>
+              </div>
+
+              {!authenticated && (
+                <button
+                  onClick={onSignUpClick}
+                  className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-600 to-blue-500 px-5 py-3 text-base font-bold text-white shadow-[0_12px_30px_rgba(37,99,235,0.35)] transition-all hover:scale-[1.02] hover:shadow-[0_16px_35px_rgba(37,99,235,0.45)]"
+                >
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
+                    <circle cx="12" cy="7" r="4" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <span>Sign Up</span>
+                </button>
+              )}
+
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="rounded-full p-2 text-blue-600 transition-colors hover:bg-blue-100 md:hidden"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {mobileMenuOpen && (
+            <div className="mt-3 space-y-2 rounded-2xl border border-blue-200 bg-white/70 p-3 backdrop-blur-md md:hidden">
+              <div className="flex flex-wrap gap-2 border-b border-blue-200 pb-2">
+                {(Object.keys(languages) as Language[]).map((l) => (
+                  <button
+                    key={l}
+                    type="button"
+                    onClick={() => {
+                      onLanguageChange(l);
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
+                      lang === l ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-600 hover:bg-blue-200'
+                    }`}
+                  >
+                    {languages[l]}
+                  </button>
+                ))}
+              </div>
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="block rounded-lg px-4 py-2 text-sm font-semibold text-blue-600 transition-colors hover:bg-blue-100"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {item.label}
+                </Link>
+              ))}
+              {!authenticated && (
+                <button
+                  onClick={() => {
+                    onSignUpClick?.();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white"
+                >
+                  Sign Up
+                </button>
+              )}
+            </div>
+          )}
+        </nav>
+      </header>
+
+      <ProfileDrawer
+        isOpen={profileOpen && authenticated}
+        onClose={() => setProfileOpen(false)}
+        language={lang}
+      />
+      <NotificationsDrawer
+        isOpen={notificationsOpen && authenticated}
+        onClose={() => setNotificationsOpen(false)}
+        language={lang}
+      />
     </>
   );
 }

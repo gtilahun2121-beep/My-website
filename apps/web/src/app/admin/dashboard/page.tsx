@@ -10,8 +10,6 @@ import { StatusBadge, BadgeTone } from '@/app/components/admin/StatusBadge';
 import { AreaChart } from '@/app/components/admin/DashboardCharts';import { ErrorState } from '@/app/components/admin/States';
 import { useRequireAdmin } from '@/app/hooks/useRequireAdmin';
 import { AdminRouteLoading } from '@/app/components/admin/AdminGate';
-import { useAuth } from '@/app/context/AuthContext';
-import { initials } from '@/app/components/dashboard/format';
 import { exportCsv as downloadCsv, exportExcel as downloadExcel, exportPdf as downloadPdf } from '@/app/components/admin/exportUtils';
 
 const stroke = {
@@ -103,6 +101,8 @@ function statusLabel(status: string) {
 }
 
 interface PendingApprovalRow {
+  id: string;
+  kind: 'equb' | 'membership';
   type: string;
   name: string;
   category: string;
@@ -134,10 +134,11 @@ export default function AdminDashboardPage() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [approvals, setApprovals] = useState<PendingApprovalRow[]>([]);
   const [approvalsLoading, setApprovalsLoading] = useState(true);
+  const [approvalBusyId, setApprovalBusyId] = useState<string | null>(null);
+  const [approvalMessage, setApprovalMessage] = useState<string | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
-  const { user } = useAuth();
 
   const load = useCallback(async (showSpinner = false) => {
     if (showSpinner) setLoading(true);
@@ -195,6 +196,8 @@ export default function AdminDashboardPage() {
       ]);
       const rows: PendingApprovalRow[] = [
         ...reqs.map((r: EqubCreationRequest) => ({
+          id: r.id,
+          kind: 'equb' as const,
           type: 'Equb Registration',
           name: r.name,
           category: 'Equb',
@@ -203,6 +206,8 @@ export default function AdminDashboardPage() {
           iconClass: 'bg-accent-100 text-accent-600',
         })),
         ...mems.map((m: PendingMembership) => ({
+          id: m.id,
+          kind: 'membership' as const,
           type: 'New Member',
           name: `${m.user_first_name} ${m.user_last_name}`.trim(),
           category: 'Member',
@@ -223,6 +228,38 @@ export default function AdminDashboardPage() {
     const t = setTimeout(() => void loadApprovals(), 0);
     return () => clearTimeout(t);
   }, [loadApprovals]);
+
+  /* Resolve a pending equb/join request inline from the dashboard — the same
+     approve/reject path used on /admin/approvals, so a member's request that
+     surfaced here is actioned in place. */
+  const resolveApproval = useCallback(
+    async (row: PendingApprovalRow, action: 'approve' | 'reject') => {
+      setApprovalBusyId(row.id);
+      setApprovalMessage(null);
+      try {
+        if (row.kind === 'equb') {
+          if (action === 'approve') await adminAPI.approveEqubRequest(row.id);
+          else await adminAPI.rejectEqubRequest(row.id);
+        } else {
+          if (action === 'approve') await adminAPI.approveMembership(row.id);
+          else await adminAPI.rejectMembership(row.id);
+        }
+        setApprovalMessage(
+          `${row.type} "${row.name}" ${action === 'approve' ? 'approved' : 'rejected'}.`,
+        );
+        await loadApprovals();
+      } catch (err) {
+        setApprovalMessage(
+          err instanceof APIError
+            ? err.data?.message || 'Action failed. Please retry.'
+            : 'Action failed. Please retry.',
+        );
+      } finally {
+        setApprovalBusyId(null);
+      }
+    },
+    [loadApprovals],
+  );
 
   /* Close export menu on outside click / Escape */
   useEffect(() => {
@@ -289,8 +326,6 @@ export default function AdminDashboardPage() {
     return { pct: quota > 0 ? Math.min(100, (bytes / quota) * 100) : 0, gb: bytes / 1024 ** 3 };
   }, [k]);
 
-  const adminInitials = user ? initials(user.firstName, user.lastName) : 'A';
-
   const exportRows = () => {
     if (!stats?.recent_transactions?.length) return null;
     const rows: (string | number)[][] = [
@@ -327,7 +362,7 @@ export default function AdminDashboardPage() {
   };
 
   const cardCls = 'bg-admin-card rounded-card border border-admin-border';
-  const cardTitleCls = 'text-base font-black text-admin-text';
+  const cardTitleCls = 'text-sm font-black text-admin-text';
   const cardSubtitleCls = 'text-xs text-admin-muted';
   const ranges: { key: '7d' | '30d' | '90d' | 'custom'; label: string }[] = [
     { key: '7d', label: '7D' },
@@ -351,16 +386,16 @@ export default function AdminDashboardPage() {
   return (
     <>
       {/* ── Greeting + date + export ─────────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-3">
         <div>
-          <h2 className="text-xl md:text-2xl font-black text-admin-text">
+          <h2 className="text-base md:text-lg font-black text-admin-text">
             {greeting()}, Admin 👋
           </h2>
-          <p className="mt-1 text-xs md:text-sm text-admin-muted">
+          <p className="mt-0.5 text-[11px] md:text-xs text-admin-muted">
             Here&apos;s what&apos;s happening with your QalNet platform today.
           </p>
         </div>
-        <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2">
+        <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-1.5">
           <div className="inline-flex items-center gap-2 px-2.5 md:px-3.5 py-2 md:py-2.5 rounded-lg bg-admin-card border border-admin-border text-xs md:text-sm font-semibold text-admin-text-secondary overflow-hidden">
             <svg viewBox="0 0 24 24" className="w-3.5 md:w-4 h-3.5 md:h-4 text-brand-600 shrink-0" {...stroke}>
               <rect x="3" y="5" width="18" height="16" rx="2" />
@@ -460,7 +495,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* ── Five KPI cards ────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2.5">
         <KpiCard
           label="Total Users"
           value={loading && !k ? '—' : (k?.total_users ?? 0)}
@@ -504,8 +539,8 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* ── Platform Activity ───────────────────────────────────────────── */}
-      <section className={`${cardCls} p-4 md:p-5`}>
-        <div className="flex flex-col gap-3 md:gap-4 mb-4">
+      <section className={`${cardCls} p-2.5 md:p-3`}>
+        <div className="flex flex-col gap-1.5 md:gap-2 mb-2.5">
             <div>
               <h3 className={cardTitleCls}>Platform Activity</h3>
               <p className={cardSubtitleCls}>Registrations, payments, equbs &amp; joins · {rangeLabel}</p>
@@ -552,7 +587,7 @@ export default function AdminDashboardPage() {
             </div>
           </div>
           {loading && !stats ? (
-            <div className="h-52 animate-pulse rounded-lg bg-admin-elevated" />
+            <div className="h-48 animate-pulse rounded-lg bg-admin-elevated" />
           ) : (
             <AreaChart
               data={trend}
@@ -560,7 +595,7 @@ export default function AdminDashboardPage() {
               valueFormatter={(v) => String(v)}
             />
           )}
-          <div className="mt-4 md:mt-5 grid grid-cols-2 sm:grid-cols-4 gap-2 md:gap-3 border-t border-admin-border pt-3 md:pt-4">
+          <div className="mt-2.5 grid grid-cols-2 sm:grid-cols-4 gap-2 border-t border-admin-border pt-2">
             {[
               { label: 'Today', value: activitySummary.today },
               { label: 'This Week', value: activitySummary.week },
@@ -576,10 +611,16 @@ export default function AdminDashboardPage() {
       </section>
 
       {/* ── Recent pending approvals ─────────────────────────────────────── */}
-      <RecentPendingApprovals loading={approvalsLoading} rows={approvals} adminInitials={adminInitials} />
+      <RecentPendingApprovals
+        loading={approvalsLoading}
+        rows={approvals}
+        busyId={approvalBusyId}
+        message={approvalMessage}
+        onResolve={resolveApproval}
+      />
 
       {/* ── System overview | transactions ───────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] gap-4 md:gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)] gap-2.5 items-start">
         <SystemOverviewCard
           loading={loading}
           healthy={!!stats}
@@ -588,7 +629,7 @@ export default function AdminDashboardPage() {
           lastUpdated={lastUpdated}
         />
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           <RecentTransactionsFeed loading={loading} transactions={stats?.recent_transactions ?? []} />
           <TopEqubsCard loading={loading} equbs={stats?.top_equbs ?? []} />
         </div>
@@ -613,27 +654,37 @@ export default function AdminDashboardPage() {
 function RecentPendingApprovals({
   loading,
   rows,
-  adminInitials,
+  busyId,
+  message,
+  onResolve,
 }: {
   loading: boolean;
   rows: PendingApprovalRow[];
-  adminInitials: string;
+  busyId: string | null;
+  message: string | null;
+  onResolve: (row: PendingApprovalRow, action: 'approve' | 'reject') => void;
 }) {
   const cardCls = 'bg-admin-card rounded-card border border-admin-border';
-  const cardTitleCls = 'text-base font-black text-admin-text';
+  const cardTitleCls = 'text-sm font-black text-admin-text';
   const cardSubtitleCls = 'text-xs text-admin-muted';
 
   return (
     <section className={`${cardCls} overflow-hidden`}>
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-4 px-4 md:px-5 py-3 md:py-4 border-b border-admin-border">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-3 px-3 md:px-4 py-2.5 md:py-3 border-b border-admin-border">
         <div>
           <h3 className={cardTitleCls}>Recent Pending Approvals</h3>
           <p className={cardSubtitleCls}>Requests awaiting administrative review</p>
         </div>
-        <Link href="/admin/approvals" className="text-xs font-bold text-brand-600 hover:text-brand-700 inline-block">
+        <Link href="/admin/approvals" className="text-[11px] font-bold text-brand-600 hover:text-brand-700 inline-block">
           View all →
         </Link>
       </div>
+
+      {message ? (
+        <div className="px-3 md:px-4 py-2 text-[11px] font-bold text-success-600 bg-success-500/10 border-b border-admin-border-subtle">
+          {message}
+        </div>
+      ) : null}
 
       {loading ? (
         <div className="divide-y divide-admin-border-subtle">
@@ -649,11 +700,11 @@ function RecentPendingApprovals({
           ))}
         </div>
       ) : rows.length === 0 ? (
-        <p className="px-4 md:px-5 py-8 md:py-12 text-center text-sm text-admin-muted">No pending approvals — all caught up.</p>
+        <p className="px-3 md:px-4 py-6 md:py-8 text-center text-sm text-admin-muted">No pending approvals — all caught up.</p>
       ) : (
         <ul className="divide-y divide-admin-border-subtle">
           {rows.slice(0, 6).map((row, i) => (
-            <li key={`${row.type}-${row.name}-${i}`} className="flex items-center gap-3 md:gap-4 px-4 md:px-5 py-3 md:py-3.5 hover:bg-admin-card-hover transition-colors">
+            <li key={`${row.type}-${row.name}-${i}`} className="flex items-center gap-3 md:gap-4 px-3 md:px-4 py-2.5 md:py-3 hover:bg-admin-card-hover transition-colors">
               <div className={`w-9 md:w-10 h-9 md:h-10 rounded-full flex items-center justify-center shrink-0 ${row.iconClass}`}>
                 <svg viewBox="0 0 24 24" className="w-4.5 md:w-5 h-4.5 md:h-5" {...stroke}>
                   <path d={row.icon} />
@@ -670,8 +721,23 @@ function RecentPendingApprovals({
                 <p className="text-xs font-semibold text-admin-text-secondary">{formatShortDate(row.date)}</p>
                 <p className="text-[11px] text-admin-muted">{formatTime(row.date)}</p>
               </div>
-              <div className="w-7 md:w-8 h-7 md:h-8 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center text-[10px] md:text-[11px] font-black shrink-0">
-                {adminInitials}
+              <div className="flex items-center gap-1.5 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => onResolve(row, 'approve')}
+                  disabled={busyId !== null}
+                  className="px-2.5 py-1.5 rounded-lg bg-success-600 text-[#0066ff] text-xs font-bold hover:bg-success-500 disabled:opacity-50 transition-colors"
+                >
+                  {busyId === row.id ? 'Working…' : '✓ Approve'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onResolve(row, 'reject')}
+                  disabled={busyId !== null}
+                  className="px-2.5 py-1.5 rounded-lg border border-danger-500/40 text-danger-500 text-xs font-bold hover:bg-danger-500/10 disabled:opacity-50 transition-colors"
+                >
+                  Reject
+                </button>
               </div>
             </li>
           ))}
@@ -699,7 +765,7 @@ function SystemOverviewCard({
   lastUpdated: Date | null;
 }) {
   const cardCls = 'bg-admin-card rounded-card border border-admin-border';
-  const cardTitleCls = 'text-base font-black text-admin-text';
+  const cardTitleCls = 'text-sm font-black text-admin-text';
   const cardSubtitleCls = 'text-xs text-admin-muted';
 
   const latencyLabel = apiLatency == null ? '—' : apiLatency < 200 ? 'Excellent' : apiLatency < 500 ? 'Good' : 'Slow';
@@ -742,8 +808,8 @@ function SystemOverviewCard({
   ];
 
   return (
-    <section className={`${cardCls} p-4 md:p-5`}>
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-4">
+    <section className={`${cardCls} p-3 md:p-4`}>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-3">
         <div>
           <h3 className={cardTitleCls}>System Overview</h3>
           <p className={cardSubtitleCls}>Key system metrics at a glance</p>
@@ -759,25 +825,25 @@ function SystemOverviewCard({
       </div>
 
       {loading ? (
-        <div className="mt-4 md:mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 md:gap-3">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-20 rounded-xl bg-admin-elevated animate-pulse" />
+            <div key={i} className="h-18 rounded-xl bg-admin-elevated animate-pulse" />
           ))}
         </div>
       ) : (
-        <div className="mt-4 md:mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 md:gap-3">
           {metrics.map((m) => (
-            <div key={m.label} className="rounded-xl border border-admin-border p-3 md:p-4">
+            <div key={m.label} className="rounded-xl border border-admin-border p-2.5 md:p-3">
               <div className="flex items-center gap-2">
-                <div className={`w-7 md:w-8 h-7 md:h-8 rounded-lg flex items-center justify-center shrink-0 ${m.iconClass}`}>
-                  <svg viewBox="0 0 24 24" className="w-3.5 md:w-4 h-3.5 md:h-4" {...stroke}>
+                <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${m.iconClass}`}>
+                  <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" {...stroke}>
                     <path d={m.icon} />
                   </svg>
                 </div>
-                <p className="text-xs font-semibold text-admin-muted">{m.label}</p>
+                <p className="text-[11px] font-semibold text-admin-muted">{m.label}</p>
               </div>
-              <p className={`mt-2 md:mt-3 text-lg md:text-xl font-black ${m.valueTone}`}>{m.value}</p>
-              <p className="text-[10px] md:text-[11px] font-semibold text-admin-muted mt-0.5">{m.sub}</p>
+              <p className={`mt-2 text-base md:text-lg font-black ${m.valueTone}`}>{m.value}</p>
+              <p className="text-[10px] font-semibold text-admin-muted mt-0.5">{m.sub}</p>
             </div>
           ))}
         </div>
@@ -798,17 +864,17 @@ function RecentTransactionsFeed({
   transactions: AdminRecentTransaction[];
 }) {
   const cardCls = 'bg-admin-card rounded-card border border-admin-border';
-  const cardTitleCls = 'text-base font-black text-admin-text';
+  const cardTitleCls = 'text-sm font-black text-admin-text';
   const cardSubtitleCls = 'text-xs text-admin-muted';
 
   return (
     <section className={`${cardCls} overflow-hidden`}>
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-4 px-4 md:px-5 py-3 md:py-4 border-b border-admin-border">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-3 px-3 md:px-4 py-2.5 md:py-3 border-b border-admin-border">
         <div>
           <h3 className={cardTitleCls}>Recent Transactions</h3>
           <p className={cardSubtitleCls}>Latest payments across all equbs</p>
         </div>
-        <Link href="/admin/finance" className="text-xs font-bold text-brand-600 hover:text-brand-700 inline-block">
+        <Link href="/admin/finance" className="text-[11px] font-bold text-brand-600 hover:text-brand-700 inline-block">
           View all →
         </Link>
       </div>
@@ -816,7 +882,7 @@ function RecentTransactionsFeed({
       {loading && !transactions.length ? (
         <div className="divide-y divide-admin-border-subtle">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-3 md:gap-4 px-4 md:px-5 py-3 md:py-4">
+            <div key={i} className="flex items-center gap-3 md:gap-4 px-3 md:px-4 py-2.5 md:py-3">
               <div className="w-10 h-10 rounded-full bg-admin-elevated animate-pulse shrink-0" />
               <div className="flex-1 space-y-2 min-w-0">
                 <div className="h-4 w-40 rounded bg-admin-elevated animate-pulse" />
@@ -827,11 +893,11 @@ function RecentTransactionsFeed({
           ))}
         </div>
       ) : transactions.length === 0 ? (
-        <p className="px-4 md:px-5 py-8 md:py-12 text-center text-sm text-admin-muted">No transactions yet.</p>
+        <p className="px-3 md:px-4 py-6 md:py-8 text-center text-sm text-admin-muted">No transactions yet.</p>
       ) : (
         <ul className="divide-y divide-admin-border-subtle">
           {transactions.slice(0, 6).map((t) => (
-            <li key={t.id} className="flex items-center gap-3 md:gap-4 px-4 md:px-5 py-3 md:py-3.5 hover:bg-admin-card-hover transition-colors">
+            <li key={t.id} className="flex items-center gap-3 md:gap-4 px-3 md:px-4 py-2.5 md:py-3 hover:bg-admin-card-hover transition-colors">
               <div className="w-9 md:w-10 h-9 md:h-10 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center shrink-0">
                 <svg viewBox="0 0 24 24" className="w-4.5 md:w-5 h-4.5 md:h-5" {...stroke}>
                   <path d="M3 10h18m0 0-4-4m4 4-4 4" />
@@ -866,17 +932,17 @@ function RecentTransactionsFeed({
 
 function TopEqubsCard({ loading, equbs }: { loading: boolean; equbs: AdminTopEqub[] }) {
   const cardCls = 'bg-admin-card rounded-card border border-admin-border';
-  const cardTitleCls = 'text-base font-black text-admin-text';
+  const cardTitleCls = 'text-sm font-black text-admin-text';
   const cardSubtitleCls = 'text-xs text-admin-muted';
 
   return (
-    <section className={`${cardCls} p-4 md:p-5`}>
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-4">
+    <section className={`${cardCls} p-3 md:p-4`}>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-3">
         <div>
           <h3 className={cardTitleCls}>Top Equbs</h3>
           <p className={cardSubtitleCls}>Largest circles by membership</p>
         </div>
-        <Link href="/admin/approvals" className="text-xs font-bold text-brand-600 hover:text-brand-700 inline-block">
+        <Link href="/admin/approvals" className="text-[11px] font-bold text-brand-600 hover:text-brand-700 inline-block">
           View all
         </Link>
       </div>
@@ -890,12 +956,12 @@ function TopEqubsCard({ loading, equbs }: { loading: boolean; equbs: AdminTopEqu
       ) : equbs.length === 0 ? (
         <p className="py-6 md:py-8 text-center text-sm text-admin-muted">No equbs yet.</p>
       ) : (
-        <ul className="space-y-2.5 md:space-y-3 mt-3 md:mt-4">
+        <ul className="space-y-2 mt-2.5">
           {equbs.map((e) => (
             <li key={e.id}>
               <Link
                 href={`/equbs/${e.id}`}
-                className="flex items-center gap-2.5 md:gap-3 p-2.5 md:p-3 rounded-xl border border-admin-border hover:border-brand-500/40 hover:bg-admin-elevated transition-colors"
+                className="flex items-center gap-2.5 md:gap-3 p-2 md:p-2.5 rounded-xl border border-admin-border hover:border-brand-500/40 hover:bg-admin-elevated transition-colors"
               >
                 <div className="w-9 md:w-10 h-9 md:h-10 rounded-xl bg-gradient-to-br from-brand-600 to-[#0052d6] text-white flex items-center justify-center font-black text-sm md:text-base shrink-0">
                   {e.name?.[0]?.toUpperCase() ?? 'E'}

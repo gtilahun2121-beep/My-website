@@ -1,4 +1,4 @@
-# QalNet API Endpoint Testing Script
+﻿# QalNet API Endpoint Testing Script
 # Tests core API endpoints after services are running
 # Usage: .\scripts\test-api.ps1
 
@@ -28,25 +28,22 @@ function Test-Endpoint {
     
     try {
         if ($Method -eq "GET") {
-            $response = Invoke-WebRequest -Uri $Url -Method GET -Headers $Headers -ErrorAction Stop -TimeoutSec 10
+            $response = Invoke-WebRequest -Uri $Url -Method GET -Headers $Headers -ErrorAction Stop -TimeoutSec 10 -UseBasicParsing
         } elseif ($Method -eq "POST") {
-            $response = Invoke-WebRequest -Uri $Url -Method POST -Headers $Headers -Body $Body -ContentType "application/json" -ErrorAction Stop -TimeoutSec 10
+            $response = Invoke-WebRequest -Uri $Url -Method POST -Headers $Headers -Body $Body -ContentType "application/json" -ErrorAction Stop -TimeoutSec 10 -UseBasicParsing
         }
         
         if ($response.StatusCode -eq 200 -or $response.StatusCode -eq 201 -or $response.StatusCode -eq 204) {
             Write-Host "  Status: $($response.StatusCode) - OK"
             $script:testsPassed++
-            return $true
         } else {
             Write-Host "  Status: $($response.StatusCode) - Unexpected"
             $script:testsFailed++
-            return $false
         }
     }
     catch {
         Write-Host "  Error: $($_.Exception.Message)"
         $script:testsFailed++
-        return $false
     }
     Write-Host ""
 }
@@ -59,7 +56,7 @@ $backendReady = $false
 $frontendReady = $false
 
 try {
-    $response = Invoke-WebRequest -Uri "$baseUrl/health" -Method GET -ErrorAction Stop -TimeoutSec 5
+    $response = Invoke-WebRequest -Uri "$baseUrl/health" -Method GET -ErrorAction Stop -TimeoutSec 5 -UseBasicParsing
     $backendReady = $true
     Write-Host "✓ Backend is running at $baseUrl"
 } catch {
@@ -70,7 +67,7 @@ try {
 }
 
 try {
-    $response = Invoke-WebRequest -Uri $frontendUrl -Method GET -ErrorAction Stop -TimeoutSec 5
+    $response = Invoke-WebRequest -Uri $frontendUrl -Method GET -ErrorAction Stop -TimeoutSec 5 -UseBasicParsing
     $frontendReady = $true
     Write-Host "✓ Frontend is running at $frontendUrl"
 } catch {
@@ -92,14 +89,15 @@ Write-Host "3. Testing Authentication Endpoints..."
 Write-Host ""
 
 # Get available OTP
-Test-Endpoint "Check Phone Availability" "$baseUrl/auth/check-availability?phone=%2B251900000000"
+Write-Host "  Sending OTP for signup flow..."
+Test-Endpoint "Send OTP" "$baseUrl/auth/send-otp" "POST" @{} '{"phone":"+251900000000"}'
 
-# Get all users (admin check)
+# User management
 Write-Host ""
 Write-Host "4. Testing User Management..."
 Write-Host ""
 
-Test-Endpoint "Get All Users" "$baseUrl/users"
+Test-Endpoint "Check Availability" "$baseUrl/auth/check-availability" "POST" @{} '{"phone":"+251900000000"}'
 
 # Frontend pages
 if ($frontendReady) {
@@ -108,7 +106,7 @@ if ($frontendReady) {
     Write-Host ""
     
     Test-Endpoint "Home Page" $frontendUrl
-    Test-Endpoint "Login Page" "$frontendUrl/login"
+    Test-Endpoint "Wallet Page" "$frontendUrl/wallet"
     Test-Endpoint "Dashboard" "$frontendUrl/dashboard"
 }
 

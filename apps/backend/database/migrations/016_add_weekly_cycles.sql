@@ -27,7 +27,16 @@
 -- -------------------------------------------------------------------------
 -- 1. Extend the cycle_type enum with 'weekly'
 -- -------------------------------------------------------------------------
-ALTER TYPE equb_cycle_type ADD VALUE 'weekly';
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_enum e
+    JOIN pg_type t ON e.enumtypid = t.oid
+    WHERE t.typname = 'equb_cycle_type' AND e.enumlabel = 'weekly'
+  ) THEN
+    ALTER TYPE equb_cycle_type ADD VALUE 'weekly';
+  END IF;
+END $$;
 
 -- -------------------------------------------------------------------------
 -- 2. Weekly cutoff configuration on equb_groups
@@ -37,6 +46,4 @@ ALTER TABLE equb_groups
     CHECK (payment_cutoff_weekday BETWEEN 0 AND 6);
 
 COMMENT ON COLUMN equb_groups.payment_cutoff_weekday IS
-  'Weekly equbs only. Day of the week (0=Sunday … 6=Saturday) on which the ' ||
-  'payment window closes and the automatic weekly draw runs (Day 7). The ' ||
-  'payment window itself spans the previous 6 days (Days 1-6). Defaults to 6 (Saturday).';
+  'Weekly equbs only. Day of the week (0=Sunday … 6=Saturday) on which the payment window closes and the automatic weekly draw runs (Day 7). The payment window itself spans the previous 6 days (Days 1-6). Defaults to 6 (Saturday).';

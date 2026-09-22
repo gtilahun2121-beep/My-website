@@ -165,7 +165,7 @@ export default function Sidebar({
         (item.label === 'Approvals' && pendingCount != null && pendingCount > 0 ? pendingCount : undefined) ??
         (item.label === 'Notifications' && unreadCount > 0 ? unreadCount : undefined);
 
-      const linkCls = `relative flex items-center rounded-lg py-2.5 text-sm font-semibold transition-colors gap-3 ${
+      const linkCls = `relative flex items-center rounded-lg py-2 text-sm font-semibold transition-colors gap-3 ${
         collapsed ? 'lg:gap-0 lg:justify-center' : ''
       } px-3 ${collapsed ? 'lg:px-0' : ''} ${
         item.disabled
@@ -232,17 +232,17 @@ export default function Sidebar({
         <Link
           href="/admin/dashboard"
           onClick={onClose}
-          className={`flex items-center gap-3 h-16 shrink-0 border-b border-admin-nav-border px-5 ${
+          className={`flex items-center gap-3 h-12 shrink-0 border-b border-admin-nav-border px-4 ${
             collapsed ? 'lg:px-0 lg:justify-center' : ''
           }`}
           aria-label="QalNet Admin Console — Dashboard"
         >
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white font-black text-lg shadow-lg shadow-[#0052d6]/40 shrink-0">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white font-black text-sm shadow-lg shadow-[#0052d6]/40 shrink-0">
             Q
           </div>
           <div className={labelHidden}>
             <p className="font-black leading-none text-admin-nav-text">QalNet</p>
-            <p className="text-xs mt-0.5 text-admin-nav-muted">Admin Console</p>
+            <p className="text-[11px] mt-0.5 text-admin-nav-muted">Admin Console</p>
           </div>
         </Link>
 
@@ -251,7 +251,7 @@ export default function Sidebar({
           ref={closeButtonRef}
           type="button"
           onClick={onClose}
-          className="lg:hidden absolute top-4 right-3 p-1.5 rounded-lg text-admin-nav-muted hover:text-admin-nav-text hover:bg-brand-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+          className="lg:hidden absolute top-2.5 right-3 p-1.5 rounded-lg text-admin-nav-muted hover:text-admin-nav-text hover:bg-brand-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
           aria-label="Close admin navigation"
         >
           <svg viewBox="0 0 24 24" className="w-5 h-5" {...stroke}>
@@ -260,32 +260,32 @@ export default function Sidebar({
         </button>
 
         {/* Primary navigation */}
-        <nav aria-label="Admin navigation" className="flex-1 overflow-y-auto px-3 py-4">
+        <nav aria-label="Admin navigation" className="flex-1 overflow-y-auto px-3 py-2">
           {ADMIN_NAV_GROUPS.map((group) => (
-            <div key={group.heading ?? 'default'} className={group.heading ? 'pt-4 first:pt-0' : ''}>
+            <div key={group.heading ?? 'default'} className={group.heading ? 'pt-3 first:pt-0' : ''}>
               {group.heading && (
                 <p
-                  className={`px-3 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-admin-nav-muted/60 ${
+                  className={`px-3 pb-1 text-[11px] font-bold uppercase tracking-wider text-admin-nav-muted/60 ${
                     collapsed ? 'lg:hidden' : ''
                   }`}
                 >
                   {group.heading}
                 </p>
               )}
-              <ul className="space-y-1">{group.items.map(renderAdminItem)}</ul>
+              <ul className="space-y-0.5">{group.items.map(renderAdminItem)}</ul>
             </div>
           ))}
         </nav>
 
         {/* System status */}
         <div className="px-3 shrink-0">
-          <div className="rounded-xl border border-admin-nav-border bg-admin-nav-elevated p-3">
+          <div className="rounded-xl border border-admin-nav-border bg-admin-nav-elevated p-2.5">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-success-500" aria-hidden="true" />
               <p className="text-xs font-bold text-admin-nav-text">System Status</p>
             </div>
-            <p className="text-[11px] text-admin-nav-muted mt-1.5">All systems operational</p>
-            <span className="text-[11px] font-bold text-brand-400 mt-1.5 inline-block" title="Coming soon">
+            <p className="text-[11px] text-admin-nav-muted mt-1">All systems operational</p>
+            <span className="text-[11px] font-bold text-brand-400 mt-1 inline-block" title="Coming soon">
               View status page →
             </span>
           </div>
@@ -293,11 +293,11 @@ export default function Sidebar({
 
         {/* Collapse toggle (desktop) */}
         {onToggleCollapsed && (
-          <div className="px-3 py-2 shrink-0 border-t border-admin-nav-border">
+          <div className="px-3 py-1.5 shrink-0 border-t border-admin-nav-border">
             <button
               type="button"
               onClick={onToggleCollapsed}
-              className={`flex items-center w-full rounded-lg py-2 text-xs font-bold text-admin-nav-muted hover:text-admin-nav-text hover:bg-brand-50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 gap-3 ${
+              className={`flex items-center w-full rounded-lg py-1.5 text-xs font-bold text-admin-nav-muted hover:text-admin-nav-text hover:bg-brand-50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 gap-3 ${
                 collapsed ? 'lg:gap-0 lg:justify-center' : ''
               } px-3 ${collapsed ? 'lg:px-0' : ''}`}
             >
@@ -315,14 +315,14 @@ export default function Sidebar({
 
         {/* Administrator profile */}
         {user && (
-          <div className="shrink-0 border-t border-admin-nav-border p-3">
+          <div className="shrink-0 border-t border-admin-nav-border p-2">
             <div className="relative">
               <button
                 type="button"
                 onClick={() => setProfileOpen((v) => !v)}
                 aria-haspopup="menu"
                 aria-expanded={profileOpen}
-                className={`flex w-full items-center rounded-lg p-2 text-left transition-colors hover:bg-brand-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 gap-3 ${
+                className={`flex w-full items-center rounded-lg p-1.5 text-left transition-colors hover:bg-brand-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 gap-3 ${
                   collapsed ? 'lg:gap-0 lg:justify-center' : ''
                 }`}
               >
@@ -331,10 +331,10 @@ export default function Sidebar({
                   <img
                     src={user.profilePhoto}
                     alt={''}
-                    className="w-9 h-9 rounded-full object-cover shrink-0"
+                    className="w-8 h-8 rounded-full object-cover shrink-0"
                   />
                 ) : (
-                  <div className="w-9 h-9 rounded-full bg-brand-600 text-white flex items-center justify-center text-sm font-bold shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-brand-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
                     {initials(user.firstName, user.lastName)}
                   </div>
                 )}
@@ -386,7 +386,7 @@ export default function Sidebar({
   const memberItemCls = (item: NavItem) => {
     const active = !!item.href && item.href === pathname;
     const base =
-      'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors';
+      'flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-semibold transition-colors';
     if (item.disabled) return `${base} text-gray-300 cursor-not-allowed`;
     if (active) return `${base} bg-brand-100 text-[#0042ad]`;
     return `${base} text-gray-600 hover:bg-gray-100 hover:text-[#0066ff]`;
@@ -419,15 +419,15 @@ export default function Sidebar({
       {/* Brand */}
       <Link
         href="/dashboard"
-        className="flex items-center gap-3 px-5 h-16 border-b border-gray-100"
+        className="flex items-center gap-3 px-4 h-12 border-b border-gray-100"
         onClick={onClose}
       >
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white font-black text-lg shadow-lg shadow-[#0066ff]/50">
+        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white font-black text-sm shadow-lg shadow-[#0066ff]/50">
           Q
         </div>
         <div>
           <p className="font-black leading-none text-[#0066ff]">QalNet</p>
-          <p className="text-xs mt-0.5 text-gray-400">{'Ethiopia\'s Digital Equb'}</p>
+          <p className="text-[11px] mt-0.5 text-gray-400">{'Ethiopia\'s Digital Equb'}</p>
         </div>
       </Link>
 
@@ -436,7 +436,7 @@ export default function Sidebar({
         ref={closeButtonRef}
         type="button"
         onClick={onClose}
-        className="lg:hidden absolute top-4 right-3 p-1.5 rounded-lg text-gray-400 hover:text-[#0066ff] hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+        className="lg:hidden absolute top-2.5 right-3 p-1.5 rounded-lg text-gray-400 hover:text-[#0066ff] hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
         aria-label="Close navigation"
       >
         <svg viewBox="0 0 24 24" className="w-5 h-5" {...stroke}>
@@ -445,20 +445,20 @@ export default function Sidebar({
       </button>
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4">
-        <div className="space-y-1">{MEMBER_NAV.map(renderMemberItem)}</div>
+      <nav className="flex-1 overflow-y-auto px-3 py-2">
+        <div className="space-y-0.5">{MEMBER_NAV.map(renderMemberItem)}</div>
       </nav>
 
       {/* Help card */}
-      <div className="px-3 pb-3">
-        <div className="rounded-card p-4 bg-gray-50 border border-gray-100">
+      <div className="px-3 pb-2">
+        <div className="rounded-card p-3 bg-gray-50 border border-gray-100">
           <p className="text-sm font-bold text-[#0066ff]">Need help?</p>
-          <p className="text-xs mt-1 text-gray-500">
+          <p className="text-xs mt-0.5 text-gray-500">
             Our support team is ready to help you.
           </p>
           <button
             type="button"
-            className="mt-3 w-full py-2 rounded-lg bg-gradient-to-r from-brand-600 to-brand-500 text-white text-xs font-bold hover:from-brand-500 hover:to-brand-400 transition-all"
+            className="mt-2 w-full py-1.5 rounded-lg bg-gradient-to-r from-brand-600 to-brand-500 text-white text-xs font-bold hover:from-brand-500 hover:to-brand-400 transition-all"
           >
             Contact Support
           </button>
@@ -466,7 +466,7 @@ export default function Sidebar({
       </div>
 
       {/* Footer nav */}
-      <div className="px-3 pb-4 space-y-1 pt-3 border-t border-gray-100">
+      <div className="px-3 pb-2 space-y-0.5 pt-2 border-t border-gray-100">
         {MEMBER_FOOTER.map(renderMemberItem)}
       </div>
     </aside>

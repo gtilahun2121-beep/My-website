@@ -93,24 +93,24 @@ export default function TopHeader({ title, subtitle, onMenuClick, variant = 'adm
   return (
     <>
       <header className={`sticky top-0 z-30 border-b ${headerCls}`}>
-      <div className="flex items-center gap-4 px-4 sm:px-6 h-16">
+      <div className="flex items-center gap-3 px-3 sm:px-4 h-12">
         {/* Mobile menu toggle */}
         <button
           ref={menuButtonRef}
           type="button"
           onClick={onMenuClick}
-          className={`lg:hidden p-2 rounded-lg ${iconBtnCls}`}
+          className={`lg:hidden p-1.5 rounded-lg ${iconBtnCls}`}
           aria-label={isAdmin ? 'Open admin navigation' : 'Open navigation'}
         >
-          <svg viewBox="0 0 24 24" className="w-6 h-6" {...stroke}>
+          <svg viewBox="0 0 24 24" className="w-5 h-5" {...stroke}>
             <path d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
 
         {/* Page title */}
         <div className="min-w-0">
-          <h1 className={`text-lg font-black truncate ${titleCls}`}>{title}</h1>
-          {subtitle && <p className={`text-xs truncate ${subtitleCls}`}>{subtitle}</p>}
+          <h1 className={`text-base font-black truncate ${titleCls}`}>{title}</h1>
+          {subtitle && <p className={`text-[11px] truncate ${subtitleCls}`}>{subtitle}</p>}
         </div>
 
         {variant === 'admin' && (
@@ -132,7 +132,7 @@ export default function TopHeader({ title, subtitle, onMenuClick, variant = 'adm
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search members, transactions, wallets…"
               aria-label="Search members, transactions and wallets"
-              className={`w-full py-2 pl-9 pr-14 rounded-lg border text-sm focus:outline-none ${searchCls}`}
+              className={`w-full py-1.5 pl-9 pr-14 rounded-lg border text-sm focus:outline-none ${searchCls}`}
             />
             <kbd className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded border border-admin-border bg-admin-card text-[10px] font-bold text-admin-disabled">
               Ctrl K
@@ -141,14 +141,14 @@ export default function TopHeader({ title, subtitle, onMenuClick, variant = 'adm
         )}
 
         {/* Actions */}
-        <div className="flex items-center gap-1 sm:gap-2 ml-auto md:ml-0">
+        <div className="flex items-center gap-1 sm:gap-1.5 ml-auto md:ml-0">
           {/* Language selector */}
           {variant === 'member' && (
             <select
               value={lang}
               onChange={(e) => changeLang(e.target.value as Language)}
               aria-label="Language"
-              className="hidden md:block py-1.5 pl-2 pr-7 rounded-lg bg-gray-50 border border-gray-200 text-sm font-semibold text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-500/40 cursor-pointer"
+              className="hidden md:block py-1 pl-2 pr-6 rounded-lg bg-gray-50 border border-gray-200 text-xs font-semibold text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-500/40 cursor-pointer"
             >
               {(Object.keys(languages) as Language[]).map((code) => (
                 <option key={code} value={code}>
@@ -162,10 +162,10 @@ export default function TopHeader({ title, subtitle, onMenuClick, variant = 'adm
           <button
             type="button"
             onClick={toggleFullscreen}
-            className={`p-2 rounded-lg ${iconBtnCls}`}
+            className={`p-1.5 rounded-lg ${iconBtnCls}`}
             aria-label="Toggle fullscreen"
           >
-            <svg viewBox="0 0 24 24" className="w-5 h-5" {...stroke}>
+            <svg viewBox="0 0 24 24" className="w-4.5 h-4.5" {...stroke}>
               <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
             </svg>
           </button>
@@ -174,14 +174,14 @@ export default function TopHeader({ title, subtitle, onMenuClick, variant = 'adm
           <button
             type="button"
             onClick={openNotifications}
-            className={`relative p-2 rounded-lg ${iconBtnCls}`}
+            className={`relative p-1.5 rounded-lg ${iconBtnCls}`}
             aria-label="Notifications"
           >
-            <svg viewBox="0 0 24 24" className="w-5 h-5" {...stroke}>
+            <svg viewBox="0 0 24 24" className="w-4.5 h-4.5" {...stroke}>
               <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5m6 0v1a3 3 0 1 1-6 0v-1m6 0H9" />
             </svg>
             {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-danger-500 border-2 border-white text-[10px] font-black text-[#0066ff] flex items-center justify-center">
+              <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-0.5 rounded-full bg-danger-500 border border-white text-[9px] font-black text-[#0066ff] flex items-center justify-center">
                 {unreadCount > 99 ? '99+' : unreadCount}
               </span>
             )}
@@ -194,10 +194,10 @@ export default function TopHeader({ title, subtitle, onMenuClick, variant = 'adm
 
       {/* Search (mobile) — admin only */}
       {variant === 'admin' && (
-        <div className="md:hidden px-4 pb-3 relative">
+        <div className="md:hidden px-3 pb-2 relative">
           <svg
             viewBox="0 0 24 24"
-            className={`w-4 h-4 absolute left-7 top-2.5 ${
+            className={`w-4 h-4 absolute left-6 top-2 ${
               isAdmin ? 'text-admin-disabled' : 'text-gray-400'
             }`}
             {...stroke}
@@ -210,7 +210,7 @@ export default function TopHeader({ title, subtitle, onMenuClick, variant = 'adm
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search…"
-            className={`w-full py-2 pl-9 pr-3 rounded-lg border focus:outline-none ${searchCls}`}
+            className={`w-full py-1.5 pl-9 pr-3 rounded-lg border focus:outline-none ${searchCls}`}
           />
         </div>
       )}

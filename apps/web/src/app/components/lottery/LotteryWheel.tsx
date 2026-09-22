@@ -31,6 +31,8 @@ interface LotteryWheelProps {
   previewSeed?: number;
   /** Play synthesised tick/win sounds (defaults to true). */
   soundEnabled?: boolean;
+  /** Smaller wheel radius for compact contexts (defaults to 130). */
+  radius?: number;
   onSpinComplete?: () => void;
 }
 
@@ -59,7 +61,6 @@ const PLACEHOLDER_COLORS = [
   '#4a6ad4',
 ];
 
-const WHEEL_RADIUS = 130;
 const POINTER_DEG = 270; // pointer sits at 12 o'clock
 const FULL_TURNS = 6;    // guaranteed full revolutions before landing
 
@@ -116,6 +117,7 @@ export const LotteryWheel: React.FC<LotteryWheelProps> = ({
   preview = false,
   previewSeed = 0,
   soundEnabled = true,
+  radius = 130,
   onSpinComplete,
 }) => {
   const [rotation, setRotation] = useState(0);
@@ -204,9 +206,9 @@ export const LotteryWheel: React.FC<LotteryWheelProps> = ({
     onSpinComplete?.();
   }, [targetRotation, onSpinComplete]);
 
-  const cx = WHEEL_RADIUS + 10;
-  const cy = WHEEL_RADIUS + 10;
-  const size = (WHEEL_RADIUS + 10) * 2;
+  const cx = radius + 10;
+  const cy = radius + 10;
+  const size = (radius + 10) * 2;
 
   const showWinnerBanner = !!winner && !spinning && !preview;
   const showConfetti = showWinnerBanner && candidates.length > 0;
@@ -262,7 +264,7 @@ export const LotteryWheel: React.FC<LotteryWheelProps> = ({
                 <g key={s.id}>
                   {isWinnerSegment ? (
                     <motion.path
-                      d={describeSegment(cx, cy, WHEEL_RADIUS + 4, s.startDeg, s.endDeg)}
+                      d={describeSegment(cx, cy, radius + 4, s.startDeg, s.endDeg)}
                       fill="none"
                       stroke="#f59e0b"
                       strokeWidth="6"
@@ -272,16 +274,16 @@ export const LotteryWheel: React.FC<LotteryWheelProps> = ({
                     />
                   ) : null}
                   <path
-                    d={describeSegment(cx, cy, WHEEL_RADIUS, s.startDeg, s.endDeg)}
+                    d={describeSegment(cx, cy, radius, s.startDeg, s.endDeg)}
                     fill={s.color}
                     stroke="#ffffff"
                     strokeWidth="2"
                   />
                   <text
-                    x={polarToCartesian(cx, cy, WHEEL_RADIUS * 0.66, s.centerDeg).x}
-                    y={polarToCartesian(cx, cy, WHEEL_RADIUS * 0.66, s.centerDeg).y}
+                    x={polarToCartesian(cx, cy, radius * 0.66, s.centerDeg).x}
+                    y={polarToCartesian(cx, cy, radius * 0.66, s.centerDeg).y}
                     fill="#ffffff"
-                    fontSize={s.label.length > 12 ? 11 : 13}
+                    fontSize={radius < 110 ? (s.label.length > 12 ? 9 : 11) : s.label.length > 12 ? 11 : 13}
                     fontWeight={isWinnerSegment ? 900 : 700}
                     textAnchor="middle"
                     dominantBaseline="middle"

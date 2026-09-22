@@ -3,6 +3,7 @@ import { NotificationsController } from './notifications.controller';
 import { NotificationsService } from './notifications.service';
 import { NotificationsRepository } from './notifications.repository';
 import { NotificationsCleanupTask } from './tasks/notifications-cleanup.task';
+import { EmailService } from './services/email.service';
 
 @Module({
     controllers: [NotificationsController],
@@ -10,7 +11,8 @@ import { NotificationsCleanupTask } from './tasks/notifications-cleanup.task';
         NotificationsService,
         NotificationsRepository,
         NotificationsCleanupTask,
+        EmailService,
     ],
-    exports: [NotificationsService, NotificationsRepository],
+    exports: [NotificationsService, NotificationsRepository, EmailService],
 })
 export class NotificationsModule {}

@@ -1,4 +1,4 @@
-# QalNet System Verification Script
+﻿# QalNet System Verification Script
 # Simple version compatible with Windows PowerShell
 
 Write-Host ""
@@ -100,7 +100,7 @@ if (Test-Path ".\apps\backend\database\migrations" -PathType Container) {
 Write-Host ""
 Write-Host "5. Checking Documentation..."
 
-$docs = "README.md", "SETUP_GUIDE.md", "SYSTEM_STATUS.md", "FILE_STRUCTURE.md"
+$docs = "README.md", "API_TESTING.md", "FILE_STRUCTURE.md", "SECURITY.md"
 foreach ($doc in $docs) {
     if (Test-Path $doc) {
         Write-Host "  $doc : ✓"
