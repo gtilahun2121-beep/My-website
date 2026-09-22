@@ -8,6 +8,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import AuthModal from './components/modals/AuthModal';
 import EqubTiersSection from './components/EqubTiersSection';
+import CommunityCircle from './components/CommunityCircle';
 import { homePathForStoredUser } from './lib/roleHome';
 
 export default function Home() {
@@ -99,19 +100,7 @@ export default function Home() {
 
               {/* Right Content - Community Circle Image */}
               <div className="relative flex justify-center items-center">
-                <div className="relative w-full max-w-md aspect-square">
-                  {/* This is where the community circle image would go */}
-                  {/* For now, we'll create a placeholder with a gradient circle */}
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center shadow-2xl">
-                    {/* Community illustration placeholder */}
-                    <div className="text-center space-y-4">
-                      <div className="text-6xl">👥</div>
-                      <p className="text-blue-600 font-semibold">
-                        {lang === 'en' ? 'Join our community' : 'ወደ ማህበረሰባችን присоединяйтесь'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                <CommunityCircle />
               </div>
             </div>
           </div>
