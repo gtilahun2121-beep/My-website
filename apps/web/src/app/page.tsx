@@ -8,7 +8,6 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import AuthModal from './components/modals/AuthModal';
 import EqubTiersSection from './components/EqubTiersSection';
-import CommunityCircle from './components/CommunityCircle';
 import { homePathForStoredUser } from './lib/roleHome';
 
 export default function Home() {
@@ -48,17 +47,21 @@ export default function Home() {
 
       <div className="flex-grow">
         {/* Hero Section */}
-        <section className="relative overflow-hidden bg-gradient-to-b from-blue-50 via-blue-50 to-white px-4 py-12 sm:py-16 md:py-20">
-          {/* Background Elements */}
-          <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-blue-200 opacity-20 blur-3xl"></div>
-            <div className="absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-blue-100 opacity-20 blur-3xl"></div>
-          </div>
+        <section 
+          className="relative overflow-hidden px-4 py-12 sm:py-16 md:py-24 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: 'url(/community-circle-bg.svg)',
+            backgroundColor: '#f0f9ff',
+            backgroundAttachment: 'fixed'
+          }}
+        >
+          {/* Overlay for better text readability */}
+          <div className="absolute inset-0 bg-gradient-to-l from-white/80 via-white/60 to-white/40"></div>
 
           <div className="relative z-10 mx-auto max-w-7xl">
-            <div className="grid grid-cols-1 items-center gap-8 md:grid-cols-2">
+            <div className="grid grid-cols-1 items-center md:grid-cols-2">
               {/* Left Content */}
-              <div className="space-y-6">
+              <div className="space-y-6 pr-0 md:pr-8">
                 {/* Tagline */}
                 <div className="flex items-center gap-2">
                   <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center text-white text-xs font-bold">
@@ -79,7 +82,7 @@ export default function Home() {
                 </div>
 
                 {/* Subheading */}
-                <p className="max-w-md text-base text-gray-600 sm:text-lg">
+                <p className="max-w-md text-base text-gray-700 sm:text-lg">
                   {lang === 'en'
                     ? 'Secure, transparent, and built for communities. Digital savings, stronger together.'
                     : 'ደህንነታዊ፣ ግልጽ፣ እና ለማህበረሰብ የተገነባ። ዲጂታል ቁጠባ፣ አንድ ላይ ጠንካራ።'}
@@ -98,10 +101,8 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Right Content - Community Circle Image */}
-              <div className="relative flex justify-center items-center">
-                <CommunityCircle />
-              </div>
+              {/* Right Content - Background shows community circle image */}
+              <div className="hidden md:block"></div>
             </div>
           </div>
         </section>

@@ -1,0 +1,95 @@
+<svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+  <!-- Background gradient -->
+  <defs>
+    <radialGradient id="circleBg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#dbeafe;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#eff6ff;stop-opacity:1" />
+    </radialGradient>
+    
+    <linearGradient id="fadeOut" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0" />
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0.3" />
+    </linearGradient>
+  </defs>
+
+  <!-- Main circle background -->
+  <circle cx="300" cy="300" r="280" fill="url(#circleBg)" opacity="0.9"/>
+  
+  <!-- Subtle shadow -->
+  <circle cx="300" cy="305" r="275" fill="#000000" opacity="0.05"/>
+
+  <!-- Central hub -->
+  <circle cx="300" cy="300" r="120" fill="#e0f2fe" stroke="#3b82f6" stroke-width="2"/>
+  <circle cx="300" cy="300" r="115" fill="#f0f9ff" opacity="0.8"/>
+  
+  <!-- Center handshake icon background -->
+  <circle cx="300" cy="270" r="35" fill="#3b82f6" opacity="0.1"/>
+  <text x="300" y="280" font-size="40" text-anchor="middle" dominant-baseline="middle">🤝</text>
+  
+  <!-- Center text -->
+  <text x="300" y="330" font-size="16" font-weight="bold" text-anchor="middle" fill="#1e40af" font-family="Arial, sans-serif">
+    Join Our
+  </text>
+  <text x="300" y="352" font-size="16" font-weight="bold" text-anchor="middle" fill="#1e40af" font-family="Arial, sans-serif">
+    Community
+  </text>
+
+  <!-- Person 1 - Top Left (Blue) -->
+  <g transform="translate(180, 100)">
+    <circle cx="0" cy="0" r="28" fill="#3b82f6" opacity="0.9"/>
+    <circle cx="0" cy="0" r="26" fill="#60a5fa"/>
+    <text x="0" y="8" font-size="28" text-anchor="middle" dominant-baseline="middle">👤</text>
+  </g>
+
+  <!-- Person 2 - Top Center (Red/Pink) -->
+  <g transform="translate(300, 60)">
+    <circle cx="0" cy="0" r="28" fill="#fca5a5" opacity="0.9"/>
+    <circle cx="0" cy="0" r="26" fill="#f87171"/>
+    <text x="0" y="8" font-size="28" text-anchor="middle" dominant-baseline="middle">👤</text>
+  </g>
+
+  <!-- Person 3 - Top Right (Orange) -->
+  <g transform="translate(420, 100)">
+    <circle cx="0" cy="0" r="28" fill="#f59e0b" opacity="0.9"/>
+    <circle cx="0" cy="0" r="26" fill="#fbbf24"/>
+    <text x="0" y="8" font-size="28" text-anchor="middle" dominant-baseline="middle">👤</text>
+  </g>
+
+  <!-- Person 4 - Right (Purple) -->
+  <g transform="translate(480, 250)">
+    <circle cx="0" cy="0" r="28" fill="#a78bfa" opacity="0.9"/>
+    <circle cx="0" cy="0" r="26" fill="#c4b5fd"/>
+    <text x="0" y="8" font-size="28" text-anchor="middle" dominant-baseline="middle">👤</text>
+  </g>
+
+  <!-- Person 5 - Bottom Right (Light Blue) -->
+  <g transform="translate(420, 400)">
+    <circle cx="0" cy="0" r="28" fill="#60a5fa" opacity="0.9"/>
+    <circle cx="0" cy="0" r="26" fill="#93c5fd"/>
+    <text x="0" y="8" font-size="28" text-anchor="middle" dominant-baseline="middle">👤</text>
+  </g>
+
+  <!-- Person 6 - Bottom Center (Rose) -->
+  <g transform="translate(300, 480)">
+    <circle cx="0" cy="0" r="28" fill="#fb7185" opacity="0.9"/>
+    <circle cx="0" cy="0" r="26" fill="#ff9ca0"/>
+    <text x="0" y="8" font-size="28" text-anchor="middle" dominant-baseline="middle">👤</text>
+  </g>
+
+  <!-- Person 7 - Bottom Left (Indigo) -->
+  <g transform="translate(180, 400)">
+    <circle cx="0" cy="0" r="28" fill="#4f46e5" opacity="0.9"/>
+    <circle cx="0" cy="0" r="26" fill="#6366f1"/>
+    <text x="0" y="8" font-size="28" text-anchor="middle" dominant-baseline="middle">👤</text>
+  </g>
+
+  <!-- Person 8 - Left (Light Blue) -->
+  <g transform="translate(120, 250)">
+    <circle cx="0" cy="0" r="28" fill="#bfdbfe" opacity="0.9"/>
+    <circle cx="0" cy="0" r="26" fill="#dbeafe"/>
+    <text x="0" y="8" font-size="28" text-anchor="middle" dominant-baseline="middle">👤</text>
+  </g>
+
+  <!-- Overlay fade -->
+  <rect width="600" height="600" fill="url(#fadeOut)"/>
+</svg>
