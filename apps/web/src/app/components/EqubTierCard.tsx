@@ -100,15 +100,15 @@ export default function EqubTierCard({
         )}
 
         {/* Header with Title */}
-        <div className={`bg-gradient-to-r ${data.color} text-white p-6`}>
-          <h3 className="text-2xl font-black mb-2">{data.title}</h3>
+        <div className={`bg-gradient-to-r ${data.color} text-white p-5`}>
+          <h3 className="text-xl font-black mb-1">{data.title}</h3>
           <p className="text-white/90 text-sm font-semibold">{data.targetUsers}</p>
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6">
+        <div className="p-5 space-y-4">
           {/* Key Metrics */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             {/* Duration */}
             <div>
               <p className="text-xs text-gray-600 font-semibold">Duration</p>
@@ -140,8 +140,8 @@ export default function EqubTierCard({
 
           {/* Features */}
           <div>
-            <p className="text-xs font-bold text-[#0066ff] mb-3">What you get:</p>
-            <ul className="space-y-2">
+            <p className="text-xs font-bold text-[#0066ff] mb-2">What you get:</p>
+            <ul className="space-y-1.5">
               {data.features.map((feature, idx) => (
                 <li key={idx} className="flex items-center gap-2 text-sm text-[#0066ff]">
                   <span className={`w-2 h-2 rounded-full bg-gradient-to-r ${data.color}`}></span>
@@ -154,7 +154,7 @@ export default function EqubTierCard({
           {/* Join Button */}
           <button
             onClick={() => onJoin?.(tier)}
-            className={`w-full py-3 px-4 bg-gradient-to-r ${data.color} text-white font-bold rounded-lg hover:shadow-lg transition-all hover:scale-105 flex items-center justify-center gap-2`}
+            className={`w-full py-2.5 px-4 bg-gradient-to-r ${data.color} text-white font-bold rounded-lg hover:shadow-lg transition-all hover:scale-105 flex items-center justify-center gap-2`}
           >
             <span>Join {tier === 'DAILY' ? 'Daily' : tier === 'WEEKLY' ? 'Weekly' : 'Monthly'} Equb</span>
           </button>
