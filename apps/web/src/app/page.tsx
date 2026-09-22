@@ -48,20 +48,23 @@ export default function Home() {
       <div className="flex-grow">
         {/* Hero Section */}
         <section 
-          className="relative overflow-hidden px-4 py-12 sm:py-16 md:py-24 bg-cover bg-center bg-no-repeat"
+          className="relative overflow-hidden px-4 py-12 sm:py-16 md:py-24"
           style={{
-            backgroundImage: 'url(/community-circle-bg.svg)',
-            backgroundColor: '#f0f9ff',
-            backgroundAttachment: 'fixed'
+            backgroundImage: 'url(/system-bg.jpeg)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center right',
+            backgroundRepeat: 'no-repeat',
+            backgroundAttachment: 'fixed',
+            minHeight: '600px'
           }}
         >
-          {/* Overlay for better text readability */}
-          <div className="absolute inset-0 bg-gradient-to-l from-white/80 via-white/60 to-white/40"></div>
+          {/* Dark overlay for better text readability */}
+          <div className="absolute inset-0 bg-gradient-to-r from-white via-white/70 to-transparent"></div>
 
           <div className="relative z-10 mx-auto max-w-7xl">
             <div className="grid grid-cols-1 items-center md:grid-cols-2">
               {/* Left Content */}
-              <div className="space-y-6 pr-0 md:pr-8">
+              <div className="space-y-6 pr-0 md:pr-12">
                 {/* Tagline */}
                 <div className="flex items-center gap-2">
                   <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center text-white text-xs font-bold">
@@ -82,14 +85,14 @@ export default function Home() {
                 </div>
 
                 {/* Subheading */}
-                <p className="max-w-md text-base text-gray-700 sm:text-lg">
+                <p className="max-w-md text-base text-gray-700 sm:text-lg font-medium">
                   {lang === 'en'
                     ? 'Secure, transparent, and built for communities. Digital savings, stronger together.'
                     : 'ደህንነታዊ፣ ግልጽ፣ እና ለማህበረሰብ የተገነባ። ዲጂታል ቁጠባ፣ አንድ ላይ ጠንካራ።'}
                 </p>
 
-                {/* CTA Buttons */}
-                <div className="flex flex-wrap gap-4">
+                {/* CTA Button */}
+                <div className="flex flex-wrap gap-4 pt-4">
                   <button
                     onClick={() => setShowAuthModal(true)}
                     className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-8 py-3 font-bold text-white shadow-lg transition-all hover:bg-blue-700 hover:shadow-xl"
@@ -101,7 +104,7 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Right Content - Background shows community circle image */}
+              {/* Right side - Background image shows through */}
               <div className="hidden md:block"></div>
             </div>
           </div>
