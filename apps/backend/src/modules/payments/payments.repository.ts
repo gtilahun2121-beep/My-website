@@ -29,6 +29,12 @@ export interface PaymentRecord {
     transaction_reference: string | null;
     paid_at: Date | null;
     created_at: Date;
+    // Multi-method payment fields
+    payment_method?: string;
+    provider_reference?: string | null;
+    failure_reason?: string | null;
+    completed_at?: Date | null;
+    tx_metadata?: any;
 }
 
 export interface EqubRecord {

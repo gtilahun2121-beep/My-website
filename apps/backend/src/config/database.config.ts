@@ -87,10 +87,22 @@ export function getPool(): Sql {
         );
     }
 
-    // Neon (production/remote) uses TLS — lock it on after reading the host.
-    // Local dev Postgres (localhost) typically has no TLS, so `ssl: false`
-    // avoids the ECONNRESET that a forced SSL handshake triggers against it.
-    const isLocalHost = /localhost|127\.0\.0\.1|::1/i.test(url);
+    // Neon (production/remote) uses TLS — lock it on for external hosts.
+    // Local dev Postgres (localhost) and docker-internal service names
+    // (e.g. `postgres`) typically have no TLS, so `ssl: false` avoids the
+    // ECONNRESET / "disconnected before secure TLS connection was established"
+    // that a forced SSL handshake triggers against a plaintext server.
+    // If the URL explicitly sets `?sslmode=`, leave it to postgres.js.
+    const pooledHost = new URL(url).hostname;
+    const isLocalHost = /localhost|127\.0\.0\.1|::1/i.test(pooledHost);
+    const looksExternal = pooledHost.includes('.');
+
+    let ssl: boolean | { rejectUnauthorized: boolean } | undefined;
+    if (url.includes('sslmode=')) {
+        ssl = undefined; // postgres.js honours the URL's sslmode=
+    } else {
+        ssl = isLocalHost || !looksExternal ? false : { rejectUnauthorized: false };
+    }
 
     _sql = postgres(url, {
         // Neon recommends a modest pool size for serverless workloads
@@ -104,7 +116,7 @@ export function getPool(): Sql {
         // SSL — defer to the connection string flags (sslmode + channel_binding)
         // Setting ssl:'require' here conflicts with channel_binding=require on the pooler.
         // Local dev connections skip TLS entirely; remote hosts use it.
-        ssl: isLocalHost ? false : { rejectUnauthorized: false },
+        ssl,
 
         // Log unexpected connection closures (pool reconnects automatically
         // on the next query)

@@ -40,8 +40,9 @@ export default function EqubMembersPage() {
         const response = await equbAPI.getEqubMembers(equbId, page);
         setMembers(response);
         setError(null);
-      } catch (err: any) {
-        setError(err.message || 'Failed to load members');
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Failed to load members';
+        setError(message);
         console.error('Error fetching members:', err);
       } finally {
         setLoading(false);
@@ -67,15 +68,16 @@ export default function EqubMembersPage() {
         members: response.members,
       });
       setError(null);
-    } catch (err: any) {
-      setError(err.message || 'Search failed');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Search failed';
+      setError(message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <AppShell>
+    <AppShell title="Equb Members" subtitle="Manage members of this equitable savings group" variant="member">
       <div className="p-6">
         {/* Header */}
         <div className="mb-8">

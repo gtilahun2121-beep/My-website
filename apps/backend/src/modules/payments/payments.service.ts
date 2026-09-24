@@ -82,12 +82,20 @@ export function calculateFees(amount: number, config: FeeConfigRecord): FeeSplit
 export class PaymentsService implements OnModuleInit {
     private readonly logger = new Logger(PaymentsService.name);
     private redlock!: Redlock;
+    private readonly strictLocks: boolean;
 
     constructor(
         private readonly repo: PaymentsRepository,
         @Optional() injectedRedlock?: Redlock,
         @Optional() private readonly providerService?: PaymentProviderService,
     ) {
+        // An injected redlock is a test seam / explicit coordination choice:
+        // lock failures are surfaced as ConflictExceptions. The self-built
+        // default redlock runs on this host's Redis; when that Redis is
+        // unavailable (single-machine dev/prod boxes) the checkout would
+        // otherwise hang forever, so lock acquisition has a bounded wait and
+        // falls back to the DB row lock that guards the payment anyway.
+        this.strictLocks = !!injectedRedlock;
         if (injectedRedlock) {
             this.redlock = injectedRedlock;
         }
@@ -194,17 +202,12 @@ export class PaymentsService implements OnModuleInit {
         hostCommissionDeducted: number,
     ): Promise<{ payment_id: string; status: string; message: string }> {
 
-        // (1) Acquire Redlock
+        // (1) Acquire Redlock — bounded wait so an unavailable Redis does not
+        // hang the checkout. If the distributed lock cannot be obtained we
+        // proceed anyway: the row-level SELECT ... FOR UPDATE below is the
+        // real guard against double payment for this round.
         const lockKey = `${LOCK_PREFIX}${ctx.userId}:${equbId}:${roundNumber}`;
-        let lock!: Redlock.Lock;
-
-        try {
-            lock = await this.redlock.lock(lockKey, LOCK_TTL_MS);
-        } catch {
-            throw new ConflictException(
-                'A payment is already being processed for this round. Please wait.',
-            );
-        }
+        const lock = await this.acquireLock(lockKey);
 
         try {
             // (2) Open ACID transaction
@@ -271,9 +274,48 @@ export class PaymentsService implements OnModuleInit {
             return result;
 
         } finally {
-            await lock.unlock().catch((err: Error) =>
-                this.logger.warn('Failed to release Redlock:', err),
+            if (lock) {
+                await lock.unlock().catch((err: Error) =>
+                    this.logger.warn('Failed to release Redlock:', err),
+                );
+            }
+        }
+    }
+
+    // ── Lock acquisition ──────────────────────────────────────────────────────
+
+    /**
+     * Acquires the per-round distributed lock.
+     *
+     * With an injected redlock (test / explicit multi-instance coordination)
+     * a lock failure is surfaced as a ConflictException. With the host-local
+     * default redlock, acquisition is bounded by a short timeout so a down
+     * Redis cannot hang a wallet checkout; on failure we proceed without the
+     * distributed lock — the SELECT ... FOR UPDATE inside the payment
+     * transaction remains the authoritative double-payment guard.
+     */
+    private async acquireLock(lockKey: string): Promise<Redlock.Lock | null> {
+        try {
+            const lock = this.redlock.lock(lockKey, LOCK_TTL_MS);
+            if (this.strictLocks) {
+                return await lock;
+            }
+            return await Promise.race([
+                lock,
+                new Promise<never>((_, reject) =>
+                    setTimeout(() => reject(new Error('REDIS_LOCK_TIMEOUT')), 3000),
+                ),
+            ]);
+        } catch (err) {
+            if (this.strictLocks) {
+                throw new ConflictException(
+                    'A payment is already being processed for this round. Please wait.',
+                );
+            }
+            this.logger.warn(
+                `Distributed lock unavailable (${(err as Error).message}) — continuing without it; the DB row lock still protects this payment.`,
             );
+            return null;
         }
     }
 

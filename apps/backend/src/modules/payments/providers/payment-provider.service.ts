@@ -15,6 +15,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ChapaPaymentProvider } from './chapa.provider';
 import { SandboxPaymentProvider } from './sandbox.provider';
 import { TelebirrPaymentProvider } from './telebirr.provider';
+import { DashenBankProvider } from './dashen-bank.provider';
 import {
     PaymentProvider,
     PaymentProviderName,
@@ -31,6 +32,7 @@ export class PaymentProviderService {
     private readonly providers = new Map<PaymentProviderName, PaymentProvider>([
         ['chapa', new ChapaPaymentProvider()],
         ['telebirr', new TelebirrPaymentProvider()],
+        ['dashen_bank', new DashenBankProvider()],
     ]);
 
     constructor() {

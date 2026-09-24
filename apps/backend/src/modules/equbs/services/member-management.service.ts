@@ -22,22 +22,11 @@ import {
   RespondToInviteDto,
   RemoveMemberDto,
   LeaveEqubDto,
-  MemberInfoDto,
   MemberStatsDto,
   EqubMembersResponseDto,
 } from '../dto/member-invite.dto';
 import { NotificationsService } from '../../notifications/notifications.service';
 import { withRlsContext } from '../../../config/database.config';
-
-interface InvitationRecord {
-  id: string;
-  inviter_id: string;
-  invitee_email: string;
-  equb_id: string;
-  status: 'pending' | 'accepted' | 'rejected';
-  created_at: Date;
-  responded_at?: Date;
-}
 
 @Injectable()
 export class MemberManagementService {
@@ -123,12 +112,11 @@ export class MemberManagementService {
       }
 
       // Create invitation record
-      const invitation = await tx`
+      await tx`
         INSERT INTO member_invitations
           (inviter_id, invitee_email, equb_id, status, message)
         VALUES
           (${hostId}, ${dto.email}, ${equbId}, 'pending', ${dto.personalMessage || null})
-        RETURNING id, created_at
       `;
 
       // Send notification email to invitee
@@ -507,7 +495,7 @@ export class MemberManagementService {
       totalMembers: total,
       activeMembers,
       pendingMembers: 0, // Could query pending invitations
-      members: members.map((m) => ({
+      members: members.map((m: any) => ({
         id: m.id,
         userId: m.user_id,
         equbId: m.equb_id,

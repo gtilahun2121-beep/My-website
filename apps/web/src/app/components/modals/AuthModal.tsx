@@ -17,6 +17,7 @@ interface AuthModalProps {
   onClose: () => void;
   initialTab?: AuthTab;
   mode?: AuthMode;
+  initialChoiceStage?: 'choice' | 'signup' | 'signin';
   lang?: Language;
   onSuccess?: (title: string, message: string, duration?: number) => void;
   onError?: (title: string, message: string, duration?: number) => void;
@@ -33,6 +34,7 @@ export default function AuthModal({
   onClose,
   initialTab = 'signin',
   mode = 'tabs',
+  initialChoiceStage = 'choice',
   lang = defaultLanguage,
   onSuccess,
   onError,
@@ -64,6 +66,7 @@ export default function AuthModal({
         isOpen={isOpen}
         onClose={onClose}
         lang={lang}
+        initialStage={initialChoiceStage}
         onSuccess={onSuccess}
         onError={onError}
       />

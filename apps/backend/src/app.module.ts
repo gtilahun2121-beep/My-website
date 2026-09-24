@@ -11,6 +11,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { DatabaseModule } from './common/database/database.module';
 
 import { AuthModule } from './modules/auth/auth.module';
 import { PaymentsModule } from './modules/payments/payments.module';
@@ -40,6 +41,7 @@ import { HealthModule } from './modules/health/health.module';
             ],
         }),
         ScheduleModule.forRoot(),
+        DatabaseModule,
         AuthModule,
         PaymentsModule,
         PayoutsModule,

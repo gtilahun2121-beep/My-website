@@ -48,10 +48,12 @@ import { SendOtpDto } from './dto/send-otp.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { ResetPinDto } from './dto/reset-pin.dto';
 import { VerifyFaydaDto } from './dto/verify-fayda.dto';
+import { FaydaVerifyDto } from './dto/fayda-oidc.dto';
 import { TwoFactorCodeDto, TwoFactorLoginDto } from './dto/two-factor.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtPayload } from './auth.service';
+import { FaydaService } from './fayda/fayda.service';
 
 // ---------------------------------------------------------------------------
 // Cookie helpers
@@ -74,7 +76,10 @@ const REFRESH_COOKIE_OPTIONS = {
 @ApiTags('Auth')
 @Controller('api/v1/auth')
 export class AuthController {
-    constructor(private readonly authService: AuthService) { }
+    constructor(
+        private readonly authService: AuthService,
+        private readonly faydaService: FaydaService,
+    ) { }
 
     // ── Register ──────────────────────────────────────────────────────────────
 
@@ -336,6 +341,38 @@ export class AuthController {
         dto: VerifyFaydaDto,
     ) {
         return this.authService.verifyFayda(dto.fayda_id);
+    }
+
+    // ── Real Fayda eSignet OIDC verification ────────────────────────────
+
+    @Get('fayda')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Return whether the real Fayda eSignet integration is configured' })
+    @ApiResponse({ status: 200, description: 'Fayda integration status.' })
+    async faydaStatus() {
+        return this.faydaService.status();
+    }
+
+    @Post('fayda/initiate')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Start a Fayda eSignet login — returns the authorize URL to redirect the citizen to' })
+    @ApiResponse({ status: 200, description: 'Authorization URL + state.' })
+    @ApiResponse({ status: 503, description: 'Fayda integration is not configured.' })
+    async faydaInitiate() {
+        return this.faydaService.initiate();
+    }
+
+    @Post('fayda/verify')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Exchange the eSignet code for a verified Fayda identity (name, phone, birthdate, address)' })
+    @ApiResponse({ status: 200, description: 'Verified identity from the real Fayda system.' })
+    @ApiResponse({ status: 400, description: 'Validation error.' })
+    @ApiResponse({ status: 503, description: 'Verification failed or session expired.' })
+    async faydaVerify(
+        @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+        dto: FaydaVerifyDto,
+    ) {
+        return this.faydaService.verify(dto.code, dto.state);
     }
 
     @Post('forgot-pin')

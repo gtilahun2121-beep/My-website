@@ -1,8 +1,8 @@
 # QalNet Role-Based Responsibilities (RBAC)
 
-**Document Version:** 2.0  
-**Date:** September 22, 2026  
-**Status:** ✅ Implemented & Documented
+**Document Version:** 2.1  
+**Date:** September 24, 2026  
+**Status:** ✅ Implemented, Documented & Aligned with Code
 
 ---
 
@@ -20,23 +20,30 @@ QalNet implements a **three-tier Role-Based Access Control (RBAC)** system based
   - ✅ View Trust Score
   - ✅ View Active Pools
   - ✅ Authenticate via Fayda
+  - ✅ Request Equb Creation (admin approves)
 
 ### 2. EQUB HOST / DAGNA
 - **Database Enum:** `'host'`
-- **Description:** Users who create and manage equb pools
+- **Description:** Users who host and operate their own equb pools
 - **Use Cases:**
-  - ✅ Create Equb Pool
+  - ✅ Activate Equb Pool (start round 1)
   - ✅ Trigger Lottery Draw
-  - ✅ Verify Payments
+  - ✅ Invite & Remove Members
+  - ✅ Queue / Process Payouts
+  - ✅ Run Daily/Weekly Cycle
+  - ✅ Submit Discount Bids
   - (Extends all participant capabilities)
 
 ### 3. ADMIN
 - **Database Enum:** `'admin'`
-- **Description:** System administrators with platform oversight
+- **Description:** System administrators with platform-wide governance
 - **Use Cases:**
+  - ✅ Create Equb Pool (direct)
+  - ✅ Approve / Reject Equb & Membership Requests
   - ✅ Monitor System Audits
   - ✅ Process Payouts
-  - ✅ Manage Users
+  - ✅ Manage Users (roles, KYC, activation)
+  - ✅ Manage Fee Configuration
   - (Extends all other capabilities)
 
 ---
@@ -49,11 +56,15 @@ QalNet implements a **three-tier Role-Based Access Control (RBAC)** system based
 | View Trust Score | ✅ | ✅ | ✅ |
 | View Active Pools | ✅ | ✅ | ✅ |
 | Authenticate via Fayda | ✅ | ✅ | ✅ |
-| Create Equb Pool | ❌ | ✅ | ✅ |
+| Request Equb Creation | ✅ | ✅ | ✅ |
+| Create Equb Pool (direct) | ❌ | ❌ | ✅ |
+| Activate Equb Pool | ❌ | ✅ | ✅ |
 | Trigger Lottery Draw | ❌ | ✅ | ✅ |
-| Verify Payments | ❌ | ✅ | ✅ |
+| Invite / Remove Members | ❌ | ✅ | ✅ |
+| Queue / Process Payouts | ❌ | ✅ | ✅ |
+| Run Daily/Weekly Cycle | ❌ | ✅ | ✅ |
+| Approve / Reject Equb & Membership Requests | ❌ | ❌ | ✅ |
 | Monitor System Audits | ❌ | ❌ | ✅ |
-| Process Payouts | ❌ | ❌ | ✅ |
 | Manage Users | ❌ | ❌ | ✅ |
 
 ---
@@ -70,19 +81,25 @@ QalNet implements a **three-tier Role-Based Access Control (RBAC)** system based
 ### Key Endpoints by Role
 
 **Participant Endpoints:**
-- `POST /api/v1/payments/deposit` - Make equb contribution
+- `POST /api/v1/payments/initiate` - Make equb contribution
+- `POST /api/v1/equbs/requests` - Request that an admin creates an equb
 - `GET /api/v1/users/trust-score` - View credibility score
 - `GET /api/v1/equbs` - Browse available equbs
 - `POST /api/v1/auth/login/fayda` - Authenticate
 
 **Host Endpoints:**
-- `POST /api/v1/equbs` - Create equb (@Roles('host', 'admin'))
-- `POST /api/v1/daily-cycles/:id/run` - Trigger draw (@Roles('host', 'admin'))
-- `PATCH /api/v1/payments/:id/verify` - Verify payment (@Roles('host', 'admin'))
+- `POST /api/v1/equbs/:id/activate` - Start round 1 (@Roles('host', 'admin'))
+- `POST /api/v1/equbs/:id/draws` - Trigger draw (@Roles('host', 'admin'))
+- `POST /api/v1/equbs/:id/members/invite` - Invite members (@Roles('host', 'admin'))
+- `DELETE /api/v1/equbs/:id/members/:memberId` - Remove member (@Roles('host', 'admin'))
+- `POST /api/v1/payouts/process` - Process payouts (@Roles('host', 'admin'))
+- `POST /api/v1/daily-cycles/:id/run` - Run cycle (@Roles('host', 'admin'))
 
 **Admin Endpoints:**
+- `POST /api/v1/equbs` - Create equb directly (@Roles('admin'))
+- `POST /api/v1/admin/equb-requests/:id/approve` - Approve equb request (@Roles('admin'))
+- `POST /api/v1/admin/memberships/:id/approve` - Approve membership (@Roles('admin'))
 - `GET /api/v1/admin/system-logs` - View audit logs (@Roles('admin'))
-- `POST /api/v1/admin/payouts/process` - Process payouts (@Roles('admin'))
 - `PATCH /api/v1/admin/users/:id/role` - Manage roles (@Roles('admin'))
 - `PATCH /api/v1/admin/users/:id/kyc` - Verify KYC (@Roles('admin'))
 
@@ -109,22 +126,22 @@ WHERE current_user_role() = 'admin'
 
 ### Auth Context with Role Checking
 ```typescript
-const { user, hasRole, canCreateEqub, canManageUsers } = useAuth();
+const { user, hasRole } = useAuth();
 
 // Check multiple roles
 if (hasRole(['host', 'admin'])) {
-  // Show host features
+  // Show host features (activate equb, run draws, manage members)
 }
 
-// Check specific capability
-if (canCreateEqub()) {
-  // Show create button
+// Show the "request equb" form to any authenticated user
+if (user) {
+  // Show request button (admin approves later)
 }
 ```
 
 ### Protected Routes
-- Admin routes check `canManageUsers()`
-- Host routes check `canCreateEqub()`
+- Admin routes check `hasRole('admin')`
+- Host routes check `hasRole(['host', 'admin'])`
 - All routes check `isAuthenticated`
 
 ---
@@ -157,12 +174,12 @@ if (canCreateEqub()) {
 
 ```
 PARTICIPANT
-    ↓ (Admin request or system threshold)
+    ↓ (Admin promotes — hosts operate equb pools)
     ↓
-  HOST (Can create equbs, manage members)
+  HOST (Activates equbs, runs draws, manages members & payouts)
     ↓ (Admin decision)
     ↓
-  ADMIN (Full platform access)
+  ADMIN (Full platform governance)
 ```
 
 ---
@@ -189,15 +206,22 @@ PARTICIPANT
 ## Testing Roles
 
 ```bash
-# Test participant cannot create equb
+# Test participant cannot create equb directly (admin-only endpoint)
 curl -X POST http://localhost:4000/api/v1/equbs \
   -H "Authorization: Bearer <participant-token>"
 # Expected: 403 Forbidden
 
-# Test host can create equb
-curl -X POST http://localhost:4000/api/v1/equbs \
-  -H "Authorization: Bearer <host-token>"
+# Test participant CAN request an equb (admin decides)
+curl -X POST http://localhost:4000/api/v1/equbs/requests \
+  -H "Authorization: Bearer <participant-token>" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Team Savings","contribution_amount":500}'
 # Expected: 201 Created
+
+# Test host can activate an equb they host
+curl -X POST http://localhost:4000/api/v1/equbs/<id>/activate \
+  -H "Authorization: Bearer <host-token>"
+# Expected: 200 OK
 
 # Test admin can manage users
 curl -X PATCH http://localhost:4000/api/v1/admin/users/:id/role \
@@ -210,7 +234,9 @@ curl -X PATCH http://localhost:4000/api/v1/admin/users/:id/role \
 ## Compliance Checklist
 
 - ✅ Three roles clearly defined (participant, host, admin)
-- ✅ Use cases mapped from diagram to implementation
+- ✅ Use cases mapped from diagram to current implementation
+- ✅ Direct equb creation is admin-only; members/hosts submit requests
+- ✅ Host operates only within their own equb pools
 - ✅ API guards enforce role permissions
 - ✅ Database RLS policies isolate data
 - ✅ Frontend respects role boundaries

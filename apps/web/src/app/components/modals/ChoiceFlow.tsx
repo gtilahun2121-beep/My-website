@@ -13,6 +13,7 @@ interface ChoiceFlowProps {
   isOpen: boolean;
   onClose: () => void;
   lang?: Language;
+  initialStage?: FlowStage;
   onSuccess?: (title: string, message: string, duration?: number) => void;
   onError?: (title: string, message: string, duration?: number) => void;
 }
@@ -30,10 +31,11 @@ export default function ChoiceFlow({
   isOpen,
   onClose,
   lang = defaultLanguage,
+  initialStage = 'choice',
   onSuccess,
   onError,
 }: ChoiceFlowProps) {
-  const [stage, setStage] = useState<FlowStage>('choice');
+  const [stage, setStage] = useState<FlowStage>(initialStage);
 
   // Handle going back from auth screens to choice
   const handleBackToChoice = () => {

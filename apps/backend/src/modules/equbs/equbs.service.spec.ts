@@ -53,6 +53,9 @@ describe('EqubsService payload validation', () => {
             contribution_amount: 1000,
             cycle_days: 30,
             total_rounds: 10,
+            winner_selection_type: 'lottery',
+            equb_type: 'public',
+            preset_template_id: undefined,
         });
     });
 

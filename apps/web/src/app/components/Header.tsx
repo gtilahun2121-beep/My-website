@@ -39,15 +39,15 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
 
   return (
     <>
-      <header className="sticky top-0 z-50 px-3 pt-5 sm:px-6 lg:px-8">
-        <nav className="mx-auto max-w-[1300px] rounded-full border border-white/70 bg-white/70 px-3 py-3 shadow-[0_18px_45px_rgba(59,130,246,0.12)] backdrop-blur-xl sm:px-5 lg:px-7">
+      <header className="absolute inset-x-0 top-0 z-50 px-3 pt-3 sm:px-5 lg:px-7">
+        <nav className="mx-auto max-w-[1490px] rounded-[28px] border border-white/80 bg-white/70 px-3 py-2.5 shadow-[0_18px_45px_rgba(59,130,246,0.12)] backdrop-blur-xl sm:px-5 lg:px-7">
           <div className="flex items-center justify-between gap-3 sm:gap-4">
             <Link href="/" className="group flex shrink-0 items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-500 shadow-md ring-2 ring-white/60">
                 <span className="text-base font-black text-white">QN</span>
               </div>
               <div className="hidden sm:block">
-                <span className="block text-[1.8rem] font-black leading-none tracking-[-0.06em] text-blue-800">QalNet</span>
+                <span className="block text-[1.9rem] font-black leading-none tracking-[-0.06em] text-blue-800">QalNet</span>
                 <p className="mt-0.5 text-[0.7rem] font-medium text-blue-600">Ethiopia&apos;s Digital Equb</p>
               </div>
             </Link>
@@ -59,7 +59,7 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
                   href={item.href}
                   className={`text-[0.95rem] font-semibold transition-colors ${
                     item.href === '/'
-                      ? 'rounded-full bg-blue-100 px-4 py-2 text-blue-700'
+                      ? 'rounded-full bg-blue-100 px-4 py-2 text-blue-700 shadow-sm'
                       : 'text-blue-600 hover:text-blue-800'
                   }`}
                 >
@@ -70,7 +70,7 @@ export default function Header({ lang, onLanguageChange, onSignUpClick, isAuthen
 
             <div className="ml-auto flex items-center gap-2 sm:gap-3">
               <div className="hidden items-center gap-2 sm:flex">
-                <button className="flex items-center gap-2 rounded-full border border-blue-200 bg-white/80 px-3 py-2 text-sm font-medium text-blue-600 shadow-sm">
+                <button className="flex items-center gap-2 rounded-full border border-blue-200 bg-white/75 px-3 py-2 text-sm font-medium text-blue-600 shadow-sm transition-colors hover:bg-blue-50">
                   <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                     <path d="M12 3a9 9 0 0 0 0 18m0-18a9 9 0 0 1 0 18M3 12h18" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>

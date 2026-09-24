@@ -18,7 +18,7 @@
  *   PAYMENT_MODE=live     → real gateway API calls + HMAC verification
  */
 
-export type PaymentProviderName = 'chapa' | 'telebirr';
+export type PaymentProviderName = 'chapa' | 'telebirr' | 'dashen_bank' | 'wallet' | 'sandbox';
 
 export interface CheckoutRequest {
     /** Amount charged to the member, in ETB. */
@@ -68,7 +68,7 @@ export interface VerifyTransactionResponse {
  * Contract every collection provider implements.
  */
 export interface PaymentProvider {
-    readonly name: PaymentProviderName | 'sandbox';
+    readonly name: PaymentProviderName;
 
     /** Initiates a checkout session and returns the redirect URL. */
     createCheckout(request: CheckoutRequest): Promise<CheckoutResponse>;

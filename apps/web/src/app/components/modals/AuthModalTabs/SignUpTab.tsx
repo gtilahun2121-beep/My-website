@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Language, defaultLanguage } from '@/i18n/config';
 import FormInput from '@/app/components/forms/FormInput';
@@ -14,22 +14,55 @@ interface SignUpTabProps {
   onError?: (title: string, message: string, duration?: number) => void;
 }
 
+/**
+ * Identity we carry back from the real Fayda (eSignet) page. The phone has
+ * already been verified by a real Fayda-delivered OTP, so the signup skips the
+ * SMS OTP step and jumps straight to the PIN step.
+ */
+interface FaydaResume {
+  first: string;
+  last: string;
+  phone: string;
+  fayda: string;
+}
+
+const readFaydaResume = (): FaydaResume | null => {
+  if (typeof window === 'undefined') return null;
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('fayda') !== 'verified') return null;
+  const name = params.get('name') ?? '';
+  const [first = '', ...rest] = name.trim().split(/\s+/);
+  let savedFayda = '';
+  try {
+    savedFayda = JSON.parse(window.sessionStorage.getItem('faydaSignup') ?? '{}').fayda ?? '';
+  } catch {
+    // malformed saved payload → fall back to whatever the form already has
+  }
+  return {
+    first,
+    last: rest.join(' '),
+    phone: params.get('phone') ?? '',
+    fayda: savedFayda,
+  };
+};
+
 export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }: SignUpTabProps) {
   const { signup, isLoading } = useAuth();
-  const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    phoneNumber: '+2519',
+  const [resume] = useState(readFaydaResume);
+  const [step, setStep] = useState(() => (resume ? 5 : 1));
+  const [formData, setFormData] = useState(() => ({
+    firstName: resume?.first ?? '',
+    lastName: resume?.last ?? '',
+    phoneNumber: resume?.phone || '+2519',
     email: '',
-    fayda: '',
+    fayda: resume?.fayda ?? '',
     otp: '',
     pin: '',
-  });
-  const [fayda, setFayda] = useState({
-    verified: false,
+  }));
+  const [fayda, setFayda] = useState(() => ({
+    verified: !!resume,
     loading: false,
-  });
+  }));
   const [otp, setOtp] = useState({
     sent: false,
     sending: false,
@@ -38,6 +71,20 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [faydaOidc, setFaydaOidc] = useState({ starting: false });
+
+  const handleSignInWithFayda = async () => {
+    setFaydaOidc({ starting: true });
+    try {
+      const res = await authAPI.faydaInitiate();
+      window.sessionStorage.setItem('faydaOidcState', res.state);
+      window.location.href = res.authUrl;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Fayda sign-in failed';
+      setErrors({ fayda: message });
+      setFaydaOidc({ starting: false });
+    }
+  };
 
   const handleFieldChange = (field: string, value: string) => {
     if (field === 'firstName' || field === 'lastName') {
@@ -242,7 +289,7 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
 
     setFayda((prev) => ({ ...prev, loading: true }));
     try {
-      // Real verification against POST /api/v1/auth/verify-fayda
+      // Real registration check against POST /api/v1/auth/verify-fayda
       const res = await authAPI.verifyFayda(formData.fayda);
       if (!res.verified) {
         setErrors({ fayda: 'This Fayda ID is already registered to another account.' });
@@ -251,7 +298,20 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
       }
       setFayda((prev) => ({ ...prev, verified: true, loading: false }));
 
-      // Send an OTP to the phone so the next step can verify it.
+      // If the real Fayda eSignet integration is configured, send the user to
+      // the real Fayda page — Fayda itself delivers the OTP to their phone.
+      const cfg = await authAPI.faydaStatus();
+      if (cfg.configured) {
+        const { authUrl, state } = await authAPI.faydaInitiate();
+        window.sessionStorage.setItem(
+          'faydaSignup',
+          JSON.stringify({ fayda: formData.fayda, state }),
+        );
+        window.location.href = authUrl;
+        return;
+      }
+
+      // Not configured yet: fall back to the SMS OTP path (dev code 818959).
       setOtp((prev) => ({ ...prev, sending: true }));
       try {
         await authAPI.sendOtp(formData.phoneNumber);
@@ -269,6 +329,17 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
       setFayda((prev) => ({ ...prev, loading: false }));
     }
   };
+
+  // The resume identity is applied lazily from the mount-time state — the form
+  // already opened at the PIN step (step 5) with the Fayda-verified data. This
+  // effect only scrubs the URL/session so a reload doesn't re-trigger anything.
+  useEffect(() => {
+    if (!resume) return;
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', window.location.pathname);
+      window.sessionStorage.removeItem('faydaSignup');
+    }
+  }, [resume]);
 
   const handleVerifyOtp = async () => {
     if (!validateStep4()) return;
@@ -543,6 +614,29 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
               ✓ Fayda ID verified
             </p>
           )}
+
+          <div className="flex items-center gap-3 my-4">
+            <span className="flex-1 h-px bg-gray-300" />
+            <span className="text-xs text-gray-500 font-medium">
+              {lang === 'en' ? 'OR' : 'ወይም'}
+            </span>
+            <span className="flex-1 h-px bg-gray-300" />
+          </div>
+
+          <button
+            type="button"
+            onClick={handleSignInWithFayda}
+            disabled={faydaOidc.starting}
+            className="w-full py-3 bg-white border-2 border-[#0066ff] text-[#0066ff] font-bold rounded-lg hover:bg-brand-50 transition-all disabled:opacity-50"
+          >
+            {faydaOidc.starting
+              ? lang === 'en'
+                ? '⏳ Opening Fayda...'
+                : '⏳ በመክፈት ላይ...'
+              : lang === 'en'
+                ? '🪪 Sign in with Real Fayda (eSignet OTP)'
+                : '🪪 በእውነተኛ Fayda ይግቡ (eSignet OTP)'}
+          </button>
 
           <div className="flex gap-3 mt-8">
             <button

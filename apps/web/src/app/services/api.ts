@@ -405,6 +405,48 @@ export const authAPI = {
     }),
 
   /**
+   * GET /api/v1/auth/fayda
+   * Reports whether the real Fayda eSignet integration is configured.
+   */
+  faydaStatus: () =>
+    request<{ enabled: boolean; mode: 'sandbox' | 'live'; configured: boolean }>(
+      '/auth/fayda',
+      { method: 'GET' },
+    ),
+
+  /**
+   * POST /api/v1/auth/fayda/initiate
+   * Starts a REAL Fayda (eSignet) login — returns the authorize URL to
+   * redirect the citizen to; they authenticate with their national ID and a
+   * real Fayda-delivered OTP.
+   */
+  faydaInitiate: () =>
+    request<{
+      authUrl: string;
+      state: string;
+      expiresIn: number;
+      mode: 'sandbox' | 'live';
+    }>('/auth/fayda/initiate', { method: 'POST' }),
+
+  /**
+   * POST /api/v1/auth/fayda/verify
+   * Exchanges the eSignet code for a verified Fayda identity.
+   */
+  faydaVerify: (code: string, state: string) =>
+    request<{
+      verified: boolean;
+      sub?: string;
+      name?: string;
+      phone?: string;
+      birthdate?: string;
+      gender?: string;
+      provider?: string;
+    }>('/auth/fayda/verify', {
+      method: 'POST',
+      body: JSON.stringify({ code, state }),
+    }),
+
+  /**
    * POST /api/v1/auth/forgot-pin
    * Initiates a PIN reset flow — sends OTP to phone.
    */
