@@ -1,13 +1,15 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Language, defaultLanguage } from '@/i18n/config';
 import { translations } from '@/i18n/translations';
-import SignUpTab from './AuthModalTabs/SignUpTab';
-import SignInTab from './AuthModalTabs/SignInTab';
-import ForgotPinTab from './AuthModalTabs/ForgotPinTab';
 import ChoiceFlow from './ChoiceFlow';
+
+const SignUpTab = dynamic(() => import('./AuthModalTabs/SignUpTab'));
+const SignInTab = dynamic(() => import('./AuthModalTabs/SignInTab'));
+const ForgotPinTab = dynamic(() => import('./AuthModalTabs/ForgotPinTab'));
 
 export type AuthTab = 'signup' | 'signin' | 'forgot';
 export type AuthMode = 'tabs' | 'choice';

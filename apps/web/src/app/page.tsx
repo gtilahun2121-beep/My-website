@@ -1,13 +1,17 @@
 'use client';
 
 import React, { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { Language, defaultLanguage } from '@/i18n/config';
 import { useAuth } from './context/AuthContext';
 import Header from './components/Header';
 import Footer from './components/Footer';
-import AuthModal from './components/modals/AuthModal';
 import { homePathForStoredUser } from './lib/roleHome';
+
+const AuthModal = dynamic(() => import('./components/modals/AuthModal'), {
+  ssr: false,
+});
 
 export default function Home() {
   const router = useRouter();
@@ -39,7 +43,7 @@ export default function Home() {
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
             backgroundImage:
-              "linear-gradient(180deg, rgba(8, 47, 99, 0.38), rgba(15, 23, 42, 0.18)), url('/image.png')",
+              "linear-gradient(180deg, rgba(8, 47, 99, 0.38), rgba(15, 23, 42, 0.18)), url('/image.jpg')",
           }}
         />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.18),transparent_28%),radial-gradient(circle_at_bottom_left,rgba(96,165,250,0.12),transparent_30%)]" />

@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { Language, defaultLanguage } from '@/i18n/config';
 import RegisterChoiceModal from './RegisterChoiceModal';
-import SignUpTab from './AuthModalTabs/SignUpTab';
-import SignInTab from './AuthModalTabs/SignInTab';
 import { motion, AnimatePresence } from 'framer-motion';
+
+const SignUpTab = dynamic(() => import('./AuthModalTabs/SignUpTab'));
+const SignInTab = dynamic(() => import('./AuthModalTabs/SignInTab'));
 
 type FlowStage = 'choice' | 'signup' | 'signin';
 

@@ -45,6 +45,26 @@ import { AppModule } from './app.module';
 import { VaultConfig } from './config/vault.config';
 import { initDatabase, closeDatabase } from './config/database.config';
 
+// ── Driver resilience guard ─────────────────────────────────────────────────
+// @neondatabase/serverless has a known async crash: when a WebSocket connect is
+// cancelled by the pool's connection timeout, its internal timer can throw an
+// uncaught `TypeError: Cannot read properties of null (reading 'close')` from
+// inside index.js (S.destroy → ws.close). Without a guard this kills the whole
+// process on a flaky Neon link. Trap ONLY failures originating from that
+// driver so backend code bugs are still loud and fatal.
+process.on('uncaughtException', (err) => {
+    const stack = String(err?.stack ?? '').replace(/\\/g, '/');
+    if (stack.includes('@neondatabase/serverless')) {
+        console.warn(
+            '[Bootstrap] Neon WebSocket driver threw an async error (network hiccup) — continuing.',
+            err instanceof Error ? err.message : err,
+        );
+        return;
+    }
+    console.error('[Bootstrap] Unhandled exception — exiting.', err);
+    process.exit(1);
+});
+
 async function bootstrap() {
     // ── 1. Secrets ────────────────────────────────────────────────────────────
     await VaultConfig.load();

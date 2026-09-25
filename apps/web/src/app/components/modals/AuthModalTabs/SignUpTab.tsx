@@ -456,35 +456,80 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
 
   return (
     <div>
-      {/* Progress Steps */}
+      {/* Progress Steps ─ professional horizontal stepper */}
       <div className="mb-8">
-        <div className="flex justify-between items-center mb-4">
-          {[1, 2, 3, 4, 5].map((s) => (
-            <div key={s} className="flex flex-col items-center flex-1 min-w-0">
-              <div
-                className={`flex items-center justify-center w-8 h-8 sm:w-12 sm:h-12 rounded-full font-bold text-sm transition-all mb-2 ${s <= step
-                  ? 'bg-[#0066ff] text-white shadow-lg'
-                  : 'bg-gray-200 text-gray-500 border border-gray-300'
-                  }`}
+        <ol className="flex items-start">
+          {[
+            { en: 'Personal', am: 'ግል' },
+            { en: 'Contact', am: 'ግንኙነት' },
+            { en: 'Fayda', am: 'Fayda' },
+            { en: 'OTP', am: 'ኦቲፒ' },
+            { en: 'PIN', am: 'PIN' },
+          ].map((label, i) => {
+            const stepNo = i + 1;
+            const isDone = stepNo < step;
+            const isActive = stepNo === step;
+            return (
+              <li
+                key={label.en}
+                aria-current={isActive ? 'step' : undefined}
+                className="relative flex-1 flex flex-col items-center min-w-0"
               >
-                {s < step ? '✓' : s}
-              </div>
-              <p className="text-xs text-[#0066ff] font-semibold text-center">
-                {s === 1 ? 'Personal' : s === 2 ? 'Contact' : s === 3 ? 'Fayda' : s === 4 ? 'OTP' : 'PIN'}
-              </p>
-            </div>
-          ))}
-        </div>
-        <div className="w-full bg-gray-200 border border-gray-300 h-2 rounded-full overflow-hidden">
+                {i < 4 && (
+                  <div
+                    className={`absolute top-5 left-1/2 w-full h-0.5 -translate-x-1/2 z-0 transition-colors duration-300 ${
+                      stepNo < step ? 'bg-[#0066ff]' : 'bg-gray-200'
+                    }`}
+                  />
+                )}
+                <div
+                  className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
+                    isDone
+                      ? 'bg-[#0066ff] text-white'
+                      : isActive
+                        ? 'bg-[#0066ff] text-white shadow-lg ring-4 ring-blue-100'
+                        : 'bg-white text-gray-400 border-2 border-gray-200'
+                  }`}
+                >
+                  {isDone ? (
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  ) : (
+                    stepNo
+                  )}
+                </div>
+                <span
+                  className={`mt-2 text-[11px] font-semibold uppercase tracking-wide text-center leading-tight ${
+                    isActive ? 'text-[#0066ff]' : isDone ? 'text-gray-700' : 'text-gray-400'
+                  }`}
+                >
+                  {lang === 'en' ? label.en : label.am}
+                </span>
+              </li>
+            );
+          })}
+        </ol>
+
+        <div className="mt-4 w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
           <div
-            className="bg-[#0066ff] h-full transition-all duration-300"
+            className="bg-[#0066ff] h-full rounded-full transition-all duration-500"
             style={{ width: `${(step / 5) * 100}%` }}
           />
         </div>
       </div>
 
-      {/* Step Indicator */}
-      <div className="mb-6 pb-4 border-b border-gray-200">
+      {/* Step Header */}
+      <div className="mb-6 pb-4 border-b border-gray-200 flex items-center justify-between gap-3">
         <h3 className="text-lg font-bold text-[#0066ff]">
           {step === 1
             ? lang === 'en'
@@ -506,9 +551,9 @@ export default function SignUpTab({ lang = defaultLanguage, onSuccess, onError }
                     ? 'Create Your PIN'
                     : 'PIN ይሰሩ'}
         </h3>
-        <p className="text-sm text-gray-500 mt-1">
+        <span className="shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-[#0066ff] border border-blue-100">
           {lang === 'en' ? `Step ${step} of 5` : `ደረጃ ${step} ከ 5`}
-        </p>
+        </span>
       </div>
 
       {/* Step 1: Personal Information */}

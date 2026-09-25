@@ -1,7 +1,18 @@
 /**
  * database.config.ts
  *
- * Configures the Neon serverless Postgres connection pool.
+ * Configures the Neon Postgres connection pool.
+ *
+ * Protocol note (IMPORTANT):
+ *  This app reaches Neon over **port 443 via Neon's WebSocket driver**
+ *  (`@neondatabase/serverless`). Many networks (corporate firewalls, ISPs,
+ *  mobile data) block outbound TCP 5432 while leaving 443 open — port 443 has
+ *  proven reliable here, direct 5432 has proven intermittently blocked. The
+ *  same DATABASE_URL is used; the driver tunnels the same wire protocol over
+ *  WebSocket/HTTPS instead of raw TCP. `Pool` exposes a node-postgres–style
+ *  API (`query()`), which this module adapts to the postgres.js-style surface
+ *  (`sql\`...\``, `sql.begin()`, `sql.unsafe()`) the repositories already use,
+ *  so no repository needs to change.
  *
  * Key responsibilities:
  *  1. Opens a pooled connection to Neon using the DATABASE_URL secret.
@@ -15,7 +26,10 @@
  *  Manager in production, .env in development) — never hardcoded here.
  */
 
-import postgres, { Sql, TransactionSql } from 'postgres';
+import { Pool, PoolClient, types as pgTypes } from '@neondatabase/serverless';
+// Type-only import: keeps `Sql`/`TransactionSql` signatures stable for the
+// repositories while the runtime is the WebSocket-based adapter below.
+import { Sql, TransactionSql } from 'postgres';
 import { VaultConfig, QalNetSecrets } from './vault.config';
 
 // ---------------------------------------------------------------------------
@@ -32,9 +46,20 @@ export interface RlsContext {
 export type QueryScope = Sql | TransactionSql;
 
 // ---------------------------------------------------------------------------
+// Type parsers (preserve postgres.js-like numeric handling)
+// ---------------------------------------------------------------------------
+
+// numeric → number (Postgres returns NUMERIC as strings by default)
+pgTypes.setTypeParser(1700, (value: string) => parseFloat(value));
+// int8 → number (COUNT(...) and aggregate amounts are int8; node-postgres
+// returns those as strings, postgres.js returned numbers — keep the numbers).
+pgTypes.setTypeParser(20, (value: string) => (value === null ? null : Number(value)));
+
+// ---------------------------------------------------------------------------
 // Module-level singleton
 // ---------------------------------------------------------------------------
 
+let _pool: Pool | null = null;
 let _sql: Sql | null = null;
 
 export function isDatabaseStartupDegraded(): boolean {
@@ -58,6 +83,11 @@ function createUnavailablePool(): Sql {
                     '[DatabaseConfig] PostgreSQL is unavailable. Start the database service or configure DATABASE_URL before hitting database-backed routes.',
                 );
             },
+            unsafe: async (_text: string, _args: unknown[] = []) => {
+                throw new Error(
+                    '[DatabaseConfig] PostgreSQL is unavailable. Start the database service or configure DATABASE_URL before hitting database-backed routes.',
+                );
+            },
             end: async () => undefined,
         },
     ) as unknown as Sql;
@@ -65,8 +95,95 @@ function createUnavailablePool(): Sql {
     return unavailable;
 }
 
+// ---------------------------------------------------------------------------
+// postgres.js → node-postgres (WebSocket) adapter
+// ---------------------------------------------------------------------------
+
+/** A postgres.js-shaped query handle backed by a node-postgres client. */
+export type WsSql = {
+    (strings: TemplateStringsArray, ...args: unknown[]): Promise<unknown[]>;
+    unsafe: (text: string, args?: unknown[]) => Promise<unknown[]>;
+    begin: <T>(callback: (tx: WsSql) => Promise<T>) => Promise<T>;
+    end: () => Promise<void>;
+};
+
 /**
- * Returns the initialised postgres.js connection pool.
+ * Expands a postgres.js tagged template into `$1, $2…` placeholders.
+ *
+ * Supports postgres.js query fragments: a value built by another
+ * `sql\`...\`` call (a lazily-executed thenable with `__frag: true`) is
+ * spliced inline with its own parameters renumbered globally, exactly like
+ * postgres.js's nested templates. This lets callers reuse query fragments
+ * such as `sql`${window.start}::date`` inside larger statements.
+ */
+function buildParametricQuery(
+    strings: TemplateStringsArray,
+    values: unknown[],
+): { text: string; values: unknown[] } {
+    const context = { count: 0, params: [] as unknown[] };
+
+    const render = (parts: TemplateStringsArray, args: unknown[]): string => {
+        let text = parts[0];
+        for (let i = 0; i < args.length; i++) {
+            const arg = args[i] as unknown;
+            if (arg && typeof arg === 'object' && (arg as { __frag?: boolean }).__frag === true) {
+                const frag = arg as unknown as { strings: TemplateStringsArray; values: unknown[] };
+                text += render(frag.strings, frag.values);
+            } else {
+                text += `$${context.count + 1}`;
+                context.params.push(arg);
+                context.count += 1;
+            }
+            text += parts[i + 1];
+        }
+        return text;
+    };
+
+    return { text: render(strings, values), values: context.params };
+}
+
+/**
+ * A lazy postgres.js-style query node. Awaiting it runs the query; embedding
+ * it inside another tagged template splices its SQL/params inline instead of
+ * executing it (mirroring postgres.js fragment semantics).
+ */
+export interface WsQueryNode {
+    __frag: boolean;
+    strings: TemplateStringsArray;
+    values: unknown[];
+    then(
+        onfulfilled?: (value: unknown[]) => unknown,
+        onrejected?: (reason: any) => unknown,
+    ): PromiseLike<unknown[]>;
+}
+
+/** Wraps a single client (pool or pooled connection) as a postgres.js handle. */
+function makeHandle(client: Pool | PoolClient): WsSql {
+    function run(strings: TemplateStringsArray, ...args: unknown[]): WsQueryNode {
+        const prepared = () => buildParametricQuery(strings, args);
+        return {
+            __frag: true,
+            strings,
+            values: args,
+            then(onfulfilled, onrejected) {
+                const { text, values } = prepared();
+                const promise = client.query(text, values).then((result) => result.rows);
+                if (!onfulfilled) return promise;
+                return promise.then(onfulfilled, onrejected) as PromiseLike<unknown[]>;
+            },
+        };
+    }
+    run.unsafe = (text: string, args: unknown[] = []) =>
+        client.query(text, args).then((result) => result.rows);
+    run.begin = (async () => {
+        throw new Error('begin() is only valid on the top-level pool handle.');
+    }) as WsSql['begin'];
+    run.end = () => Promise.resolve();
+    return run as unknown as WsSql;
+}
+
+/**
+ * Returns the initialised connection pool (postgres.js-compatible `Sql`).
  * Lazily created on first call and reused for the lifetime of the process.
  *
  * Must be called AFTER VaultConfig.load() has been awaited in main.ts.
@@ -87,69 +204,42 @@ export function getPool(): Sql {
         );
     }
 
-    // Neon (production/remote) uses TLS — lock it on for external hosts.
-    // Local dev Postgres (localhost) and docker-internal service names
-    // (e.g. `postgres`) typically have no TLS, so `ssl: false` avoids the
-    // ECONNRESET / "disconnected before secure TLS connection was established"
-    // that a forced SSL handshake triggers against a plaintext server.
-    // postgres.js ignores the URL's `?sslmode=` query param (it refuses the
-    // connection with "connection is insecure" when the server demands TLS but
-    // no explicit ssl option is given), so resolve `ssl` from that flag.
-    const pooledHost = new URL(url).hostname;
-    const isLocalHost = /localhost|127\.0\.0\.1|::1/i.test(pooledHost);
-    const looksExternal = pooledHost.includes('.');
-    const sslMode = new URL(url).searchParams.get('sslmode');
-
-    let ssl: boolean | 'require' | { rejectUnauthorized: boolean };
-    if (isLocalHost || !looksExternal) {
-        ssl = false; // plaintext in-network Postgres
-    } else if (sslMode === 'disable') {
-        ssl = false;
-    } else if (sslMode === 'verify-full') {
-        ssl = { rejectUnauthorized: true };
-    } else if (sslMode) {
-        // 'require', 'prefer', 'verify-ca', ... — TLS on. `ssl:'require'` also
-        // works alongside channel_binding=require on the Neon pooled endpoint.
-        ssl = 'require';
-    } else {
-        ssl = { rejectUnauthorized: false }; // external host, no sslmode flag
-    }
-
-    _sql = postgres(url, {
+    _pool = new Pool({
+        connectionString: url,
         // Neon recommends a modest pool size for serverless workloads
         max: 10,
-        idle_timeout: 300,  // seconds before an idle connection is closed
-                            // (kept high so the pooler stays warm and the
-                            // frequent cold-starts/ETIMEDOUTs are avoided)
-        max_lifetime: 1800, // seconds before a connection is recycled (30 min)
-        connect_timeout: 60, // raised from 10s — Neon pooler can take up to ~30s on cold start
-
-        // SSL — resolved above from the host + URL's sslmode flag.
-        // Remote hosts (Neon) require TLS; local/in-network Postgres is plaintext.
-        ssl,
-
-        // Log unexpected connection closures (pool reconnects automatically
-        // on the next query)
-        onclose: (connId) =>
-            console.warn(`[DatabaseConfig] Connection ${connId} closed.`),
-
-        // Automatically parse numeric columns as JS numbers
-        // (Postgres returns NUMERIC as strings by default)
-        types: {
-            numeric: {
-                to: 0,
-                from: [1700],
-                serialize: (x: number) => String(x),
-                parse: (x: string) => parseFloat(x),
-            },
-        },
-
-        // Log slow queries in development for performance visibility
-        onnotice: process.env.NODE_ENV !== 'production'
-            ? (notice) => console.debug('[PG Notice]', notice.message)
-            : undefined,
+        // No connect timeout on purpose: with cancellation enabled,
+        // @neondatabase/serverless throws an uncaught `null.close` crash when
+        // a WebSocket connect is cancelled mid-handshake (flaky network). A
+        // pending connect simply waits and succeeds when the link recovers;
+        // the bootstrap probe below is race-bounded instead, so a truly dead
+        // link still fails fast enough to start in degraded mode.
+        connectionTimeoutMillis: 0,
     });
 
+    const poolHandle = makeHandle(_pool);
+    poolHandle.begin = async <T>(callback: (tx: WsSql) => Promise<T>): Promise<T> => {
+        const pool = _pool as Pool;
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+            const result = await callback(makeHandle(client));
+            await client.query('COMMIT');
+            return result;
+        } catch (err) {
+            try {
+                await client.query('ROLLBACK');
+            } catch {
+                // ignore rollback failures — the original error is what matters
+            }
+            throw err;
+        } finally {
+            client.release();
+        }
+    };
+    poolHandle.end = () => (_pool?.end().then(() => undefined) ?? Promise.resolve());
+
+    _sql = poolHandle as unknown as Sql;
     return _sql;
 }
 
@@ -157,7 +247,7 @@ export function getPool(): Sql {
  * Bootstrap function called once in main.ts.
  * Resolves the DATABASE_URL from VaultConfig and warms the pool.
  *
- * The warm-up probe is retried with backoff so a slow Neon pooler cold start
+ * The warm-up probe is retried with backoff so a slow Neon cold start
  * (or a transient network blip) does not crash the process on first attempt.
  */
 export async function initDatabase(): Promise<void> {
@@ -175,8 +265,17 @@ export async function initDatabase(): Promise<void> {
     let lastError: unknown;
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        // Bound each probe so a stalled connection attempt can never wedge the
+        // whole bootstrap. If the pool connect is cancelled by its own timeout,
+        // we simply log the failure, back off, and try again.
+        const probe = Promise.race([
+            sql`SELECT 1`,
+            new Promise<never>((_, reject) =>
+                setTimeout(() => reject(new Error('warm-up probe timed out')), 30_000),
+            ),
+        ]);
         try {
-            await sql`SELECT 1`;
+            await probe;
             console.log('[DatabaseConfig] Neon connection pool initialised.');
             return;
         } catch (err) {
@@ -206,7 +305,7 @@ export async function initDatabase(): Promise<void> {
 
     throw new Error(
         '[DatabaseConfig] Unable to connect to Neon after multiple attempts. ' +
-        'Check that outbound TCP 5432 is reachable from this network and that ' +
+        'Check that the Neon endpoints (port 443) are reachable from this network and that ' +
         'DATABASE_URL points to the correct pooled endpoint.' + detail,
     );
 }
@@ -227,12 +326,6 @@ export async function initDatabase(): Promise<void> {
  *
  * Use this for every query that touches RLS-protected tables
  * (users, wallets, payments).
- *
- * Example:
- *   const rows = await withRlsContext(
- *     { userId: jwt.sub, userRole: jwt.role },
- *     (sql) => sql`SELECT * FROM payments WHERE user_id = ${jwt.sub}`
- *   );
  */
 export async function withRlsContext<T>(
     context: RlsContext,

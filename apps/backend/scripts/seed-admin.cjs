@@ -62,7 +62,12 @@ async function main() {
         throw new Error('DATABASE_URL and ARGON2_PEPPER must be set (checked .env).');
     }
 
-    const sql = postgres(process.env.DATABASE_URL, { max: 1 });
+    const sql = postgres(process.env.DATABASE_URL, {
+        max: 1,
+        // Remote hosts (Neon) demand TLS — postgres.js ignores the URL's
+        // sslmode= flag, so pass an explicit option like the migration runner.
+        ssl: /localhost|127\.0\.0\.1|::1/i.test(process.env.DATABASE_URL) ? false : { rejectUnauthorized: false },
+    });
     try {
         const passwordHash = await argon2.hash(
             PADDED_PIN + process.env.ARGON2_PEPPER,
