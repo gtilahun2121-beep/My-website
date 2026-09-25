@@ -42,6 +42,7 @@ export const LotteryPanel: React.FC<LotteryPanelProps> = ({
   onChange,
 }) => {
   const canDraw = (isHost || isAdmin) && isActive;
+  const isSteward = isHost || isAdmin;
 
   const [history, setHistory] = useState<LotteryDrawListResponse | null>(null);
   const [candidates, setCandidates] = useState<LotteryCandidate[]>([]);
@@ -184,7 +185,19 @@ export const LotteryPanel: React.FC<LotteryPanelProps> = ({
       )}
 
       {/* Round / pot / odds strip */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+      {isSteward && !canDraw && (
+          <div className="w-full rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+            <p className="font-black mb-1">⚠️ The draw isn&apos;t available yet</p>
+            <p>
+              {currentRound && currentRound >= 1
+                ? 'The lottery draw opens once members have paid for the current round.'
+                : 'Activate this Equb (tap "Activate Equb" at the top) to start Round 1 — the lottery draw unlocks right after.'}
+              {' '}Members who pay a round are added to the wheel automatically.
+            </p>
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         <div className="bg-gray-50 rounded-lg p-3 text-center">
           <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wide">Round</p>
           <p className="text-lg font-black text-[#0066ff]">

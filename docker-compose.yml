@@ -72,8 +72,9 @@ services:
     environment:
       NODE_ENV: development
       HOST: 0.0.0.0
-      # In-container service names (overrides the env_file's localhost values).
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/qalnet_dev
+      # Uses the Neon (cloud) database — isLocalHost=false, sslMode=require,
+      # so database.config.ts locks TLS on. REDIS stays in-network.
+      DATABASE_URL: postgresql://neondb_owner:npg_WxgCheAR4s6d@ep-solitary-mouse-awewjpdb-pooler.c-12.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
       REDIS_URL: redis://redis:6379
       ALLOWED_ORIGINS: http://localhost:3000,http://localhost:3001,http://localhost:5173
     env_file:
@@ -98,8 +99,8 @@ services:
       NODE_ENV: development
       PORT: "4000"
       HOST: 0.0.0.0
-      # In-container service names (overrides the env_file's localhost values).
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/qalnet_dev
+      # Uses the Neon (cloud) database — TLS required (see database.config.ts).
+      DATABASE_URL: postgresql://neondb_owner:npg_WxgCheAR4s6d@ep-solitary-mouse-awewjpdb-pooler.c-12.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
       REDIS_URL: redis://redis:6379
       ALLOWED_ORIGINS: http://localhost:3000,http://localhost:3001,http://localhost:5173
     ports:

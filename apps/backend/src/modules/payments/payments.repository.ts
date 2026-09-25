@@ -1037,8 +1037,7 @@ export class PaymentsRepository {
         await tx`
       UPDATE memberships
       SET won_current_cycle = TRUE,
-          won_round_number  = ${roundNumber},
-          updated_at        = NOW()
+          won_round_number  = ${roundNumber}
       WHERE id = ${membershipId}
     `;
     }

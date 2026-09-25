@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS pin_reset_codes (
 );
 
 -- Fast lookup by phone for the active code; partial index ignores consumed rows.
-CREATE INDEX idx_pin_reset_codes_phone_active
+CREATE INDEX IF NOT EXISTS idx_pin_reset_codes_phone_active
   ON pin_reset_codes (phone, created_at DESC)
   WHERE consumed_at IS NULL;
 

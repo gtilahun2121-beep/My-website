@@ -151,6 +151,13 @@ function splitStatements(sqlText) {
             i++;
             continue;
         }
+        if (!inQuote && ch === '-' && sqlText[i + 1] === '-') {
+            // SQL line comment — skip to EOL so `;` inside a comment can't
+            // split the statement queue or leak fragments into the SQL.
+            while (i < sqlText.length && sqlText[i] !== '\n') i++;
+            current += '\n';
+            continue;
+        }
         if (ch === ';') {
             statements.push(current);
             current = '';

@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import AppShell from '@/app/components/admin/AppShell';
 import { StatusBadge, type BadgeTone } from '@/app/components/admin/StatusBadge';
+import { Withdrawal } from '@/app/components/withdrawal/Withdrawal';
 import { useAuth } from '@/app/context/AuthContext';
 import { walletAPI, APIError } from '@/app/services/api';
 import type { WalletTransaction } from '@qalnet/shared-types';
@@ -13,8 +15,10 @@ interface TransactionFilter {
   dateRange: 'all' | '7days' | '30days' | '90days';
 }
 
-export default function WalletPage() {
+function WalletPageContent() {
   const { isAuthenticated, isLoading } = useAuth();
+  const searchParams = useSearchParams();
+  const action = searchParams?.get('action');
   const [balance, setBalance] = useState(0);
   const [transactions, setTransactions] = useState<WalletTransaction[]>([]);
   const [filteredTransactions, setFilteredTransactions] = useState<WalletTransaction[]>([]);
@@ -27,10 +31,20 @@ export default function WalletPage() {
     dateRange: 'all',
   });
 
-  const [showDepositModal, setShowDepositModal] = useState(false);
+  // Open the matching form when arriving via `?action=deposit|withdraw`
+  const [showDepositModal, setShowDepositModal] = useState(action === 'deposit');
+  const [showWithdrawModal, setShowWithdrawModal] = useState(action === 'withdraw');
   const [depositAmount, setDepositAmount] = useState('');
   const [depositPin, setDepositPin] = useState('');
   const [depositing, setDepositing] = useState(false);
+
+  const refreshWallet = async () => {
+    const data = await walletAPI.getBalance();
+    setBalance(data.balance || 0);
+
+    const txns = await walletAPI.getTransactions();
+    setTransactions(txns || []);
+  };
 
   // Load wallet data
   useEffect(() => {
@@ -119,10 +133,8 @@ export default function WalletPage() {
       setShowDepositModal(false);
       setDepositAmount('');
       setDepositPin('');
-      
-      // Refresh transactions
-      const txns = await walletAPI.getTransactions();
-      setTransactions(txns || []);
+
+      await refreshWallet();
     } catch (err) {
       const message =
         err instanceof APIError
@@ -194,14 +206,35 @@ export default function WalletPage() {
           <p className="text-sm opacity-90 mb-2">Current Balance</p>
           <h2 className="text-4xl font-bold mb-6">ETB {balance.toLocaleString('en-US')}</h2>
           <div className="flex flex-wrap gap-3">
-            <button 
+            <button
               onClick={() => setShowDepositModal(true)}
               className="bg-white text-brand-600 font-semibold px-6 py-2 rounded-lg hover:bg-gray-100 transition-all"
             >
               Deposit Funds
             </button>
+            <button
+              onClick={() => setShowWithdrawModal(true)}
+              className="border border-white/60 bg-white/10 text-white font-semibold px-6 py-2 rounded-lg hover:bg-white/15 transition-all"
+            >
+              Withdraw Funds
+            </button>
           </div>
         </div>
+
+        {showWithdrawModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+            <div className="max-w-lg w-full">
+              <Withdrawal
+                balance={balance}
+                onCancel={() => setShowWithdrawModal(false)}
+                onSuccess={async () => {
+                  setShowWithdrawModal(false);
+                  await refreshWallet();
+                }}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Error Message */}
         {error && (
@@ -373,5 +406,13 @@ export default function WalletPage() {
         </div>
       )}
     </AppShell>
+  );
+}
+
+export default function WalletPage() {
+  return (
+    <Suspense fallback={null}>
+      <WalletPageContent />
+    </Suspense>
   );
 }

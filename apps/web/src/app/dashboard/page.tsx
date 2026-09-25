@@ -57,7 +57,7 @@ function WalletHero({ balance, trustTier }: { balance: number; trustTier: string
 
         <div className="flex flex-wrap gap-2 w-full sm:w-auto">
           <Link
-            href="/wallet"
+            href="/wallet?action=deposit"
             className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-white px-4 py-2 text-xs font-black text-brand-700 shadow transition-transform hover:scale-[1.02] active:scale-[0.98]"
           >
             <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" {...stroke}>
@@ -66,7 +66,7 @@ function WalletHero({ balance, trustTier }: { balance: number; trustTier: string
             Deposit
           </Link>
           <Link
-            href="/wallet"
+            href="/wallet?action=withdraw"
             className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-white/40 bg-white/10 px-4 py-2 text-xs font-bold text-white backdrop-blur transition-colors hover:bg-white/20"
           >
             <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" {...stroke}>

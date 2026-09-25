@@ -92,16 +92,27 @@ export function getPool(): Sql {
     // (e.g. `postgres`) typically have no TLS, so `ssl: false` avoids the
     // ECONNRESET / "disconnected before secure TLS connection was established"
     // that a forced SSL handshake triggers against a plaintext server.
-    // If the URL explicitly sets `?sslmode=`, leave it to postgres.js.
+    // postgres.js ignores the URL's `?sslmode=` query param (it refuses the
+    // connection with "connection is insecure" when the server demands TLS but
+    // no explicit ssl option is given), so resolve `ssl` from that flag.
     const pooledHost = new URL(url).hostname;
     const isLocalHost = /localhost|127\.0\.0\.1|::1/i.test(pooledHost);
     const looksExternal = pooledHost.includes('.');
+    const sslMode = new URL(url).searchParams.get('sslmode');
 
-    let ssl: boolean | { rejectUnauthorized: boolean } | undefined;
-    if (url.includes('sslmode=')) {
-        ssl = undefined; // postgres.js honours the URL's sslmode=
+    let ssl: boolean | 'require' | { rejectUnauthorized: boolean };
+    if (isLocalHost || !looksExternal) {
+        ssl = false; // plaintext in-network Postgres
+    } else if (sslMode === 'disable') {
+        ssl = false;
+    } else if (sslMode === 'verify-full') {
+        ssl = { rejectUnauthorized: true };
+    } else if (sslMode) {
+        // 'require', 'prefer', 'verify-ca', ... — TLS on. `ssl:'require'` also
+        // works alongside channel_binding=require on the Neon pooled endpoint.
+        ssl = 'require';
     } else {
-        ssl = isLocalHost || !looksExternal ? false : { rejectUnauthorized: false };
+        ssl = { rejectUnauthorized: false }; // external host, no sslmode flag
     }
 
     _sql = postgres(url, {
@@ -113,9 +124,8 @@ export function getPool(): Sql {
         max_lifetime: 1800, // seconds before a connection is recycled (30 min)
         connect_timeout: 60, // raised from 10s — Neon pooler can take up to ~30s on cold start
 
-        // SSL — defer to the connection string flags (sslmode + channel_binding)
-        // Setting ssl:'require' here conflicts with channel_binding=require on the pooler.
-        // Local dev connections skip TLS entirely; remote hosts use it.
+        // SSL — resolved above from the host + URL's sslmode flag.
+        // Remote hosts (Neon) require TLS; local/in-network Postgres is plaintext.
         ssl,
 
         // Log unexpected connection closures (pool reconnects automatically
